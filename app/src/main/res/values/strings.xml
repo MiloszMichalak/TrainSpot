@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name" translatable="false">TrainSpot</string>
+    <string name="login">Log In</string>
+    <string name="register">Register</string>
+    <string name="welcome_back">Welcome Back</string>
+    <string name="email" translatable="false">Email</string>
+    <string name="password">Password</string>
+    <string name="confirm_password">Confirm password</string>
+</resources>
