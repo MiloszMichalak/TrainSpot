@@ -4,7 +4,10 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.menene.trainspot.data.AuthRepositoryImpl
-import com.menene.trainspot.domain.AuthRepository
+import com.menene.trainspot.domain.repository.AuthRepository
+import com.menene.trainspot.domain.use_case.ValidateEmail
+import com.menene.trainspot.domain.use_case.ValidatePassword
+import com.menene.trainspot.domain.use_case.ValidateRepeatedPassword
 import com.menene.trainspot.presentation.AuthViewModel
 import org.koin.core.module.dsl.bind
 import org.koin.core.module.dsl.singleOf
@@ -17,6 +20,10 @@ val AuthModule = module {
     }
 
     singleOf(::AuthRepositoryImpl) { bind<AuthRepository>() }
+
+    singleOf(::ValidateEmail)
+    singleOf(::ValidatePassword)
+    singleOf(::ValidateRepeatedPassword)
 
     viewModelOf(::AuthViewModel)
 }

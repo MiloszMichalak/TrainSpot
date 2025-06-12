@@ -6,9 +6,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -17,38 +14,45 @@ import com.menene.trainspot.R
 import com.menene.trainspot.presentation.components.EmailTextField
 import com.menene.trainspot.presentation.components.PasswordTextField
 import com.menene.trainspot.presentation.components.WideButton
+import com.menene.trainspot.presentation.model.AuthFormEvent
+import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
-fun RegisterScreen(modifier: Modifier = Modifier) {
+fun RegisterScreen(
+    modifier: Modifier = Modifier,
+    viewModel: AuthViewModel = koinViewModel()
+) {
     Column(
         modifier = modifier
             .fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically)
     ) {
-        val email by remember { mutableStateOf("") }
-        val password by remember { mutableStateOf("") }
-        val confirmPassword by remember { mutableStateOf("") }
-
         Text(
             text = stringResource(R.string.register),
             style = MaterialTheme.typography.headlineLarge
         )
 
         EmailTextField(
-            value = email,
-            onValueChange = { },
+            value = viewModel.state.email,
+            onValueChange = {
+                viewModel.onEvent(AuthFormEvent.EmailChanged(it))
+            },
         )
 
         PasswordTextField(
-            value = password,
-            onValueChange = { },
+            value = viewModel.state.password,
+            onValueChange = {
+                viewModel.onEvent(AuthFormEvent.PasswordChanged(it))
+            },
             placeholderId = R.string.password
         )
 
         PasswordTextField(
-            value = confirmPassword,
-            onValueChange = { },
+            value = viewModel.state.repeatedPassword,
+            onValueChange = {
+                viewModel.onEvent(AuthFormEvent.RepeatedPasswordChanged(it))
+            },
             placeholderId = R.string.confirm_password
         )
 

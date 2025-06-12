@@ -1,4 +1,4 @@
-package com.menene.trainspot.domain
+package com.menene.trainspot.domain.repository
 
 import com.menene.trainspot.data.DataError
 import com.menene.trainspot.util.Result
