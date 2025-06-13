@@ -7,16 +7,13 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSavedStateNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import androidx.navigation3.ui.rememberSceneSetupNavEntryDecorator
-import com.menene.trainspot.presentation.AuthViewModel
 import com.menene.trainspot.presentation.LandingScreen
 import com.menene.trainspot.presentation.LoginScreen
 import com.menene.trainspot.presentation.RegisterScreen
-import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun NavigationRoot() {
     val backStack = rememberNavBackStack(LandingScreen)
-    val viewModel = koinViewModel<AuthViewModel>()
 
     NavDisplay(
         backStack = backStack,
@@ -29,16 +26,12 @@ fun NavigationRoot() {
             when (key) {
                 is LoginScreen -> {
                     NavEntry(key = key) {
-                        LoginScreen(
-                            viewModel
-                        )
+                        LoginScreen()
                     }
                 }
                 is RegisterScreen -> {
                     NavEntry(key = key) {
-                        RegisterScreen(
-                            viewModel
-                        )
+                        RegisterScreen()
                     }
                 }
                 is LandingScreen -> {

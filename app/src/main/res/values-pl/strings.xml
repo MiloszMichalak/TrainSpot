@@ -5,4 +5,13 @@
     <string name="welcome_back">Witaj spowrotem</string>
     <string name="password">Hasło</string>
     <string name="confirm_password">Powtórz hasło</string>
+    <string name="error_icon">Ikona błędu</string>
+    <string name="email_not_empty">Email nie może byc pusty</string>
+    <string name="invalid_email">Nieprawidłowy email</string>
+    <string name="password_empty">Haslo nie moze byc puste</string>
+    <string name="password_too_short">Hasło jest za krótkie</string>
+    <string name="password_no_uppercase">Hasło musi mieć przynajmniej jedna dużą litere</string>
+    <string name="password_no_lowercase">Hasło musi mieć przynajmniej jedną małą literę</string>
+    <string name="password_no_digit">Hasło musi mieć przynajmniej jedną cyfrę</string>
+    <string name="password_do_not_match">Hasła nie są takie same</string>
 </resources>

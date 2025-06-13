@@ -15,13 +15,15 @@ import com.menene.trainspot.presentation.components.EmailTextField
 import com.menene.trainspot.presentation.components.PasswordTextField
 import com.menene.trainspot.presentation.components.WideButton
 import com.menene.trainspot.presentation.model.AuthFormEvent
+import com.menene.trainspot.presentation.model.AuthType
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun RegisterScreen(
     modifier: Modifier = Modifier,
-    viewModel: AuthViewModel = koinViewModel()
 ) {
+    val viewModel: AuthViewModel = koinViewModel()
+
     Column(
         modifier = modifier
             .fillMaxSize(),
@@ -38,6 +40,7 @@ fun RegisterScreen(
             onValueChange = {
                 viewModel.onEvent(AuthFormEvent.EmailChanged(it))
             },
+            error = viewModel.state.emailError
         )
 
         PasswordTextField(
@@ -45,7 +48,8 @@ fun RegisterScreen(
             onValueChange = {
                 viewModel.onEvent(AuthFormEvent.PasswordChanged(it))
             },
-            placeholderId = R.string.password
+            placeholderId = R.string.password,
+            error = viewModel.state.passwordError
         )
 
         PasswordTextField(
@@ -53,12 +57,15 @@ fun RegisterScreen(
             onValueChange = {
                 viewModel.onEvent(AuthFormEvent.RepeatedPasswordChanged(it))
             },
-            placeholderId = R.string.confirm_password
+            placeholderId = R.string.confirm_password,
+            error = viewModel.state.repeatedPasswordError
         )
 
         WideButton(
             stringId = R.string.login,
-            onClick = {}
+            onClick = {
+                viewModel.onEvent(AuthFormEvent.Submit(AuthType.Register))
+            }
         )
     }
 }

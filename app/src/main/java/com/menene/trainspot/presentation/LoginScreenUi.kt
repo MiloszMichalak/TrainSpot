@@ -15,13 +15,15 @@ import com.menene.trainspot.presentation.components.EmailTextField
 import com.menene.trainspot.presentation.components.PasswordTextField
 import com.menene.trainspot.presentation.components.WideButton
 import com.menene.trainspot.presentation.model.AuthFormEvent
+import com.menene.trainspot.presentation.model.AuthType
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun LoginScreen(
     modifier: Modifier = Modifier,
-    viewModel: AuthViewModel = koinViewModel()
 ) {
+    val viewModel: AuthViewModel = koinViewModel()
+
     Column(
         modifier = modifier
             .fillMaxSize(),
@@ -38,6 +40,7 @@ fun LoginScreen(
             onValueChange = {
                 viewModel.onEvent(AuthFormEvent.EmailChanged(it))
             },
+            error = viewModel.state.emailError
         )
 
         PasswordTextField(
@@ -45,12 +48,15 @@ fun LoginScreen(
             placeholderId = R.string.password,
             onValueChange = {
                 viewModel.onEvent(AuthFormEvent.PasswordChanged(it))
-            }
+            },
+            error = viewModel.state.passwordError
         )
 
         WideButton(
             stringId = R.string.login,
-            onClick = {}
+            onClick = {
+                viewModel.onEvent(AuthFormEvent.Submit(AuthType.Login))
+            }
         )
     }
 }

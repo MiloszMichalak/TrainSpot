@@ -6,10 +6,10 @@ import com.menene.trainspot.domain.use_case.ValidateRepeatedPassword.RepeatedPas
 
 data class AuthFormState (
     val email: String = "",
-    val emailError: EmailError? = null,
+    var emailError: EmailError? = null,
     val password: String = "",
-    val passwordError: PasswordError? = null,
+    var passwordError: PasswordError? = null,
     val repeatedPassword: String = "",
-    val repeatedPasswordError: RepeatedPasswordError? = null,
+    var repeatedPasswordError: RepeatedPasswordError? = null,
     val hasError: Boolean = false,
 )

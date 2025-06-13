@@ -26,14 +26,32 @@ class AuthViewModel(
 ): ViewModel() {
     var state by mutableStateOf(AuthFormState())
 
-    val _authEventChannel = Channel<AuthEvent>()
+    private val _authEventChannel = Channel<AuthEvent>()
     val validationEvent = _authEventChannel.receiveAsFlow()
 
     fun onEvent(event: AuthFormEvent){
         when (event) {
-            is AuthFormEvent.EmailChanged -> state = state.copy(email = event.email)
-            is AuthFormEvent.PasswordChanged -> state = state.copy(password = event.password)
-            is AuthFormEvent.RepeatedPasswordChanged -> state = state.copy(repeatedPassword = event.repeatedPassword)
+            is AuthFormEvent.EmailChanged -> {
+                state = state.copy(
+                    email = event.email,
+                    emailError = null,
+                    hasError = false
+                )
+            }
+            is AuthFormEvent.PasswordChanged -> {
+                state = state.copy(
+                    password = event.password,
+                    passwordError = null,
+                    hasError = false
+                )
+            }
+            is AuthFormEvent.RepeatedPasswordChanged -> {
+                state = state.copy(
+                    repeatedPassword = event.repeatedPassword,
+                    repeatedPasswordError = null,
+                    hasError = false
+                )
+            }
             is AuthFormEvent.Submit -> submitData(event.registrationType)
         }
     }

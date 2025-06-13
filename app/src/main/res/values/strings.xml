@@ -6,4 +6,13 @@
     <string name="email" translatable="false">Email</string>
     <string name="password">Password</string>
     <string name="confirm_password">Confirm password</string>
+    <string name="error_icon">Error icon</string>
+    <string name="email_not_empty">Email cannot be empty</string>
+    <string name="invalid_email">Invalid email</string>
+    <string name="password_empty">Password cannot be empty</string>
+    <string name="password_too_short">Password too short</string>
+    <string name="password_no_uppercase">Password must have at least 1 uppercase</string>
+    <string name="password_no_lowercase">Password must have at least one lowercase</string>
+    <string name="password_no_digit">Password must have at least one digit</string>
+    <string name="password_do_not_match">Passwords don\'t match</string>
 </resources>
