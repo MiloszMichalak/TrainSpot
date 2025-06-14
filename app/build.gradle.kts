@@ -50,21 +50,17 @@ dependencies {
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
-    implementation(libs.androidx.material3)
-    implementation(libs.androidx.material.icons.extended)
 
-    implementation(libs.androidx.navigation3.runtime)
-    implementation(libs.androidx.navigation3.ui)
-    implementation(libs.androidx.lifecycle.viewmodel.navigation3)
+    implementation(libs.bundles.androidx.material)
+    implementation(libs.bundles.koin)
+    implementation(libs.bundles.navigation3)
+
     implementation(libs.kotlinx.serialization.core)
-
-    implementation(libs.koin)
-    implementation(libs.koin.viewmodel)
-    implementation(libs.koin.viemodel.compose)
 
     implementation(libs.firebase.auth)
 
     testImplementation(libs.junit)
+    testImplementation(libs.google.truth)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))

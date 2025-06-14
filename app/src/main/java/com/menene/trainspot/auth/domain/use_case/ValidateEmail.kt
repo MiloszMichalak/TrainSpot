@@ -1,18 +1,20 @@
-package com.menene.trainspot.domain.use_case
+package com.menene.trainspot.auth.domain.use_case
 
-import android.util.Patterns
 import com.menene.trainspot.R
 import com.menene.trainspot.util.Error
 import com.menene.trainspot.util.Result
-import java.util.regex.Pattern
 
 class ValidateEmail {
+    companion object {
+        private val emailPattern = "[a-zA-Z0-9._%+-]+@[a-zA-z0-9.-]+\\.[a-zA-Z]{2,}".toRegex()
+    }
+
     operator fun invoke(email: String): Result<String, EmailError> {
         if (email.isEmpty()) {
             return Result.Error(EmailError.EMPTY)
         }
 
-        if (!Pattern.matches(Patterns.EMAIL_ADDRESS.pattern(), email)){
+        if (!emailPattern.matches(email)){
             return Result.Error(EmailError.INVALID_EMAIL)
         }
 
