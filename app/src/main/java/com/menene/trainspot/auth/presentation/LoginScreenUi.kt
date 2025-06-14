@@ -41,7 +41,6 @@ fun LoginScreen(
                 is AuthViewModel.AuthEvent.Success -> {
                     coroutineScope.launch {
                         snackbarHostState.showSnackbar(context.getString(R.string.logged_succes))
-                        onSuccessfulLogin()
                     }
                     onSuccessfulLogin()
                 }

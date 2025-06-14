@@ -8,16 +8,21 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSavedStateNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import androidx.navigation3.ui.rememberSceneSetupNavEntryDecorator
+import com.google.firebase.auth.FirebaseAuth
 import com.menene.trainspot.presentation.HomeScreen
 import com.menene.trainspot.presentation.LandingScreen
 import com.menene.trainspot.presentation.LoginScreen
 import com.menene.trainspot.presentation.RegisterScreen
+import org.koin.compose.koinInject
 
 @Composable
 fun NavigationRoot(
-    snackbarHostState: SnackbarHostState
+    snackbarHostState: SnackbarHostState,
+    auth: FirebaseAuth = koinInject()
 ) {
-    val backStack = rememberNavBackStack(LandingScreen)
+    val backStack = rememberNavBackStack(
+        if (auth.currentUser == null) LandingScreen else HomeScreen
+    )
 
     NavDisplay(
         backStack = backStack,

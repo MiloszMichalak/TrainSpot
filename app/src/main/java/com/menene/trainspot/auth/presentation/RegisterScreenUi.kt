@@ -42,8 +42,8 @@ fun RegisterScreen(
                 is AuthEvent.Success -> {
                     coroutineScope.launch {
                         snackbarHostState.showSnackbar(context.getString(R.string.successful_register))
-                        onSuccesfulRegister()
                     }
+                    onSuccesfulRegister()
                 }
                 is AuthEvent.Failure -> {
                     coroutineScope.launch {
