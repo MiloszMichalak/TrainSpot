@@ -10,4 +10,7 @@ data object RegisterScreen : NavKey
 data object LoginScreen : NavKey
 
 @Serializable
-data object LandingScreen: NavKey
+data object LandingScreen : NavKey
+
+@Serializable
+data object HomeScreen : NavKey

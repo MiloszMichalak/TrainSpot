@@ -1,7 +1,6 @@
 package com.menene.trainspot.domain.use_case
 
 import com.menene.trainspot.R
-import com.menene.trainspot.domain.model.PasswordErrorFunction
 import com.menene.trainspot.util.Error
 import com.menene.trainspot.util.Result
 
@@ -31,7 +30,7 @@ class ValidatePassword {
     }
 
 
-    enum class PasswordError : Error, PasswordErrorFunction {
+    enum class PasswordError : Error {
         EMPTY,
         PASSWORD_TOO_SHORT,
         NO_UPPERCASE,

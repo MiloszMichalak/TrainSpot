@@ -24,7 +24,7 @@ class ValidateEmail {
         EMPTY,
         INVALID_EMAIL;
 
-        fun toIntType(): Int {
+        override fun toIntType(): Int {
             return  when (this) {
                 EMPTY -> R.string.email_not_empty
                 INVALID_EMAIL -> R.string.invalid_email

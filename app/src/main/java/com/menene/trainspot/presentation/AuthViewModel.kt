@@ -1,5 +1,6 @@
 package com.menene.trainspot.presentation
 
+import androidx.annotation.StringRes
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -22,7 +23,6 @@ class AuthViewModel(
     private val validateEmail: ValidateEmail,
     private val validatePassword: ValidatePassword,
     private val validateRepeatedPassword: ValidateRepeatedPassword
-
 ): ViewModel() {
     var state by mutableStateOf(AuthFormState())
 
@@ -89,14 +89,18 @@ class AuthViewModel(
 
             if (result is Result.Success) {
                 _authEventChannel.send(AuthEvent.Success)
-            } else {
-                _authEventChannel.send(AuthEvent.Failure)
+            } else if (result is Result.Error) {
+                _authEventChannel.send(AuthEvent.Failure(
+                    errorId = result.error.toIntType()
+                ))
             }
         }
     }
 
     sealed class AuthEvent {
         data object Success : AuthEvent()
-        data object Failure : AuthEvent()
+        data class Failure(
+            @StringRes val errorId: Int
+        ) : AuthEvent()
     }
 }

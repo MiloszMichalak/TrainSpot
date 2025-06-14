@@ -1,3 +1,5 @@
 package com.menene.trainspot.util
 
-interface Error
+interface Error {
+    fun toIntType(): Int
+}

@@ -1,5 +1,6 @@
 package com.menene.trainspot.data
 
+import com.menene.trainspot.R
 import com.menene.trainspot.util.Error
 
 enum class DataError: Error {
@@ -9,14 +10,13 @@ enum class DataError: Error {
     NETWORK_ERROR,
     UNKNOWN_ERROR;
 
-//    override fun toString(): String {
-//        return when (this) {
-//            INVALID_EMAIL -> "Invalid email format"
-//            INVALID_PASSWORD -> "Password does not meet requirements"
-//            USER_NOT_FOUND -> "User not found"
-//            USER_ALREADY_EXISTS -> "User already exists"
-//            NETWORK_ERROR -> "Network error occurred"
-//            UNKNOWN_ERROR -> "An unknown error occurred"
-//        }
-//    }
+    override fun toIntType(): Int {
+        return when (this) {
+            INVALID_DATA -> R.string.invalid_data
+            USER_ALREADY_EXISTS -> R.string.user_exists
+            TOO_MANY_REQUESTS -> R.string.too_many_requests
+            NETWORK_ERROR -> R.string.network_error
+            UNKNOWN_ERROR -> R.string.unknown_error
+        }
+    }
 }

@@ -1,6 +1,5 @@
 package com.menene.trainspot.util
 
-import com.google.firebase.FirebaseException
 import com.google.firebase.FirebaseNetworkException
 import com.google.firebase.FirebaseTooManyRequestsException
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
@@ -21,8 +20,6 @@ suspend inline fun safeFirebaseCall(
         Result.Error(DataError.TOO_MANY_REQUESTS)
     } catch (e: FirebaseNetworkException) {
         Result.Error(DataError.NETWORK_ERROR)
-    } catch (e: FirebaseException) {
-        Result.Error(DataError.UNKNOWN_ERROR)
     } catch (e: Exception) {
         Result.Error(DataError.UNKNOWN_ERROR)
     }

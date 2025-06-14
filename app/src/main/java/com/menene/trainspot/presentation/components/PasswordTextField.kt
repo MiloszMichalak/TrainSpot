@@ -14,13 +14,13 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import com.menene.trainspot.R
-import com.menene.trainspot.domain.model.PasswordErrorFunction
+import com.menene.trainspot.util.Error
 
 @Composable
 fun PasswordTextField(
     value: String,
     @StringRes placeholderId: Int,
-    error: PasswordErrorFunction?,
+    error: Error?,
     onValueChange: (String) -> Unit,
 ) {
     TextField(

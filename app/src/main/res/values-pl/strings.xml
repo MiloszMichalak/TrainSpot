@@ -14,4 +14,11 @@
     <string name="password_no_lowercase">Hasło musi mieć przynajmniej jedną małą literę</string>
     <string name="password_no_digit">Hasło musi mieć przynajmniej jedną cyfrę</string>
     <string name="password_do_not_match">Hasła nie są takie same</string>
+    <string name="logged_succes">Zalogowano pomyślnie</string>
+    <string name="successful_register">Zarejestrowano pomyślnie</string>
+    <string name="invalid_data">Nieprawidłowe dane</string>
+    <string name="user_exists">Użytkownik już istnieje</string>
+    <string name="too_many_requests">Za dużo zapytań</string>
+    <string name="network_error">Błąd sieci</string>
+    <string name="unknown_error">Nieznany błąd</string>
 </resources>
