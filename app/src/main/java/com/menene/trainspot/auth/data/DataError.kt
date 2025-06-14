@@ -1,4 +1,4 @@
-package com.menene.trainspot.data
+package com.menene.trainspot.auth.data
 
 import com.menene.trainspot.R
 import com.menene.trainspot.util.Error

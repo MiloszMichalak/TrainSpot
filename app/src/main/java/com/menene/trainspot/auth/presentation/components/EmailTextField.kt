@@ -1,4 +1,4 @@
-package com.menene.trainspot.presentation.components
+package com.menene.trainspot.auth.presentation.components
 
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
@@ -16,7 +16,7 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.menene.trainspot.R
-import com.menene.trainspot.domain.use_case.ValidateEmail.EmailError
+import com.menene.trainspot.auth.domain.use_case.ValidateEmail.EmailError
 
 @Composable
 fun EmailTextField(

@@ -1,4 +1,4 @@
-package com.menene.trainspot.presentation.ui.theme
+package com.menene.trainspot.auth.presentation.ui.theme
 import androidx.compose.ui.graphics.Color
 
 val primaryLight = Color(0xFF8F4A4C)

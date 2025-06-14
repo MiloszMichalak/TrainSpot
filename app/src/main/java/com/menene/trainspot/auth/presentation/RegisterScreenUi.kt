@@ -1,4 +1,4 @@
-package com.menene.trainspot.presentation
+package com.menene.trainspot.auth.presentation
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -15,12 +15,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.menene.trainspot.R
-import com.menene.trainspot.presentation.AuthViewModel.AuthEvent
-import com.menene.trainspot.presentation.components.EmailTextField
-import com.menene.trainspot.presentation.components.PasswordTextField
-import com.menene.trainspot.presentation.components.WideButton
-import com.menene.trainspot.presentation.model.AuthFormEvent
-import com.menene.trainspot.presentation.model.AuthType
+import com.menene.trainspot.auth.presentation.AuthViewModel.AuthEvent
+import com.menene.trainspot.auth.presentation.components.EmailTextField
+import com.menene.trainspot.auth.presentation.components.PasswordTextField
+import com.menene.trainspot.auth.presentation.components.WideButton
+import com.menene.trainspot.auth.presentation.model.AuthFormEvent
+import com.menene.trainspot.auth.presentation.model.AuthType
 import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 

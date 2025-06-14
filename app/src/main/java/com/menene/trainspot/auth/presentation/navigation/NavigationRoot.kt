@@ -1,4 +1,4 @@
-package com.menene.trainspot.presentation.navigation
+package com.menene.trainspot.auth.presentation.navigation
 
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
@@ -9,10 +9,10 @@ import androidx.navigation3.runtime.rememberSavedStateNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import androidx.navigation3.ui.rememberSceneSetupNavEntryDecorator
 import com.google.firebase.auth.FirebaseAuth
-import com.menene.trainspot.presentation.HomeScreen
-import com.menene.trainspot.presentation.LandingScreen
-import com.menene.trainspot.presentation.LoginScreen
-import com.menene.trainspot.presentation.RegisterScreen
+import com.menene.trainspot.home.HomeScreen
+import com.menene.trainspot.auth.presentation.LandingScreen
+import com.menene.trainspot.auth.presentation.LoginScreen
+import com.menene.trainspot.auth.presentation.RegisterScreen
 import org.koin.compose.koinInject
 
 @Composable

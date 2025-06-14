@@ -1,5 +1,6 @@
-package com.menene.trainspot.domain.use_case
+package com.menene.trainspot.auth.domain.use_case
 
+import com.menene.trainspot.R
 import com.menene.trainspot.util.Error
 import com.menene.trainspot.util.Result
 
@@ -19,7 +20,7 @@ class ValidateRepeatedPassword {
 
         override fun toIntType(): Int {
             return when (this) {
-                PASSWORD_DO_NOT_MATCH -> com.menene.trainspot.R.string.password_do_not_match
+                PASSWORD_DO_NOT_MATCH -> R.string.password_do_not_match
             }
         }
     }

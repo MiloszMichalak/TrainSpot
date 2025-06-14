@@ -1,8 +1,8 @@
-package com.menene.trainspot.presentation.model
+package com.menene.trainspot.auth.presentation.model
 
-import com.menene.trainspot.domain.use_case.ValidateEmail.EmailError
+import com.menene.trainspot.auth.domain.use_case.ValidateEmail.EmailError
 import com.menene.trainspot.domain.use_case.ValidatePassword.PasswordError
-import com.menene.trainspot.domain.use_case.ValidateRepeatedPassword.RepeatedPasswordError
+import com.menene.trainspot.auth.domain.use_case.ValidateRepeatedPassword.RepeatedPasswordError
 
 data class AuthFormState (
     val email: String = "",

@@ -4,7 +4,7 @@ import com.google.firebase.FirebaseNetworkException
 import com.google.firebase.FirebaseTooManyRequestsException
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
-import com.menene.trainspot.data.DataError
+import com.menene.trainspot.auth.data.DataError
 
 suspend inline fun safeFirebaseCall(
     crossinline block: suspend ()  -> Unit

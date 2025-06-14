@@ -1,4 +1,4 @@
-package com.menene.trainspot.presentation.model
+package com.menene.trainspot.auth.presentation.model
 
 sealed class AuthFormEvent {
     data class EmailChanged(val email: String) : AuthFormEvent()

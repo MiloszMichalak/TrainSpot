@@ -1,4 +1,4 @@
-package com.menene.trainspot.presentation
+package com.menene.trainspot.auth.presentation
 
 import androidx.annotation.StringRes
 import androidx.compose.runtime.getValue
@@ -6,13 +6,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.menene.trainspot.domain.repository.AuthRepository
-import com.menene.trainspot.domain.use_case.ValidateEmail
+import com.menene.trainspot.auth.domain.repository.AuthRepository
+import com.menene.trainspot.auth.domain.use_case.ValidateEmail
 import com.menene.trainspot.domain.use_case.ValidatePassword
-import com.menene.trainspot.domain.use_case.ValidateRepeatedPassword
-import com.menene.trainspot.presentation.model.AuthFormEvent
-import com.menene.trainspot.presentation.model.AuthFormState
-import com.menene.trainspot.presentation.model.AuthType
+import com.menene.trainspot.auth.domain.use_case.ValidateRepeatedPassword
+import com.menene.trainspot.auth.presentation.model.AuthFormEvent
+import com.menene.trainspot.auth.presentation.model.AuthFormState
+import com.menene.trainspot.auth.presentation.model.AuthType
 import com.menene.trainspot.util.Result
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow

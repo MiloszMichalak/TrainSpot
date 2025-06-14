@@ -1,4 +1,4 @@
-package com.menene.trainspot.presentation.navigation
+package com.menene.trainspot.auth.presentation.navigation
 
 import androidx.navigation3.runtime.NavKey
 import kotlinx.serialization.Serializable

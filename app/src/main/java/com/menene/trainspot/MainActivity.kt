@@ -16,8 +16,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.unit.dp
-import com.menene.trainspot.presentation.navigation.NavigationRoot
-import com.menene.trainspot.presentation.ui.theme.TrainSpotTheme
+import com.menene.trainspot.auth.presentation.navigation.NavigationRoot
+import com.menene.trainspot.auth.presentation.ui.theme.TrainSpotTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

@@ -1,4 +1,4 @@
-package com.menene.trainspot.presentation.ui.theme
+package com.menene.trainspot.auth.presentation.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle

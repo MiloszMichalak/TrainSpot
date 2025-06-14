@@ -1,4 +1,4 @@
-package com.menene.trainspot.presentation.components
+package com.menene.trainspot.auth.presentation.components
 
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.fillMaxWidth
