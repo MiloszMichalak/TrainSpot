@@ -14,4 +14,38 @@ class ValidatePasswordTest {
         assertThat(result).isInstanceOf(Result.Error::class.java)
         assertThat((result as Result.Error).error).isEqualTo(ValidatePassword.PasswordError.EMPTY)
     }
+
+    @Test
+    fun `password shorter than 6 characters returns error PASSWORD_TOO_SHORT`() {
+        val result = validPassword("test")
+        assertThat(result).isInstanceOf(Result.Error::class.java)
+        assertThat((result as Result.Error).error).isEqualTo(ValidatePassword.PasswordError.PASSWORD_TOO_SHORT)
+    }
+
+    @Test
+    fun `password without uppercase returns error NO_UPPERCASE`() {
+        val result = validPassword("test123")
+        assertThat(result).isInstanceOf(Result.Error::class.java)
+        assertThat((result as Result.Error).error).isEqualTo(ValidatePassword.PasswordError.NO_UPPERCASE)
+    }
+
+    @Test
+    fun `password without lowercase returns error NO_LOWERCASE`() {
+        val result = validPassword("TEST123")
+        assertThat(result).isInstanceOf(Result.Error::class.java)
+        assertThat((result as Result.Error).error).isEqualTo(ValidatePassword.PasswordError.NO_LOWERCASE)
+    }
+
+    @Test
+    fun `password without digit returns error NO_DIGIT`() {
+        val result = validPassword("Testtest")
+        assertThat(result).isInstanceOf(Result.Error::class.java)
+        assertThat((result as Result.Error).error).isEqualTo(ValidatePassword.PasswordError.NO_DIGIT)
+    }
+
+    @Test
+    fun `valid password returns success`() {
+        val result = validPassword("Test123")
+        assertThat(result).isInstanceOf(Result.Success::class.java)
+    }
 }

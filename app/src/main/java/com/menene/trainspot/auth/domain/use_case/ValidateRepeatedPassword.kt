@@ -13,8 +13,6 @@ class ValidateRepeatedPassword {
         return Result.Success(repeatedPassword)
     }
 
-
-
     enum class RepeatedPasswordError : Error {
         PASSWORD_DO_NOT_MATCH;
 
