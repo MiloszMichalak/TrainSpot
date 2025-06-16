@@ -16,7 +16,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.unit.dp
-import com.menene.trainspot.auth.presentation.navigation.NavigationRoot
+import com.menene.trainspot.navigation.NavigationRoot
 import com.menene.trainspot.auth.presentation.ui.theme.TrainSpotTheme
 
 class MainActivity : ComponentActivity() {
@@ -32,13 +32,12 @@ class MainActivity : ComponentActivity() {
                 val snackbarHostState = remember { SnackbarHostState() }
 
                 Scaffold(
-                    modifier = Modifier
-                        .fillMaxSize(),
                     snackbarHost = {
                         SnackbarHost(hostState = snackbarHostState)
                     },
                 ) { innerPadding ->
                      Column(modifier = Modifier
+                         .fillMaxSize()
                          .background(horizontalGradient)
                          .padding(innerPadding)
                          .padding(horizontal = 32.dp)

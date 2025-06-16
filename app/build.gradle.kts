@@ -58,11 +58,15 @@ dependencies {
     implementation(libs.kotlinx.serialization.core)
 
     implementation(libs.firebase.auth)
+    implementation(libs.firebase.database)
+    implementation(libs.firebase.storage)
 
     testImplementation(libs.kotlinx.coroutines.test)
-    implementation(libs.mockito.core)
+    testImplementation(libs.mockito.core)
     testImplementation(libs.mockito.kotlin)
     testImplementation(libs.google.truth)
+
+    implementation(libs.coil)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

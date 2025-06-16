@@ -1,4 +1,4 @@
-package com.menene.trainspot.auth.presentation.navigation
+package com.menene.trainspot.navigation
 
 import androidx.navigation3.runtime.NavKey
 import kotlinx.serialization.Serializable
@@ -14,3 +14,6 @@ data object LandingScreen : NavKey
 
 @Serializable
 data object HomeScreen : NavKey
+
+@Serializable
+data object AddTrainScreen : NavKey

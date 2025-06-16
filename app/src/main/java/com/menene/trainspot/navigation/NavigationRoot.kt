@@ -1,4 +1,4 @@
-package com.menene.trainspot.auth.presentation.navigation
+package com.menene.trainspot.navigation
 
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
@@ -9,10 +9,11 @@ import androidx.navigation3.runtime.rememberSavedStateNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import androidx.navigation3.ui.rememberSceneSetupNavEntryDecorator
 import com.google.firebase.auth.FirebaseAuth
-import com.menene.trainspot.home.HomeScreen
+import com.menene.trainspot.home.presentation.HomeScreen
 import com.menene.trainspot.auth.presentation.LandingScreen
 import com.menene.trainspot.auth.presentation.LoginScreen
 import com.menene.trainspot.auth.presentation.RegisterScreen
+import com.menene.trainspot.home.presentation.AddTrainScreen
 import org.koin.compose.koinInject
 
 @Composable
@@ -69,7 +70,16 @@ fun NavigationRoot(
                 }
                 is HomeScreen -> {
                     NavEntry(key = key) {
-                        HomeScreen()
+                        HomeScreen(
+                            onFloatButtonPressed = {
+                                backStack.add(AddTrainScreen)
+                            }
+                        )
+                    }
+                }
+                is AddTrainScreen -> {
+                    NavEntry(key = key) {
+                        AddTrainScreen()
                     }
                 }
                 else -> throw IllegalArgumentException("Unknown screen: $key")
