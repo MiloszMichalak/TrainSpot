@@ -1,6 +1,7 @@
 package com.menene.trainspot.di
 
 import com.menene.trainspot.home.data.FirebaseTrainRepositoryImpl
+import com.menene.trainspot.home.data.TrainStorage
 import com.menene.trainspot.home.domain.FirebaseTrainRepository
 import com.menene.trainspot.home.presentation.AddTrainViewModel
 import com.menene.trainspot.home.util.ImageCompressor
@@ -15,4 +16,8 @@ val HomeModule = module {
     viewModelOf(::AddTrainViewModel)
 
     singleOf(::FirebaseTrainRepositoryImpl) { bind<FirebaseTrainRepository>() }
+
+    single {
+        TrainStorage()
+    }
 }

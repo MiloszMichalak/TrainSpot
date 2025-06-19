@@ -1,6 +1,6 @@
 package com.menene.trainspot.auth.domain.repository
 
-import com.menene.trainspot.auth.data.DataError
+import com.menene.trainspot.util.DataError
 import com.menene.trainspot.util.Result
 
 interface AuthRepository {

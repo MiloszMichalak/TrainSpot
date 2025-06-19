@@ -17,3 +17,6 @@ data object HomeScreen : NavKey
 
 @Serializable
 data object AddTrainScreen : NavKey
+
+@Serializable
+data object SearchNameTrainScreen : NavKey

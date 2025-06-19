@@ -4,14 +4,14 @@ import com.google.firebase.FirebaseNetworkException
 import com.google.firebase.FirebaseTooManyRequestsException
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
-import com.menene.trainspot.auth.data.DataError
+import com.menene.trainspot.util.DataError
 
-suspend inline fun safeFirebaseCall(
-    crossinline block: suspend ()  -> Unit
-): Result<Unit, DataError> {
+suspend inline fun <T> safeFirebaseCall(
+    crossinline block: suspend ()  -> T
+): Result<T, DataError> {
     return try {
         block()
-        Result.Success(Unit)
+        Result.Success(block())
     } catch (e: FirebaseAuthUserCollisionException) {
         Result.Error(DataError.USER_ALREADY_EXISTS)
     } catch (e: FirebaseAuthInvalidCredentialsException) {

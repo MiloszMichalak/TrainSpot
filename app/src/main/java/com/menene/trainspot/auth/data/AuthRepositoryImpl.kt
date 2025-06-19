@@ -2,6 +2,7 @@ package com.menene.trainspot.auth.data
 
 import com.google.firebase.auth.FirebaseAuth
 import com.menene.trainspot.auth.domain.repository.AuthRepository
+import com.menene.trainspot.util.DataError
 import com.menene.trainspot.util.Result
 import com.menene.trainspot.util.safeFirebaseCall
 import kotlinx.coroutines.tasks.await

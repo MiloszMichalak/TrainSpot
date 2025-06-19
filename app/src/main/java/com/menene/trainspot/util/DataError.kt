@@ -1,7 +1,6 @@
-package com.menene.trainspot.auth.data
+package com.menene.trainspot.util
 
 import com.menene.trainspot.R
-import com.menene.trainspot.util.Error
 
 enum class DataError: Error {
     INVALID_DATA,

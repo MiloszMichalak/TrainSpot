@@ -14,6 +14,7 @@ import com.menene.trainspot.auth.presentation.LandingScreen
 import com.menene.trainspot.auth.presentation.LoginScreen
 import com.menene.trainspot.auth.presentation.RegisterScreen
 import com.menene.trainspot.home.presentation.AddTrainScreen
+import com.menene.trainspot.home.presentation.SearchNameTrainScreen
 import org.koin.compose.koinInject
 
 @Composable
@@ -80,6 +81,11 @@ fun NavigationRoot(
                 is AddTrainScreen -> {
                     NavEntry(key = key) {
                         AddTrainScreen()
+                    }
+                }
+                is SearchNameTrainScreen -> {
+                    NavEntry(key = key) {
+                        SearchNameTrainScreen()
                     }
                 }
                 else -> throw IllegalArgumentException("Unknown screen: $key")

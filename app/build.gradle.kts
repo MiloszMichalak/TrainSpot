@@ -54,21 +54,22 @@ dependencies {
     implementation(libs.bundles.androidx.material)
     implementation(libs.bundles.koin)
     implementation(libs.bundles.navigation3)
+    implementation(libs.bundles.firebase)
 
     implementation(libs.kotlinx.serialization.core)
 
-    implementation(libs.firebase.auth)
-    implementation(libs.firebase.database)
-    implementation(libs.firebase.storage)
+    implementation(libs.coil)
+
+    implementation(libs.datastore.preferences)
+
+
+    testImplementation(libs.junit)
 
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.mockito.core)
     testImplementation(libs.mockito.kotlin)
     testImplementation(libs.google.truth)
 
-    implementation(libs.coil)
-
-    testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
