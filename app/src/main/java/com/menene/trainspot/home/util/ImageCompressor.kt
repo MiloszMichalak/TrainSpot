@@ -37,14 +37,13 @@ class ImageCompressor(
                 ensureActive()
 
                 val compressFormat = when (mimeType) {
-                    "image/jpeg" -> Bitmap.CompressFormat.PNG
+                    "image/jpeg" -> Bitmap.CompressFormat.JPEG
                     "image/png" -> Bitmap.CompressFormat.PNG
                     "image/webp" -> if (Build.VERSION.SDK_INT >= 30) {
                         Bitmap.CompressFormat.WEBP_LOSSLESS
                     } else {
                         Bitmap.CompressFormat.WEBP
                     }
-
                     else -> Bitmap.CompressFormat.JPEG
                 }
 

@@ -11,7 +11,7 @@ class TrainSpotApplication: Application() {
         startKoin {
             androidContext(this@TrainSpotApplication)
 
-            modules(AuthModule)
+            modules(listOf(AuthModule, HomeModule))
         }
     }
 }

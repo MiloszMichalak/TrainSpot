@@ -23,4 +23,5 @@
     <string name="network_error">Network error</string>
     <string name="unknown_error">Unknown error</string>
     <string name="add_train">Add train</string>
+    <string name="upload">Upload</string>
 </resources>
