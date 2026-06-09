@@ -10,8 +10,8 @@ fun Application.configureCORS() {
     val allowHosts = environment.config.propertyOrNull("cors.allowHost")
         ?.getString()
         ?.split(",")
-        ?.map { it.trim() }?.distinct()
-        ?: listOf("localhost:3000", "localhost:8080")
+        ?.map { it.trim() }
+        ?: listOf("localhost:8080")
 
     install(CORS) {
         allowHosts.forEach { host ->
