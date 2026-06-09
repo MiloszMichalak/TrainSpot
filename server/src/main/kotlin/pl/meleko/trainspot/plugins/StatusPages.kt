@@ -10,28 +10,20 @@ import io.ktor.server.response.respond
 fun Application.configureStatusPages() {
     install(StatusPages) {
         exception<IllegalArgumentException> { call, cause ->
-            call.respond(
-                HttpStatusCode.BadRequest
-            )
+            call.respond(HttpStatusCode.BadRequest)
         }
 
         exception<IllegalStateException> { call, cause ->
-            call.respond(
-                HttpStatusCode.Unauthorized
-            )
+            call.respond(HttpStatusCode.Unauthorized)
         }
 
         exception<NotFoundException> { call, cause ->
-            call.respond(
-                HttpStatusCode.NotFound
-            )
+            call.respond(HttpStatusCode.NotFound)
         }
 
         exception<Throwable> { call, cause ->
             call.application.log.error("Unhandled exception", cause)
-            call.respond(
-                HttpStatusCode.InternalServerError
-            )
+            call.respond(HttpStatusCode.InternalServerError)
         }
 
         status(HttpStatusCode.NotFound) { call, _ ->

@@ -12,9 +12,9 @@ fun Application.configureRouting() {
         }
 
         get("/") {
-            val port = environment.config.property("server.port")?.getString() ?: "8080"
+            val port = environment.config.property("server.port").getString() ?: "8080"
             call.respond(mapOf(
-                "message" to "RailSpotter API is running on port $port"
+                "message" to "Trainspot API is running on port $port"
             ))
         }
     }

@@ -24,6 +24,10 @@ dependencies {
     implementation(libs.ktor.serverStatusPages)
     implementation(libs.ktor.serializationKotlinxJson)
 
+    implementation(libs.ktor.client.core)
+    implementation(libs.ktor.client.okhttp)
+    implementation(libs.ktor.client.content.negotiation)
+
     // JWT
     implementation(libs.java.jwt)
 
