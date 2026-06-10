@@ -24,7 +24,7 @@ dependencies {
     implementation(libs.ktor.serverContentNegotiation)
     implementation(libs.ktor.serverStatusPages)
     implementation(libs.ktor.serializationKotlinxJson)
-    implementation(libs.ktor.server.config.yaml)
+    implementation(libs.ktor.serverConfigYaml)
 
     // Ktor Client for PKP API
     implementation(libs.ktor.client.core)
