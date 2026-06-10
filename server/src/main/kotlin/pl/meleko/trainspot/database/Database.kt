@@ -3,7 +3,7 @@ package pl.meleko.trainspot.database
 import io.ktor.server.application.Application
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.jetbrains.exposed.v1.jdbc.SchemaUtils
-import org.koin.ktor.ext.inject
+import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 
 data class DatabaseConfig(
     val url: String,
@@ -13,25 +13,32 @@ data class DatabaseConfig(
 )
 
 fun Application.configureDatabase() {
-    val config by inject<DatabaseConfig>()
+    val config = environment.config
+    val databaseConfig = DatabaseConfig(
+        url = config.property("database.url").getString(),
+        user = config.property("database.user").getString(),
+        password = config.property("database.password").getString(),
+    )
     
     Database.connect(
-        url = "jdbc:postgresql://${config.url}",
-        user = config.user,
-        driver = config.driver,
-        password = config.password,
+        url = databaseConfig.url,
+        user = databaseConfig.user,
+        driver = databaseConfig.driver,
+        password = databaseConfig.password,
     )
 
-    SchemaUtils.create(
-        UsersTable,
-        SessionsTable,
-        TrainModelsTable,
-        SpotsTable,
-        LikesTable,
-        ScheduleTable,
-        TrainStopsTable,
-        CarriersTable,
-        CommercialCategoriesTable,
-        StationsTable
-    )
+    transaction {
+        SchemaUtils.create(
+            UsersTable,
+            SessionsTable,
+            TrainModelsTable,
+            SpotsTable,
+            LikesTable,
+            ScheduleTable,
+            TrainStopsTable,
+            CarriersTable,
+            CommercialCategoriesTable,
+            StationsTable
+        )
+    }
 }

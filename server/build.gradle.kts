@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.kotlinJvm)
     alias(libs.plugins.ktor)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 group = "pl.meleko.trainspot"
@@ -23,7 +24,9 @@ dependencies {
     implementation(libs.ktor.serverContentNegotiation)
     implementation(libs.ktor.serverStatusPages)
     implementation(libs.ktor.serializationKotlinxJson)
+    implementation(libs.ktor.server.config.yaml)
 
+    // Ktor Client for PKP API
     implementation(libs.ktor.client.core)
     implementation(libs.ktor.client.okhttp)
     implementation(libs.ktor.client.content.negotiation)

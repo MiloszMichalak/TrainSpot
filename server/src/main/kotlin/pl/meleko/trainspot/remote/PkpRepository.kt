@@ -47,7 +47,7 @@ object PkpRepository {
         return transaction {
             ScheduleTable
                 .selectAll().where {
-                    ScheduleTable.id eq stationId
+                    ScheduleTable.trainOrderId eq stationId
                 }
                 .orderBy(
                     order = SortOrder.DESC,
@@ -88,7 +88,7 @@ fun ResultRow.toPkpCommercialCategoryDto() = CommercialCategoryDto(
 )
 
 fun ResultRow.toScheduleRouteDto(): ScheduleRouteDto {
-    val runId = this[ScheduleTable.id].value
+    val runId = this[ScheduleTable.trainOrderId]
 
     val routeStations = TrainStopsTable
         .selectAll().where { TrainStopsTable.trainRunId eq runId }
@@ -106,7 +106,7 @@ fun ResultRow.toScheduleRouteDto(): ScheduleRouteDto {
         internationalDepartureNumber = this[ScheduleTable.internationalDepartureNumber].orEmpty(),
         commercialCategorySymbol = this[ScheduleTable.catSymbol].orEmpty(),
         stations = routeStations,
-        operatingDates = listOf(this[ScheduleTable.operatingDate].toDateString())
+        operatingDates = listOf(this[ScheduleTable.operatingDate].toString())
     )
 }
 

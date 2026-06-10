@@ -24,6 +24,8 @@ deploymentTargetDropDown.xml
 render.experimental.xml
 .kotlin/
 
+.env
+
 # Keystore files
 *.jks
 *.keystore

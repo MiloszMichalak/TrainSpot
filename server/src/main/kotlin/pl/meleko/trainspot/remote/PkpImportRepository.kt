@@ -14,7 +14,9 @@ import pl.meleko.trainspot.remote.dto.CommercialCategoryDto
 import pl.meleko.trainspot.remote.dto.ScheduleRouteDto
 import pl.meleko.trainspot.remote.dto.StationDto
 import pl.meleko.trainspot.remote.dto.StationStopDto
+import pl.meleko.trainspot.util.parseToLocalDate
 import pl.meleko.trainspot.util.toInstant
+import pl.meleko.trainspot.util.toLocalTime
 
 object PkpImportRepository {
     fun importStations(stations: List<StationDto>) {
@@ -54,42 +56,40 @@ object PkpImportRepository {
         }
     }
 
-    fun importSchedules(trainRuns: List<ScheduleRouteDto>) {
-        return transaction {
-            trainRuns.forEach { trainRun ->
-                ScheduleTable.insert {
-                    it[scheduleId] = trainRun.scheduleId
-                    it[trainOrderId] = trainRun.trainOrderId
-                    it[trainName] = trainRun.name
-                    it[carrierCode] = trainRun.carrierCode
-                    it[trainNumber] = trainRun.nationalNumber
-                    it[catSymbol] = trainRun.commercialCategorySymbol
-                    it[operatingDate] = trainRun.operatingDates.first().toInstant()
-                }
-            }
+    fun importSchedule(trainRun: ScheduleRouteDto) {
+        ScheduleTable.insert {
+            it[scheduleId] = trainRun.scheduleId
+            it[trainOrderId] = trainRun.trainOrderId
+            it[trainName] = trainRun.name
+            it[carrierCode] = trainRun.carrierCode
+            it[trainNumber] = trainRun.nationalNumber
+            it[catSymbol] = trainRun.commercialCategorySymbol
+            it[operatingDate] = trainRun.operatingDates.first().parseToLocalDate()
+            it[internationalArrivalNumber] = trainRun.internationalArrivalNumber
+            it[internationalDepartureNumber] = trainRun.internationalDepartureNumber
+            it[originStationId] = trainRun.stations.first().stationId
+            it[destStationId] = trainRun.stations.last().stationId
         }
     }
 
-    fun importTrainStops(stops: List<StationStopDto>) {
-        return transaction {
-            stops.forEach { stop ->
-                TrainStopsTable.insert {
-                    it[trainRunId] = stop.orderNumber
-                    it[stationId] = stop.stationId
-                    it[orderNumber] = stop.orderNumber
-                    it[arrCat] = stop.arrivalCommercialCategory
-                    it[arrTrainNum] = stop.arrivalTrainNumber
-                    it[arrivalPlatform] = stop.arrivalPlatform
-                    it[arrivalTrack] = stop.arrivalTrack
-                    it[arrDayOffset] = stop.arrivalDay
-                    it[arrivalTime] = stop.arrivalTime.toInstant()
-                    it[depCat] = stop.departureCommercialCategory
-                    it[depTrainNum] = stop.departureTrainNumber
-                    it[platform] = stop.departurePlatform
-                    it[track] = stop.departureTrack
-                    it[departureTime] = stop.departureTime.toInstant()
-                    it[depDayOffset] = stop.departureDay
-                }
+    fun importTrainStops(runId: Int, stops: List<StationStopDto>) {
+        stops.forEach { stop ->
+            TrainStopsTable.insert {
+                it[trainRunId] = runId
+                it[stationId] = stop.stationId
+                it[orderNumber] = stop.orderNumber
+                it[arrCat] = stop.arrivalCommercialCategory
+                it[arrTrainNum] = stop.arrivalTrainNumber
+                it[arrivalPlatform] = stop.arrivalPlatform
+                it[arrivalTrack] = stop.arrivalTrack
+                it[arrDayOffset] = stop.arrivalDay
+                it[arrivalTime] = stop.arrivalTime.toLocalTime()
+                it[depCat] = stop.departureCommercialCategory
+                it[depTrainNum] = stop.departureTrainNumber
+                it[platform] = stop.departurePlatform
+                it[track] = stop.departureTrack
+                it[departureTime] = stop.departureTime.toLocalTime()
+                it[depDayOffset] = stop.departureDay
             }
         }
     }

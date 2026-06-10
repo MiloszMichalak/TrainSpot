@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class CarriersResponseDto(
     val generatedAt: String,
-    val carriers: List<CarrierDto>,
+    val carriers: List<CarrierDto>
 )
 
 @Serializable

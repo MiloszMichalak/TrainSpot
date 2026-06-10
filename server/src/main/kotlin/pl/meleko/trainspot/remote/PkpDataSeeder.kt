@@ -3,17 +3,14 @@ package pl.meleko.trainspot.remote
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import pl.meleko.trainspot.remote.dto.SchedulesResponseDto
 
-object PkpDataSeeder {
+class PkpDataSeeder(
+    private val pkpApiClient: PkpApiClient
+) {
     suspend fun seedAll() {
-        println("=".repeat(60))
-        println("Starting PKP PLK API data seeding")
-        println("=".repeat(60))
-
-        println("\n[1/2] Downloading dictionaries...")
+        println("\n[1/3] Downloading dictionaries...")
         uploadDictionariesToDatabase()
 
         println("\n[2/3] Downloading schedule...")
-
         val schedulesResponse = downloadSchedules()
 
         println("\n[3/3] Uploading all data to database...")
@@ -25,19 +22,19 @@ object PkpDataSeeder {
     }
 
     private suspend fun downloadSchedules(): SchedulesResponseDto {
-        println("  Fetching schedules (includes dictionaries)...")
-        val schedules = PkpApiClient.fetchSchedules()
+        println("Fetching schedules...")
+        val schedules = pkpApiClient.fetchSchedules()
 
-        println("    Found ${schedules.routes.size} schedules")
+        println("Found ${schedules.routes.size} schedules")
         return schedules
     }
 
     private suspend fun uploadDictionariesToDatabase(){
         PkpImportRepository.clearDictionariesData()
 
-        val carriers = PkpApiClient.fetchCarriers()
-        val commercialCategories = PkpApiClient.fetchCommercialCategories()
-        val stations = PkpApiClient.fetchStations()
+        val carriers = pkpApiClient.fetchCarriers()
+        val commercialCategories = pkpApiClient.fetchCommercialCategories()
+        val stations = pkpApiClient.fetchStations()
 
         PkpImportRepository.importCarriersData(carriers)
         PkpImportRepository.importCommercialCategories(commercialCategories)
@@ -46,16 +43,16 @@ object PkpDataSeeder {
 
     private fun uploadScheduleToDatabase(schedules: SchedulesResponseDto) {
         transaction {
-            println("  Importing train runs...")
-            PkpImportRepository.importSchedules(schedules.routes)
-
+            println("Importing train runs...")
             schedules.routes.forEach { schedule ->
-                PkpImportRepository.importTrainStops(schedule.stations)
+                PkpImportRepository.importSchedule(schedule)
 
-                println("    Added train run: ${schedule.name} (${schedule.nationalNumber})")
+                PkpImportRepository.importTrainStops(schedule.trainOrderId, schedule.stations)
+
+                println("Added train run: ${schedule.name} (${schedule.nationalNumber})")
             }
 
-            println("  Data uploaded successfully")
+            println("Data uploaded successfully")
         }
     }
 }
