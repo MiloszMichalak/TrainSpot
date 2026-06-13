@@ -1,17 +1,16 @@
-package pl.meleko.trainspot.remote
+package pl.meleko.trainspot.network
 
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.http.parameters
-import pl.meleko.trainspot.remote.dto.CarrierDto
-import pl.meleko.trainspot.remote.dto.CarriersResponseDto
-import pl.meleko.trainspot.remote.dto.CommercialCategoriesResponseDto
-import pl.meleko.trainspot.remote.dto.CommercialCategoryDto
-import pl.meleko.trainspot.remote.dto.SchedulesResponseDto
-import pl.meleko.trainspot.remote.dto.StationDto
-import pl.meleko.trainspot.remote.dto.StationsResponseDto
-
+import pl.meleko.trainspot.network.dto.CarrierDto
+import pl.meleko.trainspot.network.dto.CarriersResponseDto
+import pl.meleko.trainspot.network.dto.CommercialCategoriesResponseDto
+import pl.meleko.trainspot.network.dto.CommercialCategoryDto
+import pl.meleko.trainspot.network.dto.SchedulesResponseDto
+import pl.meleko.trainspot.network.dto.StationDto
+import pl.meleko.trainspot.network.dto.StationsResponseDto
 
 class PkpApiClient(
     private val client: HttpClient

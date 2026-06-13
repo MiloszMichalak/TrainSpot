@@ -1,4 +1,4 @@
-package pl.meleko.trainspot.remote
+package pl.meleko.trainspot.repository
 
 import org.jetbrains.exposed.v1.datetime.CurrentTimestamp
 import org.jetbrains.exposed.v1.jdbc.deleteAll
@@ -9,11 +9,11 @@ import pl.meleko.trainspot.database.CommercialCategoriesTable
 import pl.meleko.trainspot.database.ScheduleTable
 import pl.meleko.trainspot.database.StationsTable
 import pl.meleko.trainspot.database.TrainStopsTable
-import pl.meleko.trainspot.remote.dto.CarrierDto
-import pl.meleko.trainspot.remote.dto.CommercialCategoryDto
-import pl.meleko.trainspot.remote.dto.ScheduleRouteDto
-import pl.meleko.trainspot.remote.dto.StationDto
-import pl.meleko.trainspot.remote.dto.StationStopDto
+import pl.meleko.trainspot.network.dto.CarrierDto
+import pl.meleko.trainspot.network.dto.CommercialCategoryDto
+import pl.meleko.trainspot.network.dto.ScheduleRouteDto
+import pl.meleko.trainspot.network.dto.StationDto
+import pl.meleko.trainspot.network.dto.StationStopDto
 import pl.meleko.trainspot.util.parseToLocalDate
 import pl.meleko.trainspot.util.toInstant
 import pl.meleko.trainspot.util.toLocalTime

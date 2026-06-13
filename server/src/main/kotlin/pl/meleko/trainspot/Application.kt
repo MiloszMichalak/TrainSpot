@@ -4,12 +4,12 @@ import io.ktor.server.application.Application
 import io.ktor.server.netty.EngineMain
 import kotlinx.coroutines.DelicateCoroutinesApi
 import pl.meleko.trainspot.database.configureDatabase
+import pl.meleko.trainspot.jobs.configureScheduler
 import pl.meleko.trainspot.plugins.configureAuthentication
 import pl.meleko.trainspot.plugins.configureCORS
 import pl.meleko.trainspot.plugins.configureDI
 import pl.meleko.trainspot.plugins.configureSerialization
 import pl.meleko.trainspot.plugins.configureStatusPages
-import pl.meleko.trainspot.remote.configureScheduler
 import pl.meleko.trainspot.routes.configureRouting
 
 fun main(args: Array<String>): Unit = EngineMain.main(args)

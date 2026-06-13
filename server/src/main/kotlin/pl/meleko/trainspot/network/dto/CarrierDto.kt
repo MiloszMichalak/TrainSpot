@@ -1,4 +1,4 @@
-package pl.meleko.trainspot.remote.dto
+package pl.meleko.trainspot.network.dto
 
 import kotlinx.serialization.Serializable
 

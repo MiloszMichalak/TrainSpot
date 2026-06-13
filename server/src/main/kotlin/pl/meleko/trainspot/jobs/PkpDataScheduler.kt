@@ -1,4 +1,4 @@
-package pl.meleko.trainspot.remote
+package pl.meleko.trainspot.jobs
 
 import io.ktor.server.application.Application
 import kotlinx.coroutines.Dispatchers
@@ -6,6 +6,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.koin.ktor.ext.inject
+import pl.meleko.trainspot.database.PkpDataSeeder
 import java.time.Duration
 import java.time.LocalDateTime
 import java.time.ZoneId

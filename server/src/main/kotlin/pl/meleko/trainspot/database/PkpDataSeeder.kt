@@ -1,7 +1,9 @@
-package pl.meleko.trainspot.remote
+package pl.meleko.trainspot.database
 
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
-import pl.meleko.trainspot.remote.dto.SchedulesResponseDto
+import pl.meleko.trainspot.network.PkpApiClient
+import pl.meleko.trainspot.network.dto.SchedulesResponseDto
+import pl.meleko.trainspot.repository.PkpImportRepository
 
 class PkpDataSeeder(
     private val pkpApiClient: PkpApiClient

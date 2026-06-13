@@ -10,8 +10,8 @@ import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
-import pl.meleko.trainspot.remote.PkpApiClient
-import pl.meleko.trainspot.remote.PkpDataSeeder
+import pl.meleko.trainspot.database.PkpDataSeeder
+import pl.meleko.trainspot.network.PkpApiClient
 
 val appModule = module {
     single {
