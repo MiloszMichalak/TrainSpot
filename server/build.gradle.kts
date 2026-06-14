@@ -26,6 +26,8 @@ dependencies {
     implementation(libs.ktor.serializationKotlinxJson)
     implementation(libs.ktor.serverConfigYaml)
 
+    implementation(libs.jbcrypt)
+
     // Ktor Client for PKP API
     implementation(libs.ktor.client.core)
     implementation(libs.ktor.client.okhttp)

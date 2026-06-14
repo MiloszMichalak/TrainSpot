@@ -10,7 +10,7 @@ import pl.meleko.trainspot.database.PkpDataSeeder
 import java.time.Duration
 import java.time.LocalDateTime
 import java.time.ZoneId
-import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 fun Application.configureScheduler(){
     val pkpDataSeeder by inject<PkpDataSeeder>()
@@ -26,8 +26,8 @@ fun Application.configureScheduler(){
                 nextRun = nextRun.plusDays(1)
             }
 
-            val delayMillis = Duration.between(now, nextRun).toMillis()
-            delay(delayMillis.milliseconds)
+            val delayMillis = Duration.between(now, nextRun).toSeconds()
+            delay(delayMillis.seconds)
 
             try {
                 pkpDataSeeder.seedAll()

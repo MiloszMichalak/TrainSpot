@@ -30,7 +30,7 @@ inline fun <T> NetworkResult<T>.onSuccess(
     }
 }
 
-inline fun <T> NetworkResult<T>.onFailure(
+inline fun <T> NetworkResult<T>.onError(
     action: (HttpStatusCode) -> Unit
 ): NetworkResult<T> {
     return when (this) {

@@ -3,6 +3,7 @@ package pl.meleko.trainspot.database
 import org.jetbrains.exposed.v1.core.ReferenceOption
 import org.jetbrains.exposed.v1.core.Table
 import org.jetbrains.exposed.v1.core.dao.id.IntIdTable
+import org.jetbrains.exposed.v1.core.dao.id.UuidTable
 import org.jetbrains.exposed.v1.datetime.CurrentTimestamp
 import org.jetbrains.exposed.v1.datetime.CurrentTimestampWithTimeZone
 import org.jetbrains.exposed.v1.datetime.date
@@ -30,31 +31,31 @@ object CommercialCategoriesTable : IntIdTable("commercial_categories") {
     val carrierCode = varchar("carrier_code", 16).references(CarriersTable.code, onDelete = ReferenceOption.SET_NULL).nullable()
 }
 
-object UsersTable : IntIdTable("users") {
+object UsersTable : UuidTable("users") {
     val email = varchar("email", 255).uniqueIndex()
     val passwordHash = varchar("password_hash", 255)
     val username = varchar("username", 100).uniqueIndex()
     val avatarUrl = varchar("avatar_url", 255).nullable()
     val bio = text("bio").nullable()
     val createdAt = timestamp("created_at").defaultExpression(CurrentTimestamp)
-    val sessionId = integer("session_id").references(SessionsTable.id, onDelete = ReferenceOption.SET_NULL).nullable()
+    val sessionId = uuid("session_id").references(SessionsTable.id, onDelete = ReferenceOption.SET_NULL).nullable()
 }
 
-object SessionsTable : IntIdTable("sessions") {
-    val userId = integer("user_id").references(UsersTable.id, onDelete = ReferenceOption.CASCADE)
+object SessionsTable : UuidTable("sessions") {
+    val userId = uuid("user_id").references(UsersTable.id, onDelete = ReferenceOption.CASCADE)
     val createdAt = timestamp("created_at").defaultExpression(CurrentTimestamp)
     val lastSeen = timestampWithTimeZone("last_seen").defaultExpression(CurrentTimestampWithTimeZone)
 }
 
-object TrainModelsTable : IntIdTable("train_models") {
+object TrainModelsTable : UuidTable("train_models") {
     val model = varchar("model", 32)
     val numbers = varchar("numbers", 16)
     val carrierCode = varchar("carrier_code", 10).references(CarriersTable.code, onDelete = ReferenceOption.SET_NULL)
 }
 
-object SpotsTable : IntIdTable("spots") {
-    val userId = integer("user_id").references(UsersTable.id, onDelete = ReferenceOption.CASCADE)
-    val modelId = integer("model_id").references(TrainModelsTable.id, onDelete = ReferenceOption.SET_NULL).nullable()
+object SpotsTable : UuidTable("spots") {
+    val userId = uuid("user_id").references(UsersTable.id, onDelete = ReferenceOption.CASCADE)
+    val modelId = uuid("model_id").references(TrainModelsTable.id, onDelete = ReferenceOption.SET_NULL).nullable()
     val stationId = integer("station_id").references(StationsTable.id, onDelete = ReferenceOption.SET_NULL).nullable()
     val trainNumber = varchar("train_number", 50).nullable()
     val trainRunId = integer("train_run_id").nullable()
@@ -66,9 +67,9 @@ object SpotsTable : IntIdTable("spots") {
     val createdAt = timestamp("created_at").defaultExpression(CurrentTimestamp)
 }
 
-object LikesTable : IntIdTable("likes") {
-    val userId = integer("user_id").references(UsersTable.id, onDelete = ReferenceOption.CASCADE)
-    val spotId = integer("spot_id").references(SpotsTable.id, onDelete = ReferenceOption.CASCADE)
+object LikesTable : UuidTable("likes") {
+    val userId = uuid("user_id").references(UsersTable.id, onDelete = ReferenceOption.CASCADE)
+    val spotId = uuid("spot_id").references(SpotsTable.id, onDelete = ReferenceOption.CASCADE)
     val createdAt = timestamp("created_at").defaultExpression(CurrentTimestamp)
 }
 

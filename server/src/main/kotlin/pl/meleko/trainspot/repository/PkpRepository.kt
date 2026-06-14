@@ -1,9 +1,16 @@
 package pl.meleko.trainspot.repository
 
+import kotlinx.datetime.toKotlinLocalDate
+import kotlinx.datetime.toKotlinLocalTime
+import org.jetbrains.exposed.v1.core.JoinType
 import org.jetbrains.exposed.v1.core.ResultRow
 import org.jetbrains.exposed.v1.core.SortOrder
+import org.jetbrains.exposed.v1.core.alias
+import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.greaterEq
 import org.jetbrains.exposed.v1.core.or
+import org.jetbrains.exposed.v1.jdbc.select
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import pl.meleko.trainspot.database.CarriersTable
@@ -17,6 +24,8 @@ import pl.meleko.trainspot.network.dto.ScheduleRouteDto
 import pl.meleko.trainspot.network.dto.StationDto
 import pl.meleko.trainspot.network.dto.StationStopDto
 import pl.meleko.trainspot.util.toDateString
+import java.time.LocalDate
+import java.time.LocalTime
 
 object PkpRepository {
     fun getAllStations(): List<StationDto> {
@@ -43,28 +52,58 @@ object PkpRepository {
         }
     }
 
-    fun getLastTrainsForStation(stationId: Int, limit: Int = 3): List<ScheduleRouteDto> {
+    fun getRecentTrainsForStation(stationId: Int): List<ResultRow> {
+        val originStation = StationsTable.alias("origin_station")
+
         return transaction {
-            ScheduleTable
-                .selectAll().where {
-                    ScheduleTable.trainOrderId eq stationId
-                }
-                .orderBy(
-                    order = SortOrder.DESC,
-                    column = ScheduleTable.operatingDate
+            (TrainStopsTable innerJoin ScheduleTable innerJoin StationsTable)
+                .join(originStation, JoinType.LEFT, ScheduleTable.originStationId, originStation[StationsTable.id])
+                .select(
+                    ScheduleTable.trainNumber,
+                    ScheduleTable.trainName,
+                    ScheduleTable.originStationId,
+                    originStation[StationsTable.name],
+                    StationsTable.name,
+                    TrainStopsTable.arrivalTime,
+                    TrainStopsTable.departureTime,
                 )
-                .take(limit)
-                .map { row -> row.toScheduleRouteDto() }
+                .where {
+                    (TrainStopsTable.stationId eq stationId) and
+                            (ScheduleTable.operatingDate eq LocalDate.now().toKotlinLocalDate()) and
+                            (
+                                    (TrainStopsTable.departureTime greaterEq LocalTime.now().minusHours(3).toKotlinLocalTime()) or
+                                            (TrainStopsTable.arrivalTime greaterEq LocalTime.now().minusHours(3).toKotlinLocalTime())
+                                    )
+                }
+                .orderBy(TrainStopsTable.departureTime to SortOrder.ASC)
+                .toList()
         }
     }
 
-    fun getAllTrainsForStation(stationId: Int): List<ScheduleRouteDto> {
+    fun getTodayTrainsForStation(stationId: Int): List<ResultRow> {
+        val originStation = StationsTable.alias("origin_station")
+        val destStation = StationsTable.alias("dest_station")
+
         return transaction {
-            ScheduleTable
-                .selectAll().where {
-                    (ScheduleTable.originStationId eq stationId) or (ScheduleTable.destStationId eq stationId)
+            (TrainStopsTable innerJoin ScheduleTable innerJoin StationsTable)
+                .join(originStation, JoinType.LEFT, ScheduleTable.originStationId, originStation[StationsTable.id])
+                .join(destStation, JoinType.LEFT, ScheduleTable.destStationId, destStation[StationsTable.id])
+                .select(
+                    ScheduleTable.trainNumber,
+                    ScheduleTable.trainName,
+                    ScheduleTable.operatingDate,
+                    originStation[StationsTable.name],
+                    destStation[StationsTable.name],
+                    TrainStopsTable.arrivalTime,
+                    TrainStopsTable.departureTime,
+                    TrainStopsTable.arrivalPlatform
+                )
+                .where {
+                    (TrainStopsTable.stationId eq stationId) and
+                            (ScheduleTable.operatingDate eq LocalDate.now().toKotlinLocalDate())
                 }
-                .map { row -> row.toScheduleRouteDto() }
+                .orderBy(TrainStopsTable.departureTime to SortOrder.ASC)
+                .toList()
         }
     }
 }
