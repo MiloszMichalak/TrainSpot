@@ -3,7 +3,6 @@ package pl.meleko.trainspot.service
 import io.ktor.http.HttpStatusCode
 import org.mindrot.jbcrypt.BCrypt
 import pl.meleko.trainspot.AuthResponse
-import pl.meleko.trainspot.database.model.UserDto
 import pl.meleko.trainspot.database.model.toUser
 import pl.meleko.trainspot.repository.SessionsRepository
 import pl.meleko.trainspot.repository.UsersRepository
@@ -20,7 +19,6 @@ fun String.checkPassword(plain: String): Boolean =
     BCrypt.checkpw(plain, this)
 
 object AuthService {
-
     fun register(request: RegisterRequest): NetworkResult<AuthResponse> {
         val newUserId = UsersRepository.insert(
             email = request.email,
@@ -30,6 +28,7 @@ object AuthService {
 
         val user  = UsersRepository.findById(newUserId)?.toUser()
             ?: return NetworkResult.Error(HttpStatusCode.InternalServerError)
+
         SessionsRepository.create(newUserId)
         val token = JwtUtil.createToken(newUserId)
 
@@ -52,6 +51,7 @@ object AuthService {
 
     fun logout(sessionId: Uuid): NetworkResult<Unit> {
         val deleted = SessionsRepository.delete(sessionId)
+
         return if (deleted) NetworkResult.Success(Unit)
         else NetworkResult.Error(HttpStatusCode.InternalServerError)
     }
@@ -64,26 +64,5 @@ object AuthService {
     fun refreshToken(userId: Uuid): NetworkResult<String> {
         val newToken = JwtUtil.createToken(userId)
         return NetworkResult.Success(newToken)
-    }
-
-    fun getProfile(userId: Uuid): NetworkResult<UserDto> {
-        val user = UsersRepository.findById(userId)
-            ?: return NetworkResult.Error(HttpStatusCode.NotFound)
-        return NetworkResult.Success(user)
-    }
-
-    fun updateProfile(
-        userId: Uuid,
-        email: String?,
-        username: String?,
-        avatarUrl: String?,
-        bio: String?
-    ): NetworkResult<UserDto> {
-        val updated = UsersRepository.update(userId, email, username, avatarUrl, bio)
-        if (!updated) return NetworkResult.Error(HttpStatusCode.InternalServerError)
-
-        val user = UsersRepository.findById(userId)
-            ?: return NetworkResult.Error(HttpStatusCode.NotFound)
-        return NetworkResult.Success(user)
     }
 }

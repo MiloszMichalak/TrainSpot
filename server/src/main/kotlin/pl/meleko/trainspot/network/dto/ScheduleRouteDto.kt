@@ -1,9 +1,15 @@
 package pl.meleko.trainspot.network.dto
 
 import kotlinx.serialization.Serializable
+import org.jetbrains.exposed.v1.core.ResultRow
+import org.jetbrains.exposed.v1.core.SortOrder
+import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.jdbc.selectAll
+import pl.meleko.trainspot.database.ScheduleTable
+import pl.meleko.trainspot.database.TrainStopsTable
 
 @Serializable
-data class SchedulesResponseDto(
+data class SchedulesResponse(
     val generatedAt: String,
     val period: PeriodDto,
     val routes: List<ScheduleRouteDto>
@@ -48,4 +54,44 @@ data class StationStopDto(
     val departureTime: String? = null,
     val stopTypeId: Int? = null,
     val stopTypeName: String? = null
+)
+
+fun ResultRow.toScheduleRouteDto(): ScheduleRouteDto {
+    val runId = this[ScheduleTable.trainOrderId]
+
+    val routeStations = TrainStopsTable
+        .selectAll().where { TrainStopsTable.trainRunId eq runId }
+        .orderBy(TrainStopsTable.orderNumber to SortOrder.ASC)
+        .map { it.toStationStopDto() }
+
+    return ScheduleRouteDto(
+        scheduleId = runId,
+        orderId = this[ScheduleTable.trainOrderId].toLong(),
+        trainOrderId = this[ScheduleTable.trainOrderId],
+        name = this[ScheduleTable.trainName].orEmpty(),
+        carrierCode = this[ScheduleTable.carrierCode].orEmpty(),
+        nationalNumber = this[ScheduleTable.trainNumber].orEmpty(),
+        internationalArrivalNumber = this[ScheduleTable.internationalArrivalNumber].orEmpty(),
+        internationalDepartureNumber = this[ScheduleTable.internationalDepartureNumber].orEmpty(),
+        commercialCategorySymbol = this[ScheduleTable.catSymbol].orEmpty(),
+        stations = routeStations,
+        operatingDates = listOf(this[ScheduleTable.operatingDate].toString())
+    )
+}
+
+fun ResultRow.toStationStopDto() = StationStopDto(
+    stationId = this[TrainStopsTable.stationId],
+    orderNumber = this[TrainStopsTable.orderNumber],
+    arrivalCommercialCategory = this[TrainStopsTable.arrCat].orEmpty(),
+    arrivalTrainNumber = this[TrainStopsTable.arrTrainNum].orEmpty(),
+    arrivalPlatform = this[TrainStopsTable.arrivalPlatform].orEmpty(),
+    arrivalTrack = this[TrainStopsTable.arrivalTrack].orEmpty(),
+    arrivalDay = this[TrainStopsTable.arrDayOffset] ?: 0,
+    arrivalTime = this[TrainStopsTable.arrivalTime]?.toString().orEmpty(),
+    departureCommercialCategory = this[TrainStopsTable.depCat].orEmpty(),
+    departureTrainNumber = this[TrainStopsTable.depTrainNum].orEmpty(),
+    departurePlatform = this[TrainStopsTable.platform].orEmpty(),
+    departureTrack = this[TrainStopsTable.track].orEmpty(),
+    departureDay = this[TrainStopsTable.depDayOffset] ?: 0,
+    departureTime = this[TrainStopsTable.departureTime]?.toString().orEmpty()
 )

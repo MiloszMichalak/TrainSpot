@@ -2,7 +2,7 @@ package pl.meleko.trainspot.database
 
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import pl.meleko.trainspot.network.PkpApiClient
-import pl.meleko.trainspot.network.dto.SchedulesResponseDto
+import pl.meleko.trainspot.network.dto.SchedulesResponse
 import pl.meleko.trainspot.repository.PkpImportRepository
 
 class PkpDataSeeder(
@@ -23,7 +23,7 @@ class PkpDataSeeder(
         println("=".repeat(60))
     }
 
-    private suspend fun downloadSchedules(): SchedulesResponseDto {
+    private suspend fun downloadSchedules(): SchedulesResponse {
         println("Fetching schedules...")
         val schedules = pkpApiClient.fetchSchedules()
 
@@ -43,7 +43,7 @@ class PkpDataSeeder(
         PkpImportRepository.importStations(stations)
     }
 
-    private fun uploadScheduleToDatabase(schedules: SchedulesResponseDto) {
+    private fun uploadScheduleToDatabase(schedules: SchedulesResponse) {
         transaction {
             println("Importing train runs...")
             schedules.routes.forEach { schedule ->

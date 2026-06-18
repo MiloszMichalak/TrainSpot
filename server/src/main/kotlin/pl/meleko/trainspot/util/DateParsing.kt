@@ -16,16 +16,16 @@ fun String?.toInstant(): Instant {
         .toInstant(TimeZone.of("Europe/Warsaw"))
 }
 
+fun Instant?.toDateString(): String {
+    return this?.toLocalDateTime(TimeZone.of("Europe/Warsaw")).toString()
+}
+
 fun String?.toLocalTime(): LocalTime {
     if (this == null) return LocalTime(0, 0)
 
     return LocalTime.parse(this)
 }
 
-fun String.parseToLocalDate(): LocalDate {
+fun String.toLocalDate(): LocalDate {
     return LocalDate.parse(this)
-}
-
-fun Instant?.toDateString(): String {
-    return this?.toLocalDateTime(TimeZone.of("Europe/Warsaw")).toString()
 }

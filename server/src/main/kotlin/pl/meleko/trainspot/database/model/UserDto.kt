@@ -16,6 +16,15 @@ data class UserDto(
     val createdAt: Instant
 )
 
+fun UserDto.toUser() = User(
+    id = this.id,
+    email = this.email,
+    username = this.username,
+    avatarUrl = this.avatarUrl,
+    bio = this.bio,
+    createdAt = this.createdAt
+)
+
 fun ResultRow.toUserDto() = UserDto(
     id = this[UsersTable.id].value,
     email = this[UsersTable.email],
@@ -26,22 +35,11 @@ fun ResultRow.toUserDto() = UserDto(
     createdAt = this[UsersTable.createdAt]
 )
 
-fun UserDto.toUser() = User(
-    id = this.id,
-    email = this.email,
-    username = this.username,
-    avatarUrl = this.avatarUrl,
-    bio = this.bio,
-    createdAt = this.createdAt
-)
-
 data class UserProfilePictureDto(
     val id: Uuid,
     val avatarUrl: String,
     val createdAt: Instant
 )
-
-
 
 data class UserStatsDto(
     val totalSpots: Int,

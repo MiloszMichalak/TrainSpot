@@ -5,12 +5,12 @@ import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.http.parameters
 import pl.meleko.trainspot.network.dto.CarrierDto
-import pl.meleko.trainspot.network.dto.CarriersResponseDto
-import pl.meleko.trainspot.network.dto.CommercialCategoriesResponseDto
+import pl.meleko.trainspot.network.dto.CarriersResponse
+import pl.meleko.trainspot.network.dto.CommercialCategoriesResponse
 import pl.meleko.trainspot.network.dto.CommercialCategoryDto
-import pl.meleko.trainspot.network.dto.SchedulesResponseDto
+import pl.meleko.trainspot.network.dto.SchedulesResponse
 import pl.meleko.trainspot.network.dto.StationDto
-import pl.meleko.trainspot.network.dto.StationsResponseDto
+import pl.meleko.trainspot.network.dto.StationsResponse
 
 class PkpApiClient(
     private val client: HttpClient
@@ -20,22 +20,22 @@ class PkpApiClient(
             url {
                 parameters.append("pageSize", "10000")
             }
-        }.body<StationsResponseDto>().stations
+        }.body<StationsResponse>().stations
     }
 
     suspend fun fetchCommercialCategories(): List<CommercialCategoryDto> {
         return client.get("/api/v1/dictionaries/commercial-categories")
-            .body<CommercialCategoriesResponseDto>()
+            .body<CommercialCategoriesResponse>()
             .commercialCategories
     }
 
     suspend fun fetchCarriers(): List<CarrierDto> {
         return client.get("/api/v1/dictionaries/carriers")
-            .body<CarriersResponseDto>()
+            .body<CarriersResponse>()
             .carriers
     }
 
-    suspend fun fetchSchedules(): SchedulesResponseDto {
+    suspend fun fetchSchedules(): SchedulesResponse {
         return client.get("/api/v1/schedules") {
             url {
                 parameters {
@@ -43,7 +43,7 @@ class PkpApiClient(
                     append("dictionaries", "false")
                 }
             }
-        }.body<SchedulesResponseDto>()
+        }.body<SchedulesResponse>()
     }
 
     fun close() {

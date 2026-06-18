@@ -2,7 +2,6 @@ package pl.meleko.trainspot
 
 import io.ktor.server.application.Application
 import io.ktor.server.netty.EngineMain
-import kotlinx.coroutines.DelicateCoroutinesApi
 import pl.meleko.trainspot.database.configureDatabase
 import pl.meleko.trainspot.jobs.configureScheduler
 import pl.meleko.trainspot.plugins.configureAuthentication
@@ -14,7 +13,6 @@ import pl.meleko.trainspot.routes.configureRouting
 
 fun main(args: Array<String>): Unit = EngineMain.main(args)
 
-@OptIn(DelicateCoroutinesApi::class)
 fun Application.module() {
     configureDI()
     configureSerialization()

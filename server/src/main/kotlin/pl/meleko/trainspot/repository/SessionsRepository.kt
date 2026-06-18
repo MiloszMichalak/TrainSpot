@@ -6,8 +6,11 @@ import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.insert
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
+import org.jetbrains.exposed.v1.jdbc.update
 import pl.meleko.trainspot.database.SessionsTable
 import pl.meleko.trainspot.database.model.SessionDto
+import pl.meleko.trainspot.database.model.toSessionDto
+import java.time.OffsetDateTime
 import kotlin.uuid.Uuid
 
 object SessionsRepository {
@@ -45,5 +48,11 @@ object SessionsRepository {
 
     fun deleteAllByUserId(userId: Uuid): Int = transaction {
         SessionsTable.deleteWhere { SessionsTable.userId eq userId }
+    }
+
+    fun updateLastSeen(sessionId: Uuid): Boolean = transaction {
+        SessionsTable.update({ SessionsTable.id eq sessionId }) { row ->
+            row[SessionsTable.lastSeen] = OffsetDateTime.now()
+        } > 0
     }
 }

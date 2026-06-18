@@ -14,8 +14,8 @@ import pl.meleko.trainspot.network.dto.CommercialCategoryDto
 import pl.meleko.trainspot.network.dto.ScheduleRouteDto
 import pl.meleko.trainspot.network.dto.StationDto
 import pl.meleko.trainspot.network.dto.StationStopDto
-import pl.meleko.trainspot.util.parseToLocalDate
 import pl.meleko.trainspot.util.toInstant
+import pl.meleko.trainspot.util.toLocalDate
 import pl.meleko.trainspot.util.toLocalTime
 
 object PkpImportRepository {
@@ -64,7 +64,7 @@ object PkpImportRepository {
             it[carrierCode] = trainRun.carrierCode
             it[trainNumber] = trainRun.nationalNumber
             it[catSymbol] = trainRun.commercialCategorySymbol
-            it[operatingDate] = trainRun.operatingDates.first().parseToLocalDate()
+            it[operatingDate] = trainRun.operatingDates.first().toLocalDate()
             it[internationalArrivalNumber] = trainRun.internationalArrivalNumber
             it[internationalDepartureNumber] = trainRun.internationalDepartureNumber
             it[originStationId] = trainRun.stations.first().stationId

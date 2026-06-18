@@ -1,6 +1,5 @@
 package pl.meleko.trainspot.repository
 
-import org.jetbrains.exposed.v1.core.ResultRow
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.or
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
@@ -8,9 +7,7 @@ import org.jetbrains.exposed.v1.jdbc.insert
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import org.jetbrains.exposed.v1.jdbc.update
-import pl.meleko.trainspot.database.SessionsTable
 import pl.meleko.trainspot.database.UsersTable
-import pl.meleko.trainspot.database.model.SessionDto
 import pl.meleko.trainspot.database.model.UserDto
 import pl.meleko.trainspot.database.model.toUserDto
 import kotlin.uuid.Uuid
@@ -71,10 +68,3 @@ object UsersRepository {
         UsersTable.deleteWhere { UsersTable.id eq id } > 0
     }
 }
-
-fun ResultRow.toSessionDto() = SessionDto(
-    sessionId = this[SessionsTable.id].value,
-    userId = this[SessionsTable.userId],
-    createdAt = this[SessionsTable.createdAt],
-    lastSeen = this[SessionsTable.lastSeen]
-)
