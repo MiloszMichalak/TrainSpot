@@ -40,14 +40,14 @@ object SpotsService {
 
         val createdId = SpotRepository.create(userId, request, imageUrl, spotId)
 
-        val spot = SpotRepository.findById(createdId)
+        val spot = SpotRepository.findById(createdId)?.toSpotResponse()
             ?: return NetworkResult.Error(HttpStatusCode.InternalServerError)
 
         return NetworkResult.Success(spot)
     }
 
     suspend fun getById(id: Uuid): NetworkResult<Spot> {
-        val spot = SpotRepository.findById(id)
+        val spot = SpotRepository.findById(id)?.toSpotResponse()
             ?: return NetworkResult.Error(HttpStatusCode.NotFound)
         return NetworkResult.Success(spot)
     }
@@ -56,6 +56,7 @@ object SpotsService {
         if (page < 0 || limit < 1 || limit > 100) {
             return NetworkResult.Error(HttpStatusCode.BadRequest)
         }
+
         val result = SpotRepository.findAll(page, limit)
         return NetworkResult.Success(result)
     }
@@ -123,24 +124,36 @@ object SpotsService {
     }
 
      suspend fun getLikedSpots(userId: Uuid, page: Int = 0, limit: Int = 20): NetworkResult<PaginationResponse<Spot>> {
-        if (page < 0 || limit < 1 || limit > 100) {
-            return NetworkResult.Error(HttpStatusCode.BadRequest)
-        }
+         if (page < 0 || limit < 1 || limit > 100) {
+             return NetworkResult.Error(HttpStatusCode.BadRequest)
+         }
 
-        val likedSpotIds = LikesRepository.findByUserId(userId).toSet()
+         val likedSpotIds = LikesRepository.findLikedSpotIdsByUserIdPaginated(userId, page * limit, limit)
+         if (likedSpotIds.isEmpty()) {
+             return NetworkResult.Success(
+                 PaginationResponse(
+                     items = emptyList(),
+                     total = 0,
+                     page = page,
+                     limit = limit,
+                     totalPages = 0
+                 )
+             )
+         }
 
-        val result = SpotRepository.findAll(page, limit)
-        val spots = result.items.filter { likedSpotIds.contains(it.id) }
-        val total = spots.size
+         val allSpots = SpotRepository.findAll(page, limit).items
+         val likedIds = LikesRepository.findLikedSpotIdsByUserIdPaginated(userId, page, limit)
+         val spots = allSpots.filter { it.id in likedIds }
+         val total = allSpots.count()
 
-        return NetworkResult.Success(
-            PaginationResponse(
-                items = spots,
-                total = total,
-                page = page,
-                limit = limit,
-                totalPages = 1
-            )
+         return NetworkResult.Success(
+             PaginationResponse(
+                 items = spots,
+                 total = total,
+                 page = page,
+                 limit = limit,
+                 totalPages = if (total == 0) 0 else (total / limit + if (total % limit > 0) 1 else 0)
+             )
         )
     }
 }

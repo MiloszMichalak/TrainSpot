@@ -4,6 +4,10 @@ import org.jetbrains.exposed.v1.core.ResultRow
 import pl.meleko.trainspot.database.SpotsTable
 import pl.meleko.trainspot.model.Spot
 import pl.meleko.trainspot.model.TrainModel
+import pl.meleko.trainspot.network.dto.toScheduleRoute
+import pl.meleko.trainspot.repository.PkpRepository
+import pl.meleko.trainspot.repository.TrainModelRepository
+import pl.meleko.trainspot.repository.UsersRepository
 import java.time.OffsetDateTime
 import kotlin.time.Instant
 import kotlin.time.toKotlinInstant
@@ -14,7 +18,6 @@ data class SpotDto(
     val userId: Uuid,
     val modelId: Uuid?,
     val stationId: Int?,
-    val trainNumber: String?,
     val trainRunId: Int?,
     val imageUrl: String,
     val description: String?,
@@ -26,13 +29,17 @@ data class SpotDto(
     val model: TrainModel? = null,
     val likesCount: Int = 0
 ) {
-    fun toSpotResponse(): Spot {
+    suspend fun toSpotResponse(): Spot {
+        val user = UsersRepository.findById(this.userId)!!.toUser()
+        val trainModel = TrainModelRepository.findById(this.modelId!!)!!.toTrainModel()
+        val scheduleRoute = PkpRepository.getTrainRouteById(this.trainRunId!!).toScheduleRoute()
+
         return Spot(
             id = this.id,
             user = user,
-            model = model,
+            model = trainModel,
             stationId = this.stationId,
-            trainRunId = this.trainRunId ?: 0,
+            trainRunId = scheduleRoute,
             imageUrl = this.imageUrl,
             description = this.description.orEmpty(),
             lat = this.lat,
@@ -49,7 +56,6 @@ fun ResultRow.toSpotDto() = SpotDto(
     userId = this[SpotsTable.userId],
     modelId = this[SpotsTable.modelId],
     stationId = this[SpotsTable.stationId],
-    trainNumber = this[SpotsTable.trainNumber],
     trainRunId = this[SpotsTable.trainRunId],
     imageUrl = this[SpotsTable.imageUrl],
     description = this[SpotsTable.description],

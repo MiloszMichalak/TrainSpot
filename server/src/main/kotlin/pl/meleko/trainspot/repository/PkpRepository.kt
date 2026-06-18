@@ -36,6 +36,17 @@ object PkpRepository {
         }
     }
 
+    suspend fun getStationById(id: Int): StationDto? {
+        return dbTransaction {
+            StationsTable
+                .selectAll()
+                .where { StationsTable.id eq id }
+                .limit(1)
+                .map { it.toStationDto() }
+                .firstOrNull()
+        }
+    }
+
     suspend fun getAllCarriers(): List<CarrierDto> {
         return dbTransaction {
             CarriersTable.selectAll().map { row ->
@@ -52,19 +63,37 @@ object PkpRepository {
         }
     }
 
+    suspend fun getTrainRouteById(trainOrderId: Int): ScheduleRouteDto {
+        return dbTransaction {
+            TrainStopsTable.selectAll()
+                .where { TrainStopsTable.trainRunId eq trainOrderId }
+                .orderBy(TrainStopsTable.orderNumber to SortOrder.ASC)
+                .limit(1)
+                .map { it.toScheduleRouteDto() }
+                .first()
+        }
+    }
+
     suspend fun getRecentTrainsForStation(stationId: Int, minutes: Long): List<ScheduleRouteDto> {
         val originStation = StationsTable.alias("origin_station")
 
         return dbTransaction {
             (TrainStopsTable innerJoin ScheduleTable innerJoin StationsTable)
-                .join(originStation, JoinType.LEFT, ScheduleTable.originStationId, originStation[StationsTable.id])
+                .join(
+                    originStation,
+                    JoinType.LEFT,
+                    ScheduleTable.originStationId,
+                    originStation[StationsTable.id]
+                )
                 .selectAll()
                 .where {
                     (TrainStopsTable.stationId eq stationId) and
                             (ScheduleTable.operatingDate eq LocalDate.now().toKotlinLocalDate()) and
                             (
-                                    (TrainStopsTable.departureTime greaterEq LocalTime.now().minusMinutes(minutes).toKotlinLocalTime()) or
-                                            (TrainStopsTable.arrivalTime greaterEq LocalTime.now().minusMinutes(minutes).toKotlinLocalTime())
+                                    (TrainStopsTable.departureTime greaterEq LocalTime.now()
+                                        .minusMinutes(minutes).toKotlinLocalTime()) or
+                                            (TrainStopsTable.arrivalTime greaterEq LocalTime.now()
+                                                .minusMinutes(minutes).toKotlinLocalTime())
                                     )
                 }
                 .orderBy(TrainStopsTable.departureTime to SortOrder.ASC)
@@ -79,8 +108,18 @@ object PkpRepository {
 
         return dbTransaction {
             (TrainStopsTable innerJoin ScheduleTable innerJoin StationsTable)
-                .join(originStation, JoinType.LEFT, ScheduleTable.originStationId, originStation[StationsTable.id])
-                .join(destStation, JoinType.LEFT, ScheduleTable.destStationId, destStation[StationsTable.id])
+                .join(
+                    originStation,
+                    JoinType.LEFT,
+                    ScheduleTable.originStationId,
+                    originStation[StationsTable.id]
+                )
+                .join(
+                    destStation,
+                    JoinType.LEFT,
+                    ScheduleTable.destStationId,
+                    destStation[StationsTable.id]
+                )
                 .selectAll()
                 .where {
                     (TrainStopsTable.stationId eq stationId) and

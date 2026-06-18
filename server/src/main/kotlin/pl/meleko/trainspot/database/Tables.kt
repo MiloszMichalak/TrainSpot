@@ -50,6 +50,7 @@ object TrainModelsTable : UuidTable("train_models") {
     val model = varchar("model", 32)
     val number = varchar("number", 16)
     val carrierCode = varchar("carrier_code", 10).references(CarriersTable.code, onDelete = ReferenceOption.SET_NULL)
+    val createdAt = timestamp("created_at").defaultExpression(CurrentTimestamp)
 }
 
 object SpotsTable : UuidTable("spots") {

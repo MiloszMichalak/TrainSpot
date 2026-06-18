@@ -7,6 +7,9 @@ import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import pl.meleko.trainspot.database.ScheduleTable
 import pl.meleko.trainspot.database.TrainStopsTable
+import pl.meleko.trainspot.model.ScheduleRoute
+import pl.meleko.trainspot.model.StationStop
+import pl.meleko.trainspot.repository.PkpRepository
 
 @Serializable
 data class SchedulesResponse(
@@ -36,6 +39,19 @@ data class ScheduleRouteDto(
     val stations: List<StationStopDto>
 )
 
+suspend fun ScheduleRouteDto.toScheduleRoute() = ScheduleRoute(
+    scheduleId = this.scheduleId,
+    orderId = this.orderId,
+    trainOrderId = this.trainOrderId,
+    name = this.name,
+    carrierCode = this.carrierCode,
+    nationalNumber = this.name,
+    internationalArrivalNumber = this.internationalArrivalNumber,
+    internationalDepartureNumber = this.internationalDepartureNumber,
+    commercialCategorySymbol = this.commercialCategorySymbol,
+    stations = this.stations.map { it.toStationStop() }
+)
+
 @Serializable
 data class StationStopDto(
     val stationId: Int,
@@ -55,6 +71,23 @@ data class StationStopDto(
     val stopTypeId: Int? = null,
     val stopTypeName: String? = null
 )
+
+suspend fun StationStopDto.toStationStop(): StationStop {
+    val station = PkpRepository.getStationById(this.stationId)!!.toStation()
+
+    return StationStop(
+        stationId = station,
+        orderNumber = this.orderNumber,
+        departureCommercialCategory = this.arrivalCommercialCategory ?: this.departureCommercialCategory,
+        departureTrainNumber = this.arrivalTrainNumber ?: this.departureTrainNumber,
+        departurePlatform = this.arrivalPlatform ?: this.departurePlatform,
+        departureTrack = this.arrivalTrack ?: this.departureTrack,
+        departureDay = this.arrivalDay ?: this.departureDay,
+        departureTime = this.arrivalTime ?: this.departureTime,
+        stopTypeId = this.stopTypeId,
+        stopTypeName = this.stopTypeName
+    )
+}
 
 fun ResultRow.toScheduleRouteDto(): ScheduleRouteDto {
     val runId = this[ScheduleTable.trainOrderId]

@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 // todo usuniete arrival zeby w bazie danych po prostu je do jednego skracac
 @Serializable
 data class StationStop(
-    val stationId: Int,
+    val stationId: Station,
     val orderNumber: Int,
     val departureCommercialCategory: String? = null,
     val departureTrainNumber: String? = null,

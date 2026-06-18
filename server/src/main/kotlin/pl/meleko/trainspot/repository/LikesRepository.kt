@@ -60,4 +60,17 @@ object LikesRepository {
                 .count() > 0
         }
     }
+
+    suspend fun findLikedSpotIdsByUserIdPaginated(userId: Uuid, page: Int, limit: Int): List<Uuid> {
+        return dbTransaction {
+            val offset = page * limit
+
+            LikesTable.selectAll()
+                .where { LikesTable.userId eq userId }
+                .orderBy(LikesTable.createdAt)
+                .offset(offset.toLong())
+                .limit(limit)
+                .map { it[LikesTable.spotId] }
+        }
+    }
 }

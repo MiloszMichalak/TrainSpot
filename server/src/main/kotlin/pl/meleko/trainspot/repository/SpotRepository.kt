@@ -19,10 +19,17 @@ import kotlin.uuid.Uuid
 object SpotRepository {
     suspend fun create(userId: Uuid, request: SpotRequest, imageUrl: String, spotId: Uuid): Uuid {
         return dbTransaction {
+            val trainModel = request.trainModel!!
+            val trainModelId = TrainModelRepository.createOrInsert(
+                trainModel.model,
+                trainModel.number,
+                trainModel.carrierCode
+            )?.id
+
             SpotsTable.insert {
                 it[SpotsTable.id] = spotId
                 it[SpotsTable.userId] = userId
-                it[SpotsTable.modelId] = request.trainModel
+                it[SpotsTable.modelId] = trainModelId
                 it[SpotsTable.stationId] = request.stationId
                 it[SpotsTable.trainRunId] = request.trainRunId
                 it[SpotsTable.imageUrl] = imageUrl
@@ -41,8 +48,15 @@ object SpotRepository {
 
             if (spot == null) return@dbTransaction null
 
+            val trainModel = request.trainModel!!
+            val trainModelId = TrainModelRepository.createOrInsert(
+                trainModel.model,
+                trainModel.number,
+                trainModel.carrierCode
+            )?.id
+
             SpotsTable.update({ SpotsTable.id eq id }) { row ->
-                request.trainModel?.let { row[SpotsTable.modelId] = it }
+                request.trainModel?.let { row[SpotsTable.modelId] = trainModelId }
                 request.stationId?.let { row[SpotsTable.stationId] = it }
                 request.trainRunId?.let { row[SpotsTable.trainRunId] = it }
                 row[SpotsTable.imageUrl] = imageUrl
@@ -68,18 +82,18 @@ object SpotRepository {
         }
     }
 
-    suspend fun findAll(page: Int = 0, limit: Int = 20): PaginationResponse<SpotDto> {
+    suspend fun findAll(page: Int = 0, limit: Int = 20): PaginationResponse<Spot> {
         return dbTransaction {
             val total = SpotsTable.selectAll().count()
 
-            val offset = (page * limit).toLong()
+            val offset = (page * limit)
 
             val spots = SpotsTable
                 .selectAll()
                 .orderBy(SpotsTable.spottedAt to SortOrder.DESC)
-                .offset(offset)
+                .offset(offset.toLong())
                 .limit(limit)
-                .map { row -> row.toSpotDto() }
+                .map { row -> row.toSpotDto().toSpotResponse() }
 
             PaginationResponse(
                 items = spots,
