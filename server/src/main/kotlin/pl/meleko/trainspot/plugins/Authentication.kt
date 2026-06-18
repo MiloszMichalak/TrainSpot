@@ -28,8 +28,7 @@ fun Application.configureAuthentication() {
             }
             challenge { _, _ ->
                 call.respond(
-                    HttpStatusCode.Unauthorized,
-                    mapOf("error" to "Invalid or expired token")
+                    HttpStatusCode.Unauthorized
                 )
             }
         }

@@ -2,12 +2,12 @@ package pl.meleko.trainspot.service
 
 import io.ktor.http.HttpStatusCode
 import org.mindrot.jbcrypt.BCrypt
-import pl.meleko.trainspot.AuthResponse
 import pl.meleko.trainspot.database.model.toUser
 import pl.meleko.trainspot.repository.SessionsRepository
 import pl.meleko.trainspot.repository.UsersRepository
 import pl.meleko.trainspot.requests.LoginRequest
 import pl.meleko.trainspot.requests.RegisterRequest
+import pl.meleko.trainspot.response.AuthResponse
 import pl.meleko.trainspot.util.JwtUtil
 import pl.meleko.trainspot.util.NetworkResult
 import kotlin.uuid.Uuid
@@ -19,7 +19,7 @@ fun String.checkPassword(plain: String): Boolean =
     BCrypt.checkpw(plain, this)
 
 object AuthService {
-    fun register(request: RegisterRequest): NetworkResult<AuthResponse> {
+    suspend fun register(request: RegisterRequest): NetworkResult<AuthResponse> {
         val newUserId = UsersRepository.insert(
             email = request.email,
             passwordHash = request.password.hashPassword(),
@@ -35,7 +35,7 @@ object AuthService {
         return NetworkResult.Success(AuthResponse(token = token, user = user))
     }
 
-    fun login(request: LoginRequest): NetworkResult<AuthResponse> {
+    suspend fun login(request: LoginRequest): NetworkResult<AuthResponse> {
         val user = UsersRepository.findByEmailOrUsername(email = request.emailOrUsername, username = request.emailOrUsername)
             ?: return NetworkResult.Error(HttpStatusCode.Unauthorized)
 
@@ -49,14 +49,14 @@ object AuthService {
         return NetworkResult.Success(AuthResponse(token = token, user = user.toUser()))
     }
 
-    fun logout(sessionId: Uuid): NetworkResult<Unit> {
+    suspend fun logout(sessionId: Uuid): NetworkResult<Unit> {
         val deleted = SessionsRepository.delete(sessionId)
 
         return if (deleted) NetworkResult.Success(Unit)
         else NetworkResult.Error(HttpStatusCode.InternalServerError)
     }
 
-    fun logoutAll(userId: Uuid): NetworkResult<Unit> {
+    suspend fun logoutAll(userId: Uuid): NetworkResult<Unit> {
         SessionsRepository.deleteAllByUserId(userId)
         return NetworkResult.Success(Unit)
     }

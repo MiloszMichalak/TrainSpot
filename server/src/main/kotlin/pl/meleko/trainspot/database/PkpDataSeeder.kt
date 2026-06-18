@@ -1,6 +1,5 @@
 package pl.meleko.trainspot.database
 
-import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import pl.meleko.trainspot.network.PkpApiClient
 import pl.meleko.trainspot.network.dto.SchedulesResponse
 import pl.meleko.trainspot.repository.PkpImportRepository
@@ -43,18 +42,16 @@ class PkpDataSeeder(
         PkpImportRepository.importStations(stations)
     }
 
-    private fun uploadScheduleToDatabase(schedules: SchedulesResponse) {
-        transaction {
-            println("Importing train runs...")
-            schedules.routes.forEach { schedule ->
-                PkpImportRepository.importSchedule(schedule)
+    private suspend fun uploadScheduleToDatabase(schedules: SchedulesResponse) {
+        println("Importing train runs...")
+        schedules.routes.forEach { schedule ->
+            PkpImportRepository.importSchedule(schedule)
 
-                PkpImportRepository.importTrainStops(schedule.trainOrderId, schedule.stations)
+            PkpImportRepository.importTrainStops(schedule.trainOrderId, schedule.stations)
 
-                println("Added train run: ${schedule.name} (${schedule.nationalNumber})")
-            }
-
-            println("Data uploaded successfully")
+            println("Added train run: ${schedule.name} (${schedule.nationalNumber})")
         }
+
+        println("Data uploaded successfully")
     }
 }

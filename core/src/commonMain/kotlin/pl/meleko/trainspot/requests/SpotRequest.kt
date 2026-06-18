@@ -1,11 +1,11 @@
 package pl.meleko.trainspot.requests
 
 import kotlinx.serialization.Serializable
-import kotlin.uuid.Uuid
+import pl.meleko.trainspot.model.TrainModel
 
 @Serializable
 data class SpotRequest(
-    val modelId: Uuid?,
+    val trainModel: TrainModel?,
     val stationId: Int?,
     val trainRunId: Int?,
     val description: String?,

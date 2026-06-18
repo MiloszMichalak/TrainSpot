@@ -10,7 +10,6 @@ import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.greaterEq
 import org.jetbrains.exposed.v1.core.or
 import org.jetbrains.exposed.v1.jdbc.selectAll
-import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import pl.meleko.trainspot.database.CarriersTable
 import pl.meleko.trainspot.database.CommercialCategoriesTable
 import pl.meleko.trainspot.database.ScheduleTable
@@ -24,38 +23,39 @@ import pl.meleko.trainspot.network.dto.toCarrierDto
 import pl.meleko.trainspot.network.dto.toCommercialCategoryDto
 import pl.meleko.trainspot.network.dto.toScheduleRouteDto
 import pl.meleko.trainspot.network.dto.toStationDto
+import pl.meleko.trainspot.util.dbTransaction
 import java.time.LocalDate
 import java.time.LocalTime
 
 object PkpRepository {
-    fun getAllStations(): List<StationDto> {
-        return transaction {
+    suspend fun getAllStations(): List<StationDto> {
+        return dbTransaction {
             StationsTable.selectAll().map { row ->
                 row.toStationDto()
             }
         }
     }
 
-    fun getAllCarriers(): List<CarrierDto> {
-        return transaction {
+    suspend fun getAllCarriers(): List<CarrierDto> {
+        return dbTransaction {
             CarriersTable.selectAll().map { row ->
                 row.toCarrierDto()
             }
         }
     }
 
-    fun getAllCommercialCategories(): List<CommercialCategoryDto> {
-        return transaction {
+    suspend fun getAllCommercialCategories(): List<CommercialCategoryDto> {
+        return dbTransaction {
             CommercialCategoriesTable.selectAll().map { row ->
                 row.toCommercialCategoryDto()
             }
         }
     }
 
-    fun getRecentTrainsForStation(stationId: Int, minutes: Long): List<ScheduleRouteDto> {
+    suspend fun getRecentTrainsForStation(stationId: Int, minutes: Long): List<ScheduleRouteDto> {
         val originStation = StationsTable.alias("origin_station")
 
-        return transaction {
+        return dbTransaction {
             (TrainStopsTable innerJoin ScheduleTable innerJoin StationsTable)
                 .join(originStation, JoinType.LEFT, ScheduleTable.originStationId, originStation[StationsTable.id])
                 .selectAll()
@@ -73,11 +73,11 @@ object PkpRepository {
         }
     }
 
-    fun getTodayTrainsForStation(stationId: Int): List<ScheduleRouteDto> {
+    suspend fun getTodayTrainsForStation(stationId: Int): List<ScheduleRouteDto> {
         val originStation = StationsTable.alias("origin_station")
         val destStation = StationsTable.alias("dest_station")
 
-        return transaction {
+        return dbTransaction {
             (TrainStopsTable innerJoin ScheduleTable innerJoin StationsTable)
                 .join(originStation, JoinType.LEFT, ScheduleTable.originStationId, originStation[StationsTable.id])
                 .join(destStation, JoinType.LEFT, ScheduleTable.destStationId, destStation[StationsTable.id])

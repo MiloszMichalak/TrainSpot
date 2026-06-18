@@ -6,7 +6,11 @@ import pl.meleko.trainspot.repository.PkpRepository
 import pl.meleko.trainspot.util.NetworkResult
 
 object ScheduleService {
-    fun getRecentTrains(stationId: Int, minutes: Long): NetworkResult<List<ScheduleRouteDto>> {
+    suspend fun getRecentTrains(stationId: Int?, minutes: Long): NetworkResult<List<ScheduleRouteDto>> {
+        if (stationId == null) {
+            return NetworkResult.Error(HttpStatusCode.BadRequest)
+        }
+
         return try {
             NetworkResult.Success(PkpRepository.getRecentTrainsForStation(stationId, minutes))
         } catch (e: Exception) {
@@ -14,7 +18,11 @@ object ScheduleService {
         }
     }
 
-    fun getTodayTrainsForStation(stationId: Int): NetworkResult<List<ScheduleRouteDto>> {
+    suspend fun getTodayTrainsForStation(stationId: Int?): NetworkResult<List<ScheduleRouteDto>> {
+        if (stationId == null) {
+            return NetworkResult.Error(HttpStatusCode.BadRequest)
+        }
+
         return try {
             NetworkResult.Success(PkpRepository.getTodayTrainsForStation(stationId))
         } catch (e: Exception) {

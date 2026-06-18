@@ -6,17 +6,17 @@ import pl.meleko.trainspot.util.NetworkResult
 import kotlin.uuid.Uuid
 
 object LikesService {
-    fun getLikesCount(spotId: Uuid): NetworkResult<Int> {
+    suspend fun getLikesCount(spotId: Uuid): NetworkResult<Int> {
         val count = LikesRepository.getLikeCountBySpotId(spotId)
         return NetworkResult.Success(count.toInt())
     }
 
-    fun hasLiked(userId: Uuid, spotId: Uuid): NetworkResult<Boolean> {
+    suspend fun hasLiked(userId: Uuid, spotId: Uuid): NetworkResult<Boolean> {
         val exists = LikesRepository.exists(userId, spotId)
         return NetworkResult.Success(exists)
     }
 
-    fun createLike(userId: Uuid, spotId: Uuid?): NetworkResult<Unit> {
+    suspend fun createLike(userId: Uuid, spotId: Uuid?): NetworkResult<Unit> {
         if (spotId == null) return NetworkResult.Error(HttpStatusCode.BadRequest)
 
         if (LikesRepository.exists(userId, spotId)) {
@@ -27,7 +27,7 @@ object LikesService {
         return NetworkResult.Success(Unit)
     }
 
-    fun removeLike(userId: Uuid, spotId: Uuid?): NetworkResult<Unit> {
+    suspend fun removeLike(userId: Uuid, spotId: Uuid?): NetworkResult<Unit> {
         if (spotId == null) return NetworkResult.Error(HttpStatusCode.BadRequest)
 
         val deleted = LikesRepository.delete(userId, spotId)

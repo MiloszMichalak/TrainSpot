@@ -1,6 +1,7 @@
-package pl.meleko.trainspot
+package pl.meleko.trainspot.response
 
 import kotlinx.serialization.Serializable
+import pl.meleko.trainspot.model.User
 
 @Serializable
 data class AuthResponse(

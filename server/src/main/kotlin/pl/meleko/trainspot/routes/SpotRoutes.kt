@@ -21,7 +21,7 @@ import kotlin.uuid.Uuid
 fun Application.installSpotRoutes() {
     routing {
         authenticate("auth-jwt") {
-            route("/spots") {
+            route("/spot") {
                 // GET  - Get all spots (paginated) - Used for feed
                 get("/") {
                     val page = call.parameters["page"]?.toIntOrNull() ?: 0
@@ -65,12 +65,8 @@ fun Application.installSpotRoutes() {
                         return@put
                     }
 
-                    val imageUrl = call.receiveImage(
-                        "spots",
-                        spotId
-                    )
-
-                    SpotsService.update(spotId, userId, request, imageUrl)
+                    val incomingImage = call.receiveImageData()
+                    SpotsService.update(spotId, userId, request, incomingImage)
                         .mapToResponse()
                 }
 

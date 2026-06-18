@@ -1,4 +1,4 @@
-package pl.meleko.trainspot
+package pl.meleko.trainspot.response
 
 import kotlinx.serialization.Serializable
 

@@ -1,8 +1,8 @@
 package pl.meleko.trainspot.database.model
 
 import org.jetbrains.exposed.v1.core.ResultRow
-import pl.meleko.trainspot.User
 import pl.meleko.trainspot.database.UsersTable
+import pl.meleko.trainspot.model.User
 import kotlin.time.Instant
 import kotlin.uuid.Uuid
 

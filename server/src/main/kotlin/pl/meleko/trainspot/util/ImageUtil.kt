@@ -37,7 +37,7 @@ object ImageStorage {
         subdir: String,
         id: Uuid,
         baseUrl: String = "https://trainspot.meleko.pl",
-        basePath: String = "/var/trainspot"
+        basePath: String = "/var/www"
     ): String {
         val extension = image.originalFileName?.substringAfterLast(".", "jpg") ?: "jpg"
         val fileName = "${Uuid.generateV4()}.$extension"

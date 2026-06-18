@@ -1,26 +1,20 @@
 package pl.meleko.trainspot.service
 
 import io.ktor.http.HttpStatusCode
-import pl.meleko.trainspot.PaginationResponse
-import pl.meleko.trainspot.SpotResponse
-import pl.meleko.trainspot.database.model.SpotDto
-import pl.meleko.trainspot.database.model.toSpotResponse
+import pl.meleko.trainspot.model.Spot
 import pl.meleko.trainspot.repository.LikesRepository
 import pl.meleko.trainspot.repository.SpotRepository
 import pl.meleko.trainspot.requests.SpotRequest
+import pl.meleko.trainspot.response.PaginationResponse
 import pl.meleko.trainspot.util.ImageStorage
 import pl.meleko.trainspot.util.IncomingImage
 import pl.meleko.trainspot.util.NetworkResult
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
-/**
- * SpotsService - handles all spot-related operations with validation
- */
 object SpotsService {
-
     @OptIn(ExperimentalUuidApi::class)
-    fun create(userId: Uuid, request: SpotRequest, incomingImage: IncomingImage?): NetworkResult<SpotResponse> {
+    suspend fun create(userId: Uuid, request: SpotRequest, incomingImage: IncomingImage?): NetworkResult<Spot> {
         if (incomingImage == null) {
             return NetworkResult.Error(HttpStatusCode.BadRequest)
         }
@@ -37,15 +31,14 @@ object SpotsService {
             }
         }
 
-        // Save image to disk — the image is written synchronously before the DB transaction.
+        val spotId = Uuid.generateV4()
         val imageUrl = ImageStorage.save(
             image = incomingImage,
+            id = spotId,
             subdir = "spots",
         )
 
-        // Now create the DB record with the pre-generated ID.
         val createdId = SpotRepository.create(userId, request, imageUrl, spotId)
-            ?: return NetworkResult.Error(HttpStatusCode.Conflict)
 
         val spot = SpotRepository.findById(createdId)
             ?: return NetworkResult.Error(HttpStatusCode.InternalServerError)
@@ -53,13 +46,13 @@ object SpotsService {
         return NetworkResult.Success(spot)
     }
 
-    fun getById(id: Uuid): NetworkResult<SpotResponse> {
+    suspend fun getById(id: Uuid): NetworkResult<Spot> {
         val spot = SpotRepository.findById(id)
             ?: return NetworkResult.Error(HttpStatusCode.NotFound)
         return NetworkResult.Success(spot)
     }
 
-    fun findAll(page: Int = 0, limit: Int = 20): NetworkResult<PaginationResponse<SpotResponse>> {
+    suspend fun findAll(page: Int = 0, limit: Int = 20): NetworkResult<PaginationResponse<Spot>> {
         if (page < 0 || limit < 1 || limit > 100) {
             return NetworkResult.Error(HttpStatusCode.BadRequest)
         }
@@ -67,7 +60,7 @@ object SpotsService {
         return NetworkResult.Success(result)
     }
 
-    fun findByUser(userId: Uuid, page: Int = 0, limit: Int = 20): NetworkResult<PaginationResponse<SpotResponse>> {
+    suspend fun findByUser(userId: Uuid, page: Int = 0, limit: Int = 20): NetworkResult<PaginationResponse<Spot>> {
         if (page < 0 || limit < 1 || limit > 100) {
             return NetworkResult.Error(HttpStatusCode.BadRequest)
         }
@@ -75,7 +68,7 @@ object SpotsService {
         return NetworkResult.Success(result)
     }
 
-    fun update(id: Uuid, userId: Uuid, request: SpotRequest, imageUrl: String?): NetworkResult<SpotResponse> {
+    suspend fun update(id: Uuid, userId: Uuid, request: SpotRequest, incomingImage: IncomingImage?): NetworkResult<Spot> {
         val existingSpot = SpotRepository.findById(id)
             ?: return NetworkResult.Error(HttpStatusCode.NotFound)
 
@@ -83,11 +76,10 @@ object SpotsService {
             return NetworkResult.Error(HttpStatusCode.Forbidden)
         }
 
-        if (imageUrl == null) {
+        if (incomingImage == null) {
             return NetworkResult.Error(HttpStatusCode.BadRequest)
         }
 
-        // Validate lat/lon if provided
         request.lat?.let { lat ->
             if (lat < -90.0 || lat > 90.0) {
                 return NetworkResult.Error(HttpStatusCode.BadRequest)
@@ -99,7 +91,13 @@ object SpotsService {
             }
         }
 
-        val updatedId = SpotRepository.update(id, request, imageUrl)
+        val imageUrl = ImageStorage.save(
+            image = incomingImage,
+            id = id,
+            subdir = "spots",
+        )
+
+        SpotRepository.update(id, request, imageUrl)
             ?: return NetworkResult.Error(HttpStatusCode.Conflict)
 
         val updatedSpot = SpotRepository.findById(id)?.toSpotResponse()
@@ -108,7 +106,7 @@ object SpotsService {
         return NetworkResult.Success(updatedSpot)
     }
 
-    fun delete(id: Uuid, userId: Uuid): NetworkResult<Unit> {
+    suspend fun delete(id: Uuid, userId: Uuid): NetworkResult<Unit> {
         val existingSpot = SpotRepository.findById(id)
             ?: return NetworkResult.Error(HttpStatusCode.NotFound)
 
@@ -124,7 +122,7 @@ object SpotsService {
         }
     }
 
-    fun getLikedSpots(userId: Uuid, page: Int = 0, limit: Int = 20): NetworkResult<PaginationResponse<SpotDto>> {
+     suspend fun getLikedSpots(userId: Uuid, page: Int = 0, limit: Int = 20): NetworkResult<PaginationResponse<Spot>> {
         if (page < 0 || limit < 1 || limit > 100) {
             return NetworkResult.Error(HttpStatusCode.BadRequest)
         }

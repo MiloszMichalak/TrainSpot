@@ -1,4 +1,4 @@
-package pl.meleko.trainspot
+package pl.meleko.trainspot.model
 
 import kotlinx.serialization.Serializable
 import kotlin.time.Instant

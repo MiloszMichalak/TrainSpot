@@ -1,9 +1,7 @@
 package pl.meleko.trainspot.routes
 
-import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.Application
 import io.ktor.server.auth.authenticate
-import io.ktor.server.response.respond
 import io.ktor.server.routing.get
 import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
@@ -19,23 +17,12 @@ fun Application.installScheduleRoutes() {
                     val stationId = call.parameters["id"]?.toInt()
                     val minutes = call.parameters["minutes"]?.toLongOrNull() ?: 60
 
-                    if (stationId == null) {
-                        call.respond(HttpStatusCode.BadRequest)
-                        return@get
-                    }
-
                     ScheduleService.getRecentTrains(stationId, minutes).mapToResponse()
                 }
 
                 // GET /train/{number}/today - Get today's route for a train
                 get("/train/{number}/today") {
                     val stationId = call.parameters["number"]?.toIntOrNull()
-
-
-                    if (stationId == null) {
-                        call.respond(HttpStatusCode.BadRequest)
-                        return@get
-                    }
 
                     ScheduleService.getTodayTrainsForStation(stationId).mapToResponse()
                 }

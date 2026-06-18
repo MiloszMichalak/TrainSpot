@@ -1,8 +1,9 @@
 package pl.meleko.trainspot.database.model
 
 import org.jetbrains.exposed.v1.core.ResultRow
-import pl.meleko.trainspot.SpotResponse
 import pl.meleko.trainspot.database.SpotsTable
+import pl.meleko.trainspot.model.Spot
+import pl.meleko.trainspot.model.TrainModel
 import java.time.OffsetDateTime
 import kotlin.time.Instant
 import kotlin.time.toKotlinInstant
@@ -13,6 +14,7 @@ data class SpotDto(
     val userId: Uuid,
     val modelId: Uuid?,
     val stationId: Int?,
+    val trainNumber: String?,
     val trainRunId: Int?,
     val imageUrl: String,
     val description: String?,
@@ -20,32 +22,34 @@ data class SpotDto(
     val lon: Double?,
     val spottedAt: OffsetDateTime,
     val createdAt: Instant,
-//    val likes: Int TODO ni ma ale w spocie co leci do usera juz beda
-)
-
-fun SpotDto.toSpotResponse(
-    user: UserDto,
-    likes: Long
-) = SpotResponse(
-    id = this.id,
-    user = user.toUser(),
-    modelId = this.modelId,
-    stationId = this.stationId,
-    trainRunId = this.trainRunId,
-    imageUrl = this.imageUrl,
-    description = this.description,
-    lat = this.lat,
-    lon = this.lon,
-    spottedAt = this.spottedAt.toInstant().toKotlinInstant(),
-    createdAt = this.createdAt,
-    likes = likes.toInt()
-)
+    val user: UserDto? = null,
+    val model: TrainModel? = null,
+    val likesCount: Int = 0
+) {
+    fun toSpotResponse(): Spot {
+        return Spot(
+            id = this.id,
+            user = user,
+            model = model,
+            stationId = this.stationId,
+            trainRunId = this.trainRunId ?: 0,
+            imageUrl = this.imageUrl,
+            description = this.description.orEmpty(),
+            lat = this.lat,
+            lon = this.lon,
+            spottedAt = this.spottedAt.toInstant().toKotlinInstant(),
+            createdAt = this.createdAt,
+            likes = this.likesCount
+        )
+    }
+}
 
 fun ResultRow.toSpotDto() = SpotDto(
     id = this[SpotsTable.id].value,
     userId = this[SpotsTable.userId],
     modelId = this[SpotsTable.modelId],
     stationId = this[SpotsTable.stationId],
+    trainNumber = this[SpotsTable.trainNumber],
     trainRunId = this[SpotsTable.trainRunId],
     imageUrl = this[SpotsTable.imageUrl],
     description = this[SpotsTable.description],
