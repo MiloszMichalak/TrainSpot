@@ -1,14 +1,10 @@
 package pl.meleko.trainspot.repository
 
-import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.insert
-import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.update
 import pl.meleko.trainspot.database.SessionsTable
-import pl.meleko.trainspot.database.model.SessionDto
-import pl.meleko.trainspot.database.model.toSessionDto
 import pl.meleko.trainspot.util.dbTransaction
 import java.time.OffsetDateTime
 import kotlin.uuid.Uuid
@@ -19,34 +15,6 @@ object SessionsRepository {
             SessionsTable.insert {
                 it[SessionsTable.userId] = userId
             }[SessionsTable.id].value
-        }
-    }
-
-    suspend fun findById(id: Uuid): SessionDto? {
-        return dbTransaction {
-            SessionsTable.selectAll()
-                .where { SessionsTable.id eq id }
-                .firstOrNull()
-                ?.toSessionDto()
-        }
-    }
-
-    suspend fun findLatestByUserId(userId: Uuid): SessionDto? {
-        return dbTransaction {
-            SessionsTable.selectAll()
-                .where { SessionsTable.userId eq userId }
-                .orderBy(SessionsTable.createdAt to SortOrder.DESC)
-                .firstOrNull()
-                ?.toSessionDto()
-        }
-    }
-
-    suspend fun findAllByUserId(userId: Uuid): List<SessionDto> {
-        return dbTransaction {
-            SessionsTable.selectAll()
-                .where { SessionsTable.userId eq userId }
-                .orderBy(SessionsTable.createdAt to SortOrder.DESC)
-                .map { it.toSessionDto() }
         }
     }
 
