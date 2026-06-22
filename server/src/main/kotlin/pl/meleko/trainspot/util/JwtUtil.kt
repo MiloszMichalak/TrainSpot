@@ -13,14 +13,18 @@ object JwtUtil {
     private val issuer = System.getenv("JWT_ISSUER")
     private val audience = System.getenv("JWT_AUDIENCE")
 
-    fun createToken(userId: Uuid, expiresInMs: Long = 3_600_000): String =
+    fun createToken(userId: Uuid, sessionId: Uuid, expiresInMs: Long = 3_600_000): String =
         JWT.create()
             .withIssuer(issuer)
             .withAudience(audience)
             .withClaim("userId", userId.toString())
+            .withClaim("sessionId", sessionId.toString())
             .withExpiresAt(Date(System.currentTimeMillis() + expiresInMs))
             .sign(Algorithm.HMAC256(secret))
 }
 
 fun ApplicationCall.jwtUserId(): Uuid =
-    Uuid.parse(principal<JWTPrincipal>()?.payload?.getClaim("userId").toString())
+    Uuid.parse(principal<JWTPrincipal>()?.payload?.getClaim("userId")?.asString()!!)
+
+fun ApplicationCall.jwtSessionId(): Uuid =
+    Uuid.parse(principal<JWTPrincipal>()?.payload?.getClaim("sessionId")?.asString()!!)

@@ -10,9 +10,9 @@ data class UserDto(
     val id: Uuid,
     val email: String,
     val username: String,
-    val avatarUrl: String,
+    val avatarUrl: String?,
     val passwordHash: String,
-    val bio: String,
+    val bio: String?,
     val createdAt: Instant
 )
 
@@ -33,12 +33,6 @@ fun ResultRow.toUserDto() = UserDto(
     avatarUrl = this[UsersTable.avatarUrl].orEmpty(),
     passwordHash = this[UsersTable.passwordHash],
     createdAt = this[UsersTable.createdAt]
-)
-
-data class UserProfilePictureDto(
-    val id: Uuid,
-    val avatarUrl: String,
-    val createdAt: Instant
 )
 
 data class UserStatsDto(

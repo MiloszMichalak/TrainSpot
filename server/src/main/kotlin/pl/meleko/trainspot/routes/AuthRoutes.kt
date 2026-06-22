@@ -9,6 +9,7 @@ import io.ktor.server.routing.routing
 import pl.meleko.trainspot.requests.LoginRequest
 import pl.meleko.trainspot.requests.RegisterRequest
 import pl.meleko.trainspot.service.AuthService
+import pl.meleko.trainspot.util.jwtSessionId
 import pl.meleko.trainspot.util.jwtUserId
 import pl.meleko.trainspot.util.mapToResponse
 import kotlin.uuid.ExperimentalUuidApi
@@ -33,9 +34,9 @@ fun Application.installAuthRoutes() {
 
             authenticate("auth-jwt") {
                 post("/logout") {
-                    val userId = call.jwtUserId()
+                    val sessionId = call.jwtSessionId()
 
-                    AuthService.logout(userId)
+                    AuthService.logout(sessionId)
                         .mapToResponse()
                 }
 
@@ -50,8 +51,9 @@ fun Application.installAuthRoutes() {
                 // POST /refresh
                 post("/refresh") {
                     val userId = call.jwtUserId()
+                    val sessionId = call.jwtSessionId()
 
-                    AuthService.refreshToken(userId)
+                    AuthService.refreshToken(userId, sessionId)
                         .mapToResponse()
                 }
             }

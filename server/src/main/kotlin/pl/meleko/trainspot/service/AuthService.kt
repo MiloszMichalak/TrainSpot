@@ -1,22 +1,17 @@
 package pl.meleko.trainspot.service
 
 import io.ktor.http.HttpStatusCode
-import org.mindrot.jbcrypt.BCrypt
 import pl.meleko.trainspot.database.model.toUser
 import pl.meleko.trainspot.repository.SessionsRepository
 import pl.meleko.trainspot.repository.UsersRepository
 import pl.meleko.trainspot.requests.LoginRequest
 import pl.meleko.trainspot.requests.RegisterRequest
 import pl.meleko.trainspot.response.AuthResponse
+import pl.meleko.trainspot.util.Bcrypt.checkPassword
+import pl.meleko.trainspot.util.Bcrypt.hashPassword
 import pl.meleko.trainspot.util.JwtUtil
 import pl.meleko.trainspot.util.NetworkResult
 import kotlin.uuid.Uuid
-
-fun String.hashPassword(): String =
-    BCrypt.hashpw(this, BCrypt.gensalt())
-
-fun String.checkPassword(plain: String): Boolean =
-    BCrypt.checkpw(plain, this)
 
 object AuthService {
     suspend fun register(request: RegisterRequest): NetworkResult<AuthResponse> {
@@ -29,8 +24,8 @@ object AuthService {
         val user  = UsersRepository.findById(newUserId)?.toUser()
             ?: return NetworkResult.Error(HttpStatusCode.InternalServerError)
 
-        SessionsRepository.create(newUserId)
-        val token = JwtUtil.createToken(newUserId)
+        val sessionId = SessionsRepository.create(newUserId)
+        val token = JwtUtil.createToken(newUserId, sessionId)
 
         return NetworkResult.Success(AuthResponse(token = token, user = user))
     }
@@ -43,8 +38,8 @@ object AuthService {
             return NetworkResult.Error(HttpStatusCode.Unauthorized)
         }
 
-        SessionsRepository.create(user.id)
-        val token = JwtUtil.createToken(user.id)
+        val sessionId = SessionsRepository.create(user.id)
+        val token = JwtUtil.createToken(user.id, sessionId)
 
         return NetworkResult.Success(AuthResponse(token = token, user = user.toUser()))
     }
@@ -61,8 +56,8 @@ object AuthService {
         return NetworkResult.Success(Unit)
     }
 
-    fun refreshToken(userId: Uuid): NetworkResult<String> {
-        val newToken = JwtUtil.createToken(userId)
+    fun refreshToken(userId: Uuid, sessionId: Uuid): NetworkResult<String> {
+        val newToken = JwtUtil.createToken(userId, sessionId)
         return NetworkResult.Success(newToken)
     }
 }
