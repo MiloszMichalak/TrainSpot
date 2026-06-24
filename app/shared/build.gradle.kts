@@ -5,6 +5,8 @@ plugins {
     alias(libs.plugins.androidMultiplatformLibrary)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.androidx.room)
 }
 
 kotlin {
@@ -41,6 +43,18 @@ kotlin {
             implementation(libs.androidx.navigation3.runtime)
         }
         commonMain.dependencies {
+            implementation(libs.androidx.room.runtime)
+            implementation(libs.androidx.sqlite.bundled)
+            
+            implementation(libs.ktor.client.core)
+            implementation(libs.ktor.client.content.negotiation)
+            implementation(libs.ktor.client.serialization.json)
+            implementation(libs.ktor.client.auth)
+            implementation(libs.ktor.client.cio)
+            implementation(libs.kotlinx.serialization.json)
+            
+            implementation(libs.androidx.datastore.preferences)
+            
             api(projects.core)
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
@@ -64,8 +78,16 @@ kotlin {
             implementation(libs.kotlin.test)
         }
     }
+    
+    room {
+        schemaDirectory("$projectDir/schemas")
+    }
 }
 
 dependencies {
+    add("kspAndroid", libs.androidx.room.compiler)
+    add("kspIosSimulatorArm64", libs.androidx.room.compiler)
+    add("kspIosArm64", libs.androidx.room.compiler)
+    
     androidRuntimeClasspath(libs.compose.uiTooling)
 }
