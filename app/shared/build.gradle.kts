@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.ksp)
     alias(libs.plugins.androidx.room)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 kotlin {
@@ -20,7 +21,7 @@ kotlin {
         }
     }
     
-    androidLibrary {
+    android {
        namespace = "pl.meleko.trainspot.app.shared"
        compileSdk = libs.versions.android.compileSdk.get().toInt()
        minSdk = libs.versions.android.minSdk.get().toInt()
@@ -39,8 +40,6 @@ kotlin {
     sourceSets {
         androidMain.dependencies {
             implementation(libs.compose.uiToolingPreview)
-            implementation(libs.koin.android)
-            implementation(libs.androidx.navigation3.runtime)
         }
         commonMain.dependencies {
             implementation(libs.androidx.room.runtime)

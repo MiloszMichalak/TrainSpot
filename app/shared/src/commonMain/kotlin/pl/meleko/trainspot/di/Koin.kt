@@ -3,10 +3,11 @@ package pl.meleko.trainspot.di
 import org.koin.core.context.startKoin
 import org.koin.dsl.KoinAppDeclaration
 
-fun initKoin(appDeclaration: KoinAppDeclaration = {}) = startKoin {
-    appDeclaration()
+fun initKoin(configuration: KoinAppDeclaration? = null) = startKoin {
+    configuration?.invoke(this)
+
     modules(
-        commonModule,
+        platformModule,
         dataModule,
         viewModelModule
     )

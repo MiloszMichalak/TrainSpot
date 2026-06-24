@@ -10,6 +10,7 @@ import io.ktor.client.plugins.defaultRequest
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 import org.koin.core.module.dsl.singleOf
+import org.koin.dsl.bind
 import org.koin.dsl.module
 import pl.meleko.trainspot.data.local.AuthDataStore
 import pl.meleko.trainspot.data.remote.AuthService
@@ -44,5 +45,5 @@ val dataModule = module {
     }
 
     singleOf(::AuthService)
-    single<AuthRepository> { AuthRepositoryImpl(get(), get()) }
+    singleOf(::AuthRepositoryImpl).bind(AuthRepository::class)
 }
