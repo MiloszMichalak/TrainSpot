@@ -2,6 +2,7 @@ package pl.meleko.trainspot.data.local
 
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import kotlinx.coroutines.flow.Flow
@@ -12,6 +13,7 @@ class AuthDataStore(
     private val dataStore: DataStore<Preferences>
 ) {
     private val tokenKey = stringPreferencesKey("auth_token")
+    private val dictionarySyncedKey = booleanPreferencesKey("dictionary_synced")
 
     suspend fun saveToken(token: String) {
         dataStore.edit { preferences ->
@@ -30,6 +32,17 @@ class AuthDataStore(
     suspend fun clearToken() {
         dataStore.edit { preferences ->
             preferences.remove(tokenKey)
+            preferences.remove(dictionarySyncedKey)
+        }
+    }
+
+    suspend fun isDictionarySynced(): Boolean {
+        return dataStore.data.map { it[dictionarySyncedKey] ?: false }.first()
+    }
+
+    suspend fun setDictionarySynced(synced: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[dictionarySyncedKey] = synced
         }
     }
 }

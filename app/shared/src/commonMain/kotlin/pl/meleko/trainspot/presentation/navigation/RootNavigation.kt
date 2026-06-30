@@ -11,6 +11,8 @@ import androidx.savedstate.serialization.SavedStateConfiguration
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 import kotlinx.serialization.modules.subclass
+import org.koin.compose.viewmodel.koinViewModel
+import pl.meleko.trainspot.presentation.MainViewModel
 
 private val navigationConfig = SavedStateConfiguration {
     serializersModule = SerializersModule {
@@ -22,8 +24,11 @@ private val navigationConfig = SavedStateConfiguration {
 }
 
 @Composable
-fun RootNavigation(modifier: Modifier) {
+fun RootNavigation(
+    modifier: Modifier
+) {
     val backStack = rememberNavBackStack(navigationConfig, Screen.Auth)
+    val mainViewModel = koinViewModel<MainViewModel>()
 
     Column(modifier) {
         NavDisplay(
@@ -36,13 +41,13 @@ fun RootNavigation(modifier: Modifier) {
                 entry<Screen.Auth>{
                     AuthNavigation(
                         onAuthSuccess = {
+                            mainViewModel.syncAfterLogin()
                             backStack.clear()
                             backStack.add(Screen.Home)
                         }
                     )
                 }
                 entry<Screen.Home>{
-
                 }
             }
         )
