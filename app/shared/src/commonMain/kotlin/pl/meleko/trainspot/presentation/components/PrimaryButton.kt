@@ -22,6 +22,7 @@ fun PrimaryButton(
     text: String,
     onClick: () -> Unit,
     isLoading: Boolean = false,
+    enabled: Boolean = true,
     modifier: Modifier = Modifier
 ) {
     val colorScheme = MaterialTheme.colorScheme
@@ -36,7 +37,7 @@ fun PrimaryButton(
             containerColor = colorScheme.primary,
             contentColor = colorScheme.onPrimary
         ),
-        enabled = !isLoading
+        enabled = enabled && !isLoading
     ) {
         if (isLoading) {
             CircularProgressIndicator(

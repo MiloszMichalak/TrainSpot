@@ -48,6 +48,7 @@ fun RootNavigation(
                     )
                 }
                 entry<Screen.Home>{
+                    HomeNavigation()
                 }
             }
         )

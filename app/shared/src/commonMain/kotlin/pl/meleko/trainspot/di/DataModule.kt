@@ -21,12 +21,18 @@ import pl.meleko.trainspot.data.local.AuthDataStore
 import pl.meleko.trainspot.data.local.getRoomDatabase
 import pl.meleko.trainspot.data.remote.AuthService
 import pl.meleko.trainspot.data.remote.DictionaryService
+import pl.meleko.trainspot.data.remote.LikeService
+import pl.meleko.trainspot.data.remote.SpotService
 import pl.meleko.trainspot.data.remote.UserService
 import pl.meleko.trainspot.data.repository.AuthRepositoryImpl
 import pl.meleko.trainspot.data.repository.DictionaryRepositoryImpl
+import pl.meleko.trainspot.data.repository.LikeRepositoryImpl
+import pl.meleko.trainspot.data.repository.SpotRepositoryImpl
 import pl.meleko.trainspot.data.repository.UserRepositoryImpl
 import pl.meleko.trainspot.domain.repository.AuthRepository
 import pl.meleko.trainspot.domain.repository.DictionaryRepository
+import pl.meleko.trainspot.domain.repository.LikeRepository
+import pl.meleko.trainspot.domain.repository.SpotRepository
 import pl.meleko.trainspot.domain.repository.UserRepository
 
 val dataModule = module {
@@ -75,6 +81,12 @@ val dataModule = module {
 
     singleOf(::DictionaryService)
     singleOf(::DictionaryRepositoryImpl).bind(DictionaryRepository::class)
+
+    singleOf(::SpotService)
+    singleOf(::SpotRepositoryImpl).bind(SpotRepository::class)
+
+    singleOf(::LikeService)
+    singleOf(::LikeRepositoryImpl).bind(LikeRepository::class)
 
     singleOf(::UserService)
     singleOf(::UserRepositoryImpl).bind(UserRepository::class)
