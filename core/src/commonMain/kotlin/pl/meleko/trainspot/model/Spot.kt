@@ -9,13 +9,14 @@ data class Spot(
     val id: Uuid,
     val user: User,
     val model: TrainModel,
-    val stationId: Int?,
-    val trainRunId: ScheduleRoute,
+    val station: Station?,
+    val trainRun: ScheduleRoute,
     val imageUrl: String,
     val description: String,
     val lat: Double?,
     val lon: Double?,
     val spottedAt: Instant,
     val createdAt: Instant,
-    val likes: Int
+    val likes: Int,
+    val isLiked: Boolean = false
 )
