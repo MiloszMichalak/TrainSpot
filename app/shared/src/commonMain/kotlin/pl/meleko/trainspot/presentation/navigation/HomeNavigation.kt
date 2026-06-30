@@ -9,6 +9,7 @@ import androidx.savedstate.serialization.SavedStateConfiguration
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 import kotlinx.serialization.modules.subclass
+import pl.meleko.trainspot.presentation.addspot.AddSpotRoot
 import pl.meleko.trainspot.presentation.feed.FeedRoot
 
 private val homeNavigationConfig = SavedStateConfiguration {
@@ -41,7 +42,9 @@ fun HomeNavigation() {
                 )
             }
             entry<Screen.Home.Create> {
-
+                AddSpotRoot(
+                    onNavigateBack = { backStack.removeLastOrNull() }
+                )
             }
             entry<Screen.Home.Details> {
                 // TODO: Implement SpotDetailsRoot
