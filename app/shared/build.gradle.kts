@@ -50,6 +50,7 @@ kotlin {
             implementation(libs.ktor.client.serialization.json)
             implementation(libs.ktor.client.auth)
             implementation(libs.ktor.client.cio)
+            implementation(libs.ktor.client.logging)
             implementation(libs.kotlinx.serialization.json)
             
             implementation(libs.androidx.datastore.preferences)
@@ -72,6 +73,19 @@ kotlin {
             implementation(libs.jetbrains.navigation3.adaptive)
 
             implementation(libs.jetbrains.material.icons.extended)
+
+            implementation(libs.coil.compose)
+            implementation(libs.coil.network.ktor)
+
+            implementation(libs.napier)
+
+            implementation(libs.krop.ui)
+            implementation(libs.krop.filekit)
+
+            implementation(libs.filekit.core)
+            implementation(libs.filekit.dialogs.compose)
+            implementation(libs.filekit.coil)
+
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

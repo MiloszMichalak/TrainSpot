@@ -19,6 +19,8 @@ dependencies {
     implementation(libs.koin.android)
     implementation(libs.androidx.navigation3.runtime)
 
+    implementation(libs.filekit.core)
+
     implementation(libs.compose.uiToolingPreview)
     debugImplementation(libs.compose.uiTooling)
 }
