@@ -34,7 +34,7 @@ object CommercialCategoriesTable : IntIdTable("commercial_categories") {
 object UsersTable : UuidTable("users") {
     val email = varchar("email", 255).uniqueIndex()
     val passwordHash = varchar("password_hash", 255)
-    val username = varchar("username", 100).uniqueIndex()
+    val username = varchar("username", 100).uniqueIndex().nullable()
     val avatarUrl = varchar("avatar_url", 255).nullable()
     val bio = text("bio").nullable()
     val createdAt = timestamp("created_at").defaultExpression(CurrentTimestamp)
