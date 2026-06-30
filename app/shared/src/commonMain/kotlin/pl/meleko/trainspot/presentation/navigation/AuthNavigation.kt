@@ -11,6 +11,7 @@ import kotlinx.serialization.modules.polymorphic
 import kotlinx.serialization.modules.subclass
 import pl.meleko.trainspot.presentation.login.LoginRoot
 import pl.meleko.trainspot.presentation.register.RegisterRoot
+import pl.meleko.trainspot.presentation.username.UsernameRoot
 
 private val authNavigationConfig = SavedStateConfiguration {
     serializersModule = SerializersModule {
@@ -48,7 +49,9 @@ fun AuthNavigation(onAuthSuccess: () -> Unit) {
                 )
             }
             entry<Screen.Auth.EnterUsername> {
-
+                UsernameRoot(
+                    onSuccess = { onAuthSuccess() }
+                )
             }
         }
     )

@@ -5,9 +5,11 @@ import org.koin.dsl.module
 import pl.meleko.trainspot.presentation.MainViewModel
 import pl.meleko.trainspot.presentation.login.LoginViewModel
 import pl.meleko.trainspot.presentation.register.RegisterViewModel
+import pl.meleko.trainspot.presentation.username.UsernameViewModel
 
 val viewModelModule = module {
     viewModelOf(::MainViewModel)
     viewModelOf(::LoginViewModel)
     viewModelOf(::RegisterViewModel)
+    viewModelOf(::UsernameViewModel)
 }

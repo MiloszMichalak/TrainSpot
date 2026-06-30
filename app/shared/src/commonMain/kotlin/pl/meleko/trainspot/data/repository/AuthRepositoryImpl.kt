@@ -6,7 +6,6 @@ import pl.meleko.trainspot.core.onSuccess
 import pl.meleko.trainspot.data.local.AuthDataStore
 import pl.meleko.trainspot.data.remote.AuthService
 import pl.meleko.trainspot.domain.repository.AuthRepository
-import pl.meleko.trainspot.model.User
 import pl.meleko.trainspot.response.AuthResponse
 
 class AuthRepositoryImpl(
@@ -24,10 +23,6 @@ class AuthRepositoryImpl(
         return apiService.register(email, password).onSuccess {
             authDataStore.saveToken(it.token)
         }
-    }
-
-    override suspend fun updateUsername(username: String): Result<User, DataError.Network> {
-        return apiService.updateUsername(username)
     }
 
     override suspend fun getToken() = authDataStore.getToken()

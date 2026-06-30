@@ -2,6 +2,7 @@ package pl.meleko.trainspot.presentation.util
 
 import androidx.compose.runtime.Composable
 import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 
 sealed interface UiText {
@@ -16,6 +17,13 @@ sealed interface UiText {
         return when(this) {
             is DynamicString -> value
             is ResString -> stringResource(resource, *args)
+        }
+    }
+
+    suspend fun asText(): String{
+        return when (this) {
+            is DynamicString -> value
+            is ResString -> getString(resource, args)
         }
     }
 }

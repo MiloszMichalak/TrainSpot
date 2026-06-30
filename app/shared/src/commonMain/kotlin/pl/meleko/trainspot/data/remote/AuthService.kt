@@ -7,10 +7,8 @@ import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import pl.meleko.trainspot.core.DataError
 import pl.meleko.trainspot.core.Result
-import pl.meleko.trainspot.model.User
 import pl.meleko.trainspot.requests.LoginRequest
 import pl.meleko.trainspot.requests.RegisterRequest
-import pl.meleko.trainspot.requests.UpdateProfileRequest
 import pl.meleko.trainspot.response.AuthResponse
 
 class AuthService(private val client: HttpClient) {
@@ -28,15 +26,6 @@ class AuthService(private val client: HttpClient) {
             client.post("/auth/register") {
                 contentType(ContentType.Application.Json)
                 setBody(RegisterRequest(email = email, password = password))
-            }
-        }
-    }
-
-    suspend fun updateUsername(username: String): Result<User, DataError.Network> {
-        return safeCall {
-            client.post("/users/udpate") {
-                contentType(ContentType.Application.Json)
-                setBody(UpdateProfileRequest(username = username))
             }
         }
     }
