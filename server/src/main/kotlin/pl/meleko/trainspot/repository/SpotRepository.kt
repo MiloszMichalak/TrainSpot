@@ -2,6 +2,7 @@ package pl.meleko.trainspot.repository
 
 import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.inList
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.insert
 import org.jetbrains.exposed.v1.jdbc.selectAll
@@ -129,6 +130,14 @@ object SpotRepository {
                 limit = limit,
                 totalPages = ceil(total.toDouble() / limit.coerceAtLeast(1)).toInt().coerceAtLeast(1)
             )
+        }
+    }
+
+    suspend fun findByIds(ids: List<Uuid>): List<Spot> {
+        return dbTransaction {
+            SpotsTable.selectAll()
+                .where { SpotsTable.id inList ids }
+                .map { row -> row.toSpotDto().toSpotResponse() }
         }
     }
 }

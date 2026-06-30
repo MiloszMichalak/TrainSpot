@@ -5,6 +5,7 @@ import pl.meleko.trainspot.database.SpotsTable
 import pl.meleko.trainspot.model.Spot
 import pl.meleko.trainspot.model.TrainModel
 import pl.meleko.trainspot.network.dto.toScheduleRoute
+import pl.meleko.trainspot.network.dto.toStation
 import pl.meleko.trainspot.repository.PkpRepository
 import pl.meleko.trainspot.repository.TrainModelRepository
 import pl.meleko.trainspot.repository.UsersRepository
@@ -33,13 +34,14 @@ data class SpotDto(
         val user = UsersRepository.findById(this.userId)!!.toUser()
         val trainModel = TrainModelRepository.findById(this.modelId!!)!!.toTrainModel()
         val scheduleRoute = PkpRepository.getTrainRouteById(this.trainRunId!!).toScheduleRoute()
+        val station = PkpRepository.getStationById(this.stationId!!)!!.toStation()
 
         return Spot(
             id = this.id,
             user = user,
             model = trainModel,
-            stationId = this.stationId,
-            trainRunId = scheduleRoute,
+            station = station,
+            trainRun = scheduleRoute,
             imageUrl = this.imageUrl,
             description = this.description.orEmpty(),
             lat = this.lat,

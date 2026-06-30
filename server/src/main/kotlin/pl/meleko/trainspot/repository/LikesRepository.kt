@@ -7,6 +7,8 @@ import org.jetbrains.exposed.v1.jdbc.insert
 import org.jetbrains.exposed.v1.jdbc.select
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import pl.meleko.trainspot.database.LikesTable
+import pl.meleko.trainspot.database.model.LikeDto
+import pl.meleko.trainspot.database.model.toLikeDto
 import pl.meleko.trainspot.util.dbTransaction
 import kotlin.uuid.Uuid
 
@@ -19,11 +21,11 @@ object LikesRepository {
         }
     }
 
-    suspend fun findByUserId(userId: Uuid): List<Uuid> {
+    suspend fun findByUserId(userId: Uuid): List<LikeDto> {
         return dbTransaction {
             LikesTable.selectAll()
                 .where { LikesTable.userId eq userId }
-                .map { it[LikesTable.id].value }
+                .map { it.toLikeDto() }
         }
     }
 
@@ -58,6 +60,14 @@ object LikesRepository {
             LikesTable.selectAll()
                 .where { (LikesTable.userId eq userId) and (LikesTable.spotId eq spotId) }
                 .count() > 0
+        }
+    }
+
+    suspend fun countByUserId(userId: Uuid): Long {
+        return dbTransaction {
+            LikesTable.selectAll()
+                .where { LikesTable.userId eq userId }
+                .count()
         }
     }
 

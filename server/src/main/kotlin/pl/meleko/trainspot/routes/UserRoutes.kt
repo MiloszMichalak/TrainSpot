@@ -22,6 +22,17 @@ import kotlin.uuid.Uuid
 fun Application.installUserRoutes() {
     routing {
         route("/users") {
+            get("/check-username") {
+                val username = call.request.queryParameters["username"]
+                if (username == null) {
+                    call.respond(HttpStatusCode.BadRequest)
+                    return@get
+                }
+
+                UserService.isUsernameAvailable(username)
+                    .mapToResponse()
+            }
+
             authenticate("auth-jwt") {
                 // GET /{id} - Get user by ID (public)
                 get("/{id}") {

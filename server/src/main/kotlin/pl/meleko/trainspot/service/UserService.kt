@@ -17,8 +17,16 @@ object UserService {
     }
 
     suspend fun updateProfile(userIdFromToken: Uuid, request: UpdateProfileRequest, incomingImage: IncomingImage?): NetworkResult<User> {
-        if (incomingImage == null) return NetworkResult.Error(HttpStatusCode.BadRequest)
-        val avatarUrl = ImageStorage.save(incomingImage, "avatars", userIdFromToken)
+        request.username?.let { username ->
+            val existingUser = UsersRepository.findByEmailOrUsername(username = username)
+            if (existingUser != null && existingUser.id != userIdFromToken) {
+                return NetworkResult.Error(HttpStatusCode.Conflict)
+            }
+        }
+
+        val avatarUrl = incomingImage?.let {
+            ImageStorage.save(it, "avatars", userIdFromToken)
+        }
 
         val updated = UsersRepository.update(userIdFromToken, request.email, request.username, avatarUrl, request.bio)
         if (!updated) return NetworkResult.Error(HttpStatusCode.InternalServerError)
@@ -26,6 +34,11 @@ object UserService {
         val user = UsersRepository.findById(userIdFromToken)
             ?: return NetworkResult.Error(HttpStatusCode.NotFound)
         return NetworkResult.Success(user.toUser())
+    }
+
+    suspend fun isUsernameAvailable(username: String): NetworkResult<Boolean> {
+        val user = UsersRepository.findByEmailOrUsername(username = username)
+        return NetworkResult.Success(user == null)
     }
 
     suspend fun deleteProfile(userId: Uuid): NetworkResult<Unit> {

@@ -83,7 +83,8 @@ suspend fun StationStopDto.toStationStop(): StationStop {
         departurePlatform = this.arrivalPlatform ?: this.departurePlatform,
         departureTrack = this.arrivalTrack ?: this.departureTrack,
         departureDay = this.arrivalDay ?: this.departureDay,
-        departureTime = this.arrivalTime ?: this.departureTime,
+        arrivalTime = this.arrivalTime,
+        departureTime = this.departureTime,
         stopTypeId = this.stopTypeId,
         stopTypeName = this.stopTypeName
     )

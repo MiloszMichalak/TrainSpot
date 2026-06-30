@@ -37,18 +37,16 @@ object UsersRepository {
     suspend fun insert(
         email: String,
         passwordHash: String,
-        username: String,
         avatarUrl: String? = null,
         bio: String? = null
     ): Uuid? {
         return dbTransaction {
-            val conflict = findByEmailOrUsername(email, username)
+            val conflict = findByEmailOrUsername(email)
             if (conflict != null) return@dbTransaction null
 
             UsersTable.insert {
                 it[UsersTable.email] = email.lowercase()
                 it[UsersTable.passwordHash] = passwordHash
-                it[UsersTable.username] = username.lowercase()
                 it[UsersTable.avatarUrl] = avatarUrl
                 it[UsersTable.bio] = bio
             }[UsersTable.id].value

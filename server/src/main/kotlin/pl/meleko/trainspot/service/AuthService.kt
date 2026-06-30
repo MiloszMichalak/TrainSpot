@@ -18,7 +18,6 @@ object AuthService {
         val newUserId = UsersRepository.insert(
             email = request.email,
             passwordHash = request.password.hashPassword(),
-            username = request.username
         ) ?: return NetworkResult.Error(HttpStatusCode.Conflict)
 
         val user  = UsersRepository.findById(newUserId)?.toUser()

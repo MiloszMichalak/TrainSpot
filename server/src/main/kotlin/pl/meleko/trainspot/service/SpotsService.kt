@@ -128,7 +128,9 @@ object SpotsService {
              return NetworkResult.Error(HttpStatusCode.BadRequest)
          }
 
-         val likedSpotIds = LikesRepository.findLikedSpotIdsByUserIdPaginated(userId, page * limit, limit)
+         val total = LikesRepository.countByUserId(userId).toInt()
+         val likedSpotIds = LikesRepository.findLikedSpotIdsByUserIdPaginated(userId, page, limit)
+         
          if (likedSpotIds.isEmpty()) {
              return NetworkResult.Success(
                  PaginationResponse(
@@ -141,10 +143,7 @@ object SpotsService {
              )
          }
 
-         val allSpots = SpotRepository.findAll(page, limit).items
-         val likedIds = LikesRepository.findLikedSpotIdsByUserIdPaginated(userId, page, limit)
-         val spots = allSpots.filter { it.id in likedIds }
-         val total = allSpots.count()
+         val spots = SpotRepository.findByIds(likedSpotIds)
 
          return NetworkResult.Success(
              PaginationResponse(
