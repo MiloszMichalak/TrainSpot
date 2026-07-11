@@ -18,8 +18,12 @@ class UserRepositoryImpl(
         return userService.getMyProfile()
     }
 
-    override suspend fun updateProfile(request: UpdateProfileRequest, avatarBytes: ByteArray?): Result<User, DataError.Network> {
-        return userService.updateProfile(request, avatarBytes)
+    override suspend fun updateProfile(request: UpdateProfileRequest): Result<User, DataError.Network> {
+        return userService.updateProfile(request)
+    }
+
+    override suspend fun updateAvatar(avatarBytes: ByteArray?): Result<User, DataError.Network> {
+        return userService.updateAvatar(avatarBytes)
     }
 
     override suspend fun deleteProfile(): Result<Unit, DataError.Network> {

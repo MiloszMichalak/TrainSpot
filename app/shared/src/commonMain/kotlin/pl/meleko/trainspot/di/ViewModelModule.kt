@@ -1,5 +1,6 @@
 package pl.meleko.trainspot.di
 
+import org.koin.core.module.dsl.viewModel
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
 import pl.meleko.trainspot.presentation.MainViewModel
@@ -15,5 +16,8 @@ val viewModelModule = module {
     viewModelOf(::RegisterViewModel)
     viewModelOf(::FeedViewModel)
     viewModelOf(::UsernameViewModel)
-    viewModelOf(::AddSpotViewModel)
+
+    viewModel {
+        AddSpotViewModel(null, get(), get(), get())
+    }
 }

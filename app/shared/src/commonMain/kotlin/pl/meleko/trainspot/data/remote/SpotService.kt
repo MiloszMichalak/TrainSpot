@@ -4,16 +4,15 @@ import io.ktor.client.HttpClient
 import io.ktor.client.request.delete
 import io.ktor.client.request.forms.MultiPartFormDataContent
 import io.ktor.client.request.forms.formData
-import io.ktor.client.request.forms.submitFormWithBinaryData
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
+import io.ktor.client.request.post
 import io.ktor.client.request.put
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.Headers
 import io.ktor.http.HttpHeaders
-import io.ktor.http.append
-import kotlinx.serialization.json.Json
+import io.ktor.http.contentType
 import pl.meleko.trainspot.core.DataError
 import pl.meleko.trainspot.core.Result
 import pl.meleko.trainspot.model.Spot
@@ -36,37 +35,33 @@ class SpotService(private val client: HttpClient) {
         }
     }
 
-    suspend fun createSpot(request: SpotRequest, image: ByteArray): Result<Spot, DataError.Network> {
+    suspend fun createSpot(request: SpotRequest): Result<Spot, DataError.Network> {
         return safeCall {
-            client.submitFormWithBinaryData(
-                url = "/spot",
-                formData = formData {
-                    append("request", Json.encodeToString(request), Headers.build {
-                        append(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                    })
-                    append("image", image, Headers.build {
-                        append(HttpHeaders.ContentDisposition, "filename=\"spot.jpg\"")
-                        append(HttpHeaders.ContentType, "image/jpeg")
-                    })
-                }
-            )
+            client.post("/spot") {
+                contentType(ContentType.Application.Json)
+                setBody(request)
+            }
         }
     }
 
-    suspend fun updateSpot(id: String, request: SpotRequest, image: ByteArray?): Result<Spot, DataError.Network> {
+    suspend fun updateSpot(id: String, request: SpotRequest): Result<Spot, DataError.Network> {
+        return safeCall {
+            client.put("/spot/$id") {
+                contentType(ContentType.Application.Json)
+                setBody(request)
+            }
+        }
+    }
+
+    suspend fun updateSpotImage(id: String, image: ByteArray): Result<Spot, DataError.Network> {
         return safeCall {
             client.put("/spot/$id") {
                 setBody(MultiPartFormDataContent(
                     formData {
-                        append("request", Json.encodeToString(request), Headers.build {
-                            append(HttpHeaders.ContentType, ContentType.Application.Json)
+                        append("image", image, Headers.build {
+                            append(HttpHeaders.ContentDisposition, "filename=\"spot.jpg\"")
+                            append(HttpHeaders.ContentType, "image/jpeg")
                         })
-                        if (image != null) {
-                            append("image", image, Headers.build {
-                                append(HttpHeaders.ContentDisposition, "filename=\"spot.jpg\"")
-                                append(HttpHeaders.ContentType, "image/jpeg")
-                            })
-                        }
                     }
                 ))
             }

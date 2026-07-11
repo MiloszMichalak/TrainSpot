@@ -1,8 +1,14 @@
 package pl.meleko.trainspot.presentation.navigation
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
@@ -12,6 +18,7 @@ import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 import kotlinx.serialization.modules.subclass
 import org.koin.compose.viewmodel.koinViewModel
+import pl.meleko.trainspot.presentation.AuthState
 import pl.meleko.trainspot.presentation.MainViewModel
 
 private val navigationConfig = SavedStateConfiguration {
@@ -27,8 +34,21 @@ private val navigationConfig = SavedStateConfiguration {
 fun RootNavigation(
     modifier: Modifier
 ) {
-    val backStack = rememberNavBackStack(navigationConfig, Screen.Auth)
     val mainViewModel = koinViewModel<MainViewModel>()
+    val authState by mainViewModel.authState.collectAsStateWithLifecycle()
+
+    if (authState == AuthState.Loading) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator()
+        }
+        return
+    }
+
+    val startDestination = if (authState == AuthState.Authenticated) Screen.Home else Screen.Auth
+    val backStack = rememberNavBackStack(navigationConfig, startDestination)
 
     Column(modifier) {
         NavDisplay(
@@ -38,11 +58,10 @@ fun RootNavigation(
             popTransitionSpec = NavTransitions.slideBackward(),
             predictivePopTransitionSpec = NavTransitions.slideBackwardPredictive(),
             entryProvider = entryProvider {
-                entry<Screen.Auth>{
+                entry<Screen.Auth> {
                     AuthNavigation(
                         onAuthSuccess = {
-                            mainViewModel.syncAfterLogin()
-                            backStack.clear()
+                            backStack.removeLastOrNull()
                             backStack.add(Screen.Home)
                         }
                     )

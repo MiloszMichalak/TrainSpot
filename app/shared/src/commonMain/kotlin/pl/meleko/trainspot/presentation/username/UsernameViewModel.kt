@@ -56,7 +56,7 @@ class UsernameViewModel(
 
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
-            userRepository.updateProfile(UpdateProfileRequest(username = username), null)
+            userRepository.updateProfile(UpdateProfileRequest(username = username))
                 .onSuccess {
                     _events.send(UsernameEvent.Success)
                 }
@@ -71,7 +71,7 @@ class UsernameViewModel(
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
             val randomUsername = "User${Random.nextInt(1000, 9999)}"
-            userRepository.updateProfile(UpdateProfileRequest(username = randomUsername), null)
+            userRepository.updateProfile(UpdateProfileRequest(username = randomUsername))
                 .onSuccess {
                     _events.send(UsernameEvent.Success)
                 }

@@ -11,7 +11,7 @@ import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.Headers
 import io.ktor.http.HttpHeaders
-import kotlinx.serialization.json.Json
+import io.ktor.http.contentType
 import pl.meleko.trainspot.core.DataError
 import pl.meleko.trainspot.core.Result
 import pl.meleko.trainspot.model.User
@@ -30,14 +30,20 @@ class UserService(private val client: HttpClient) {
         }
     }
 
-    suspend fun updateProfile(request: UpdateProfileRequest, avatarBytes: ByteArray?): Result<User, DataError.Network> {
+    suspend fun updateProfile(request: UpdateProfileRequest): Result<User, DataError.Network> {
+        return safeCall {
+            client.put("/users/me") {
+                contentType(ContentType.Application.Json)
+                setBody(request)
+            }
+        }
+    }
+
+    suspend fun updateAvatar(avatarBytes: ByteArray?): Result<User, DataError.Network> {
         return safeCall {
             client.put("/users/me") {
                 setBody(MultiPartFormDataContent(
                     formData {
-                        append("request", Json.encodeToString(request), Headers.build {
-                            append(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                        })
                         if (avatarBytes != null) {
                             append("image", avatarBytes, Headers.build {
                                 append(HttpHeaders.ContentDisposition, "filename=\"avatar.jpg\"")

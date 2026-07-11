@@ -85,8 +85,7 @@ class AddSpotViewModel(
                 _state.update {
                     it.copy(
                         selectedTrainSuggestion = action.train,
-                        trainNumber = action.train.number,
-                        rollingStockModel = action.train.model
+                        trainNumber = action.train.number
                     )
                 }
             }
@@ -134,9 +133,9 @@ class AddSpotViewModel(
                             trainSuggestions = routes.map { route ->
                                 TrainSuggestion(
                                     number = route.nationalNumber ?: route.trainOrderId.toString(),
-                                    model = route.commercialCategorySymbol,
-                                    time = route.stations.find { s -> s.stationId.id == stationId }?.departureTime ?: "",
-                                    destination = route.stations.lastOrNull()?.stationId?.name ?: "",
+                                    category = route.commercialCategorySymbol,
+                                    time = route.departureTime ?: route.arrivalTime ?: "",
+                                    stationName = route.destStation?.name ?: route.originStation?.name ?: "",
                                     carrierCode = route.carrierCode
                                 )
                             }
@@ -165,9 +164,15 @@ class AddSpotViewModel(
                 lon = null
             )
 
-            spotRepository.createSpot(request, imageBytes)
-                .onSuccess {
-                    _events.send(AddSpotEvent.SpotPublished)
+            spotRepository.createSpot(request)
+                .onSuccess { spot ->
+                    spotRepository.updateSpotImage(spot.id.toString(), imageBytes)
+                        .onSuccess {
+                            _events.send(AddSpotEvent.SpotPublished)
+                        }
+                        .onFailure { error ->
+                            _events.send(AddSpotEvent.Error(error.toUiText()))
+                        }
                 }
                 .onFailure { error ->
                     _events.send(AddSpotEvent.Error(error.toUiText()))
@@ -196,9 +201,20 @@ class AddSpotViewModel(
                 lon = null
             )
 
-            spotRepository.updateSpot(id, request, state.value.selectedImageBytes)
+            spotRepository.updateSpot(id, request)
                 .onSuccess {
-                    _events.send(AddSpotEvent.SpotPublished)
+                    val imageBytes = state.value.selectedImageBytes
+                    if (imageBytes != null) {
+                        spotRepository.updateSpotImage(id, imageBytes)
+                            .onSuccess {
+                                _events.send(AddSpotEvent.SpotPublished)
+                            }
+                            .onFailure { error ->
+                                _events.send(AddSpotEvent.Error(error.toUiText()))
+                            }
+                    } else {
+                        _events.send(AddSpotEvent.SpotPublished)
+                    }
                 }
                 .onFailure { error ->
                     _events.send(AddSpotEvent.Error(error.toUiText()))

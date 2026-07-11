@@ -10,7 +10,7 @@ import pl.meleko.trainspot.core.Result
 
 suspend inline fun <reified T> safeCall(
     execute: () -> HttpResponse
-): pl.meleko.trainspot.core.Result<T, DataError.Network> {
+): Result<T, DataError.Network> {
     val response = try {
         execute()
     } catch (_: UnresolvedAddressException) {

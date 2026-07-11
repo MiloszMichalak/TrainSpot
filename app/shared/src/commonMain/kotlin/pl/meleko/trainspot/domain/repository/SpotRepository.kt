@@ -9,8 +9,9 @@ import pl.meleko.trainspot.response.PaginationResponse
 interface SpotRepository {
     suspend fun getSpots(page: Int, limit: Int): Result<PaginationResponse<Spot>, DataError.Network>
     suspend fun getSpot(id: String): Result<Spot, DataError.Network>
-    suspend fun createSpot(request: SpotRequest, image: ByteArray): Result<Spot, DataError.Network>
-    suspend fun updateSpot(id: String, request: SpotRequest, image: ByteArray?): Result<Spot, DataError.Network>
+    suspend fun createSpot(request: SpotRequest): Result<Spot, DataError.Network>
+    suspend fun updateSpot(id: String, request: SpotRequest): Result<Spot, DataError.Network>
+    suspend fun updateSpotImage(id: String, image: ByteArray): Result<Spot, DataError.Network>
     suspend fun deleteSpot(id: String): Result<Unit, DataError.Network>
     suspend fun getUserSpots(userId: String, page: Int, limit: Int): Result<PaginationResponse<Spot>, DataError.Network>
     suspend fun getMySpots(page: Int, limit: Int): Result<PaginationResponse<Spot>, DataError.Network>
