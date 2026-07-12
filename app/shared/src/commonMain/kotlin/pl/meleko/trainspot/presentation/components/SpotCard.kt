@@ -82,9 +82,9 @@ fun SpotCard(
                         )
                     )
                 }
-                
+
                 Spacer(modifier = Modifier.width(10.dp))
-                
+
                 Column {
                     Text(
                         text = spot.user.username.orEmpty(),
@@ -104,9 +104,9 @@ fun SpotCard(
                         )
                     )
                 }
-                
+
                 Spacer(modifier = Modifier.weight(1f))
-                
+
                 Icon(
                     imageVector = Icons.Default.MoreVert,
                     contentDescription = null,
@@ -172,7 +172,7 @@ fun SpotCard(
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = spot.trainRun.stations.firstOrNull()?.stationId?.name ?: "Unknown",
+                        text = spot.trainRun.originStation?.name.orEmpty(),
                         style = TextStyle(
                             fontFamily = FontFamily.Monospace,
                             fontSize = 11.sp,
@@ -189,7 +189,7 @@ fun SpotCard(
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = spot.trainRun.stations.lastOrNull()?.stationId?.name ?: "Unknown",
+                        text = spot.trainRun.destStation?.name.orEmpty(),
                         style = TextStyle(
                             fontFamily = FontFamily.Monospace,
                             fontSize = 11.sp,
@@ -225,9 +225,9 @@ fun SpotCard(
                         )
                     )
                 }
-                
+
                 Spacer(modifier = Modifier.width(16.dp))
-                
+
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -247,9 +247,9 @@ fun SpotCard(
                         )
                     )
                 }
-                
+
                 Spacer(modifier = Modifier.weight(1f))
-                
+
                 Text(
                     text = "14:32", // TODO: Format time
                     style = TextStyle(

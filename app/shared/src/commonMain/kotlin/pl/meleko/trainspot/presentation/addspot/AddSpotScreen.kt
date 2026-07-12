@@ -412,7 +412,7 @@ fun TrainChip(
             )
         )
         Text(
-            text = suggestion.category,
+            text = "${suggestion.carrierCode} ${suggestion.trainName}",
             style = TextStyle(
                 fontFamily = FontFamily.SansSerif,
                 fontSize = 11.sp,
@@ -428,7 +428,7 @@ fun TrainChip(
                 fontSize = 10.sp,
                 color = Color(0xFF5C5A56)
             ),
-            maxLines = 1
+            maxLines = 2
         )
     }
 }

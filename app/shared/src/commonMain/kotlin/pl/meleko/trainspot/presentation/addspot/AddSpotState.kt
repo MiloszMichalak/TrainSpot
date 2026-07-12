@@ -25,5 +25,6 @@ data class TrainSuggestion(
     val category: String,
     val time: String,
     val stationName: String,
-    val carrierCode: String
+    val carrierCode: String,
+    val trainName: String
 )
