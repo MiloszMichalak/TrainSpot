@@ -20,8 +20,8 @@ fun Instant?.toDateString(): String {
     return this?.toLocalDateTime(TimeZone.of("Europe/Warsaw")).toString()
 }
 
-fun String?.toLocalTime(): LocalTime {
-    if (this == null) return LocalTime(0, 0)
+fun String?.toLocalTime(): LocalTime? {
+    if (this.isNullOrBlank()) return null
 
     return LocalTime.parse(this)
 }

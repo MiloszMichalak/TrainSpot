@@ -8,7 +8,7 @@ import kotlin.uuid.Uuid
 data class User(
     val id: Uuid,
     val email: String,
-    val username: String,
+    val username: String?,
     val avatarUrl: String?,
     val bio: String?,
     val createdAt: Instant

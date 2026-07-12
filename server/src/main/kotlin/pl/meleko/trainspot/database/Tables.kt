@@ -55,9 +55,9 @@ object TrainModelsTable : UuidTable("train_models") {
 
 object SpotsTable : UuidTable("spots") {
     val userId = uuid("user_id").references(UsersTable.id, onDelete = ReferenceOption.CASCADE)
-    val modelId = uuid("model_id").references(TrainModelsTable.id, onDelete = ReferenceOption.SET_NULL).nullable()
+    val modelId = uuid("model_id").references(TrainModelsTable.id, onDelete = ReferenceOption.SET_NULL)
     val stationId = integer("station_id").references(StationsTable.id, onDelete = ReferenceOption.SET_NULL).nullable()
-    val trainRunId = integer("train_run_id").nullable()
+    val trainRunId = integer("train_run_id")
     val imageUrl = varchar("image_url", 255)
     val description = text("description").nullable()
     val lat = double("lat").nullable()

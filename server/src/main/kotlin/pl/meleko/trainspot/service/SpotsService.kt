@@ -1,6 +1,7 @@
 package pl.meleko.trainspot.service
 
 import io.ktor.http.HttpStatusCode
+import pl.meleko.trainspot.database.model.toSpotResponse
 import pl.meleko.trainspot.model.Spot
 import pl.meleko.trainspot.repository.LikesRepository
 import pl.meleko.trainspot.repository.SpotRepository
@@ -73,7 +74,7 @@ object SpotsService {
         val existingSpot = SpotRepository.findById(id)
             ?: return NetworkResult.Error(HttpStatusCode.NotFound)
 
-        if (existingSpot.userId != userId) {
+        if (existingSpot.user != userId) {
             return NetworkResult.Error(HttpStatusCode.Forbidden)
         }
 
@@ -111,7 +112,7 @@ object SpotsService {
         val existingSpot = SpotRepository.findById(id)
             ?: return NetworkResult.Error(HttpStatusCode.NotFound)
 
-        if (existingSpot.userId != userId) {
+        if (existingSpot.user != userId) {
             return NetworkResult.Error(HttpStatusCode.Forbidden)
         }
 

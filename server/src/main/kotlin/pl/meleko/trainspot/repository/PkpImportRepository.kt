@@ -1,5 +1,6 @@
 package pl.meleko.trainspot.repository
 
+import kotlinx.datetime.toKotlinLocalDate
 import org.jetbrains.exposed.v1.datetime.CurrentTimestamp
 import org.jetbrains.exposed.v1.jdbc.deleteAll
 import org.jetbrains.exposed.v1.jdbc.insert
@@ -10,13 +11,14 @@ import pl.meleko.trainspot.database.StationsTable
 import pl.meleko.trainspot.database.TrainStopsTable
 import pl.meleko.trainspot.network.dto.CarrierDto
 import pl.meleko.trainspot.network.dto.CommercialCategoryDto
-import pl.meleko.trainspot.network.dto.ScheduleRouteDto
+import pl.meleko.trainspot.network.dto.ScheduleRouteStopsDto
 import pl.meleko.trainspot.network.dto.StationDto
 import pl.meleko.trainspot.network.dto.StationStopDto
 import pl.meleko.trainspot.util.dbTransaction
 import pl.meleko.trainspot.util.toInstant
 import pl.meleko.trainspot.util.toLocalDate
 import pl.meleko.trainspot.util.toLocalTime
+import java.time.LocalDate
 
 object PkpImportRepository {
     suspend fun importStations(stations: List<StationDto>) {
@@ -56,7 +58,8 @@ object PkpImportRepository {
         }
     }
 
-    suspend fun importSchedule(trainRun: ScheduleRouteDto) {
+    suspend fun importSchedule(trainRun: ScheduleRouteStopsDto) {
+        val sortedStops = trainRun.stations.sortedBy { it.orderNumber }
         dbTransaction {
             ScheduleTable.insert {
                 it[scheduleId] = trainRun.scheduleId
@@ -65,11 +68,11 @@ object PkpImportRepository {
                 it[carrierCode] = trainRun.carrierCode
                 it[trainNumber] = trainRun.nationalNumber
                 it[catSymbol] = trainRun.commercialCategorySymbol
-                it[operatingDate] = trainRun.operatingDates.first().toLocalDate()
+                it[operatingDate] = trainRun.operatingDates.firstOrNull()?.toLocalDate() ?: LocalDate.now().toKotlinLocalDate()
                 it[internationalArrivalNumber] = trainRun.internationalArrivalNumber
                 it[internationalDepartureNumber] = trainRun.internationalDepartureNumber
-                it[originStationId] = trainRun.stations.first().stationId
-                it[destStationId] = trainRun.stations.last().stationId
+                it[originStationId] = sortedStops.firstOrNull()?.stationId
+                it[destStationId] = sortedStops.lastOrNull()?.stationId
             }
         }
     }
