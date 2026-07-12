@@ -147,15 +147,6 @@ fun AddSpotScreen(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
-                                    text = "#${station.id}",
-                                    style = TextStyle(
-                                        fontFamily = FontFamily.Monospace,
-                                        fontSize = 10.sp,
-                                        color = Color(0xFF5C5A56)
-                                    ),
-                                    modifier = Modifier.width(50.dp)
-                                )
-                                Text(
                                     text = station.name,
                                     style = TextStyle(
                                         fontFamily = FontFamily.SansSerif,
@@ -348,7 +339,7 @@ fun PhotoZone(
 }
 
 @Composable
-fun TrainSuggestionsSection(
+private fun TrainSuggestionsSection(
     suggestions: List<TrainSuggestion>,
     selectedSuggestion: TrainSuggestion?,
     onSuggestionClick: (TrainSuggestion) -> Unit
@@ -421,7 +412,7 @@ fun TrainChip(
             )
         )
         Text(
-            text = suggestion.model,
+            text = suggestion.category,
             style = TextStyle(
                 fontFamily = FontFamily.SansSerif,
                 fontSize = 11.sp,
@@ -431,7 +422,7 @@ fun TrainChip(
             )
         )
         Text(
-            text = "${suggestion.time} → ${suggestion.destination}",
+            text = "${suggestion.time} → ${suggestion.stationName}",
             style = TextStyle(
                 fontFamily = FontFamily.Monospace,
                 fontSize = 10.sp,

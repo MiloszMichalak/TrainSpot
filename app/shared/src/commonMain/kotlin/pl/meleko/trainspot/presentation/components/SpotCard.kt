@@ -22,6 +22,7 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -49,19 +50,17 @@ fun SpotCard(
             .fillMaxWidth()
             .padding(bottom = 2.dp),
         colors = CardDefaults.cardColors(
-            containerColor = ColorBgCard
+            containerColor = MaterialTheme.colorScheme.surfaceContainer
         ),
         shape = RoundedCornerShape(0.dp)
     ) {
         Column {
-            // Header
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp, 12.dp, 16.dp, 10.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Avatar approximation
                 Box(
                     modifier = Modifier
                         .size(34.dp)
@@ -74,12 +73,12 @@ fun SpotCard(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = spot.user.username.take(1).uppercase(),
+                        text = spot.user.username?.take(1)?.uppercase().orEmpty(),
                         style = TextStyle(
                             fontFamily = FontFamily.Monospace,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
-                            color = ColorAccent
+                            color = MaterialTheme.colorScheme.primary
                         )
                     )
                 }
@@ -88,12 +87,12 @@ fun SpotCard(
                 
                 Column {
                     Text(
-                        text = spot.user.username,
+                        text = spot.user.username.orEmpty(),
                         style = TextStyle(
                             fontFamily = FontFamily.SansSerif,
                             fontSize = 14.sp,
                             fontWeight = FontWeight.SemiBold,
-                            color = ColorText1
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                     )
                     Text(
@@ -101,7 +100,7 @@ fun SpotCard(
                         style = TextStyle(
                             fontFamily = FontFamily.Monospace,
                             fontSize = 10.sp,
-                            color = ColorText3
+                            color = MaterialTheme.colorScheme.outline
                         )
                     )
                 }
@@ -111,11 +110,10 @@ fun SpotCard(
                 Icon(
                     imageVector = Icons.Default.MoreVert,
                     contentDescription = null,
-                    tint = ColorText3
+                    tint = MaterialTheme.colorScheme.outline
                 )
             }
-            
-            // Image
+
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -127,14 +125,13 @@ fun SpotCard(
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop
                 )
-                
-                // Train Badge
+
                 Column(
                     modifier = Modifier
                         .align(Alignment.BottomStart)
                         .padding(12.dp)
                         .clip(RoundedCornerShape(8.dp))
-                        .background(ColorBg.copy(alpha = 0.85f))
+                        .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.85f))
                         .padding(horizontal = 10.dp, vertical = 6.dp)
                 ) {
                     Text(
@@ -143,7 +140,7 @@ fun SpotCard(
                             fontFamily = FontFamily.Monospace,
                             fontSize = 16.sp,
                             fontWeight = FontWeight.SemiBold,
-                            color = ColorAccent
+                            color = MaterialTheme.colorScheme.primary
                         )
                     )
                     Text(
@@ -152,14 +149,13 @@ fun SpotCard(
                             fontFamily = FontFamily.SansSerif,
                             fontSize = 11.sp,
                             fontWeight = FontWeight.SemiBold,
-                            color = ColorText2,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             letterSpacing = 0.5.sp
                         )
                     )
                 }
             }
-            
-            // Info
+
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -172,7 +168,7 @@ fun SpotCard(
                         modifier = Modifier
                             .size(5.dp)
                             .clip(CircleShape)
-                            .background(ColorAccent)
+                            .background(MaterialTheme.colorScheme.primary)
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
@@ -180,14 +176,14 @@ fun SpotCard(
                         style = TextStyle(
                             fontFamily = FontFamily.Monospace,
                             fontSize = 11.sp,
-                            color = ColorText2
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
                         text = "→",
                         style = TextStyle(
-                            color = ColorText3,
+                            color = MaterialTheme.colorScheme.outline,
                             fontSize = 11.sp
                         )
                     )
@@ -197,13 +193,12 @@ fun SpotCard(
                         style = TextStyle(
                             fontFamily = FontFamily.Monospace,
                             fontSize = 11.sp,
-                            color = ColorText2
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     )
                 }
             }
-            
-            // Actions
+
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -218,7 +213,7 @@ fun SpotCard(
                         imageVector = if (spot.isLiked) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                         contentDescription = null,
                         modifier = Modifier.size(18.dp),
-                        tint = if (spot.isLiked) ColorAccent else ColorText2
+                        tint = if (spot.isLiked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(modifier = Modifier.width(5.dp))
                     Text(
@@ -226,7 +221,7 @@ fun SpotCard(
                         style = TextStyle(
                             fontFamily = FontFamily.Monospace,
                             fontSize = 11.sp,
-                            color = if (spot.isLiked) ColorAccent else ColorText2
+                            color = if (spot.isLiked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     )
                 }
@@ -240,7 +235,7 @@ fun SpotCard(
                         imageVector = Icons.Default.ChatBubbleOutline,
                         contentDescription = null,
                         modifier = Modifier.size(18.dp),
-                        tint = ColorText2
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(modifier = Modifier.width(5.dp))
                     Text(
@@ -248,7 +243,7 @@ fun SpotCard(
                         style = TextStyle(
                             fontFamily = FontFamily.Monospace,
                             fontSize = 11.sp,
-                            color = ColorText2
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     )
                 }
@@ -260,18 +255,10 @@ fun SpotCard(
                     style = TextStyle(
                         fontFamily = FontFamily.Monospace,
                         fontSize = 10.sp,
-                        color = ColorText3
+                        color = MaterialTheme.colorScheme.outline
                     )
                 )
             }
         }
     }
 }
-
-// Re-using tokens from railspotter-ui.html
-private val ColorBgCard = Color(0xFF141618)
-private val ColorAccent = Color(0xFFE8C547)
-private val ColorText1 = Color(0xFFF0EDE8)
-private val ColorText2 = Color(0xFF9A9690)
-private val ColorText3 = Color(0xFF5C5A56)
-private val ColorBg = Color(0xFF0D0E0F)
