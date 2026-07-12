@@ -1,12 +1,13 @@
 package pl.meleko.trainspot.routes
 
-import io.ktor.server.application.Application
 import io.ktor.server.auth.authenticate
 import io.ktor.server.request.receive
+import io.ktor.server.routing.Routing
+import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
-import io.ktor.server.routing.routing
 import pl.meleko.trainspot.requests.LoginRequest
+import pl.meleko.trainspot.requests.RefreshTokenRequest
 import pl.meleko.trainspot.requests.RegisterRequest
 import pl.meleko.trainspot.service.AuthService
 import pl.meleko.trainspot.util.jwtSessionId
@@ -15,47 +16,50 @@ import pl.meleko.trainspot.util.mapToResponse
 import kotlin.uuid.ExperimentalUuidApi
 
 @OptIn(ExperimentalUuidApi::class)
-fun Application.installAuthRoutes() {
-    routing {
-        route("/auth"){
-            post("/register") {
-                val request = call.receive<RegisterRequest>()
+fun Routing.installAuthRoutes() {
+    route("/auth"){
+        post("/register") {
+            val request = call.receive<RegisterRequest>()
 
-                AuthService.register(request)
+            AuthService.register(request)
+                .mapToResponse()
+        }
+
+        post("/login") {
+            val request = call.receive<LoginRequest>()
+
+            AuthService.login(request)
+                .mapToResponse()
+        }
+
+        post("/refresh") {
+            val request = call.receive<RefreshTokenRequest>()
+
+            AuthService.refresh(request.refreshToken)
+                .mapToResponse()
+        }
+
+        authenticate("auth-jwt") {
+            post("/logout") {
+                val sessionId = call.jwtSessionId()
+
+                AuthService.logout(sessionId)
                     .mapToResponse()
             }
 
-            post("/login") {
-                val request = call.receive<LoginRequest>()
+            // POST /logout-all
+            post("/logout-all") {
+                val userId = call.jwtUserId()
 
-                AuthService.login(request)
+                AuthService.logoutAll(userId)
                     .mapToResponse()
             }
 
-            authenticate("auth-jwt") {
-                post("/logout") {
-                    val sessionId = call.jwtSessionId()
+            get("/check-session") {
+                val userId = call.jwtUserId()
 
-                    AuthService.logout(sessionId)
-                        .mapToResponse()
-                }
-
-                // POST /logout-all
-                post("/logout-all") {
-                    val userId = call.jwtUserId()
-
-                    AuthService.logoutAll(userId)
-                        .mapToResponse()
-                }
-
-                // POST /refresh
-                post("/refresh") {
-                    val userId = call.jwtUserId()
-                    val sessionId = call.jwtSessionId()
-
-                    AuthService.refreshToken(userId, sessionId)
-                        .mapToResponse()
-                }
+                AuthService.checkSession(userId)
+                    .mapToResponse()
             }
         }
     }

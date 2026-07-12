@@ -25,8 +25,9 @@ object AuthService {
 
         val sessionId = SessionsRepository.create(newUserId)
         val token = JwtUtil.createToken(newUserId, sessionId)
+        val refreshToken = JwtUtil.createRefreshToken(newUserId, sessionId)
 
-        return NetworkResult.Success(AuthResponse(token = token, user = user))
+        return NetworkResult.Success(AuthResponse(token = token, refreshToken = refreshToken, user = user))
     }
 
     suspend fun login(request: LoginRequest): NetworkResult<AuthResponse> {
@@ -39,8 +40,9 @@ object AuthService {
 
         val sessionId = SessionsRepository.create(user.id)
         val token = JwtUtil.createToken(user.id, sessionId)
+        val refreshToken = JwtUtil.createRefreshToken(user.id, sessionId)
 
-        return NetworkResult.Success(AuthResponse(token = token, user = user.toUser()))
+        return NetworkResult.Success(AuthResponse(token = token, refreshToken = refreshToken, user = user.toUser()))
     }
 
     suspend fun logout(sessionId: Uuid): NetworkResult<Unit> {
@@ -55,8 +57,26 @@ object AuthService {
         return NetworkResult.Success(Unit)
     }
 
-    fun refreshToken(userId: Uuid, sessionId: Uuid): NetworkResult<String> {
+    suspend fun checkSession(userId: Uuid): NetworkResult<AuthResponse> {
+        val user = UsersRepository.findById(userId)?.toUser()
+            ?: return NetworkResult.Error(HttpStatusCode.NotFound)
+
+        return NetworkResult.Success(AuthResponse(token = "", refreshToken = "", user = user))
+    }
+
+    suspend fun refresh(refreshToken: String): NetworkResult<AuthResponse> {
+        val principal = JwtUtil.verifyToken(refreshToken) ?: return NetworkResult.Error(HttpStatusCode.Unauthorized)
+        val isRefresh = principal.payload.getClaim("refresh").asBoolean() ?: false
+        if (!isRefresh) return NetworkResult.Error(HttpStatusCode.Unauthorized)
+
+        val userId = Uuid.parse(principal.payload.getClaim("userId").asString())
+        val sessionId = Uuid.parse(principal.payload.getClaim("sessionId").asString())
+
+        val user = UsersRepository.findById(userId)?.toUser() ?: return NetworkResult.Error(HttpStatusCode.NotFound)
+
         val newToken = JwtUtil.createToken(userId, sessionId)
-        return NetworkResult.Success(newToken)
+        val newRefreshToken = JwtUtil.createRefreshToken(userId, sessionId)
+
+        return NetworkResult.Success(AuthResponse(token = newToken, refreshToken = newRefreshToken, user = user))
     }
 }

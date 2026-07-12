@@ -9,7 +9,7 @@ import kotlin.uuid.Uuid
 data class UserDto(
     val id: Uuid,
     val email: String,
-    val username: String,
+    val username: String?,
     val avatarUrl: String?,
     val passwordHash: String,
     val bio: String?,
@@ -29,8 +29,8 @@ fun ResultRow.toUserDto() = UserDto(
     id = this[UsersTable.id].value,
     email = this[UsersTable.email],
     username  = this[UsersTable.username],
-    bio = this[UsersTable.bio].orEmpty(),
-    avatarUrl = this[UsersTable.avatarUrl].orEmpty(),
+    bio = this[UsersTable.bio],
+    avatarUrl = this[UsersTable.avatarUrl],
     passwordHash = this[UsersTable.passwordHash],
     createdAt = this[UsersTable.createdAt]
 )
