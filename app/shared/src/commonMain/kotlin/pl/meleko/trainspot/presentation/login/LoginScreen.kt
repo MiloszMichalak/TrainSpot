@@ -25,7 +25,6 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -37,6 +36,7 @@ import pl.meleko.trainspot.presentation.components.PrimaryButton
 import pl.meleko.trainspot.presentation.components.RailFooter
 import pl.meleko.trainspot.presentation.components.RailTextField
 import pl.meleko.trainspot.presentation.util.ObserveAsEvents
+import pl.meleko.trainspot.presentation.util.SnackbarController
 import trainspot.app.shared.generated.resources.Res
 import trainspot.app.shared.generated.resources.create_account
 import trainspot.app.shared.generated.resources.email
@@ -62,7 +62,7 @@ fun LoginRoot(
     ObserveAsEvents(viewModel.events) { event ->
         when(event) {
             LoginEvent.LoginSuccess -> onLoginSuccess()
-            is LoginEvent.Error -> { /* Show Snackbar or toast */ }
+            is LoginEvent.Error -> SnackbarController.onEvent(event.error.asText())
         }
     }
 
@@ -170,7 +170,7 @@ fun LoginScreen(
                 text = stringResource(Res.string.footer_text),
                 actionText = stringResource(Res.string.terms_of_service),
                 onActionClick = { /* Handle terms */ },
-                version = "RAILSPOTTER v1.0"
+                version = "TrainSpot v1.0"
             )
 
             Spacer(modifier = Modifier.height(32.dp))
@@ -199,17 +199,5 @@ fun LoginTitle() {
             lineHeight = 36.sp,
             letterSpacing = (-0.5).sp
         )
-    )
-}
-
-@Composable
-@Preview
-fun LoginScreenPreview() {
-    LoginScreen(
-        state = LoginState(
-            email = "michal@trainspot.pl",
-            password = "password123"
-        ),
-        onAction = {}
     )
 }

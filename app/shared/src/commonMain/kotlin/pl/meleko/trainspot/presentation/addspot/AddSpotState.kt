@@ -22,8 +22,9 @@ data class AddSpotState(
 
 data class TrainSuggestion(
     val number: String,
-    val model: String,
+    val category: String,
     val time: String,
-    val destination: String,
-    val carrierCode: String
+    val stationName: String,
+    val carrierCode: String,
+    val trainName: String
 )

@@ -131,12 +131,14 @@ class AddSpotViewModel(
                     _state.update {
                         it.copy(
                             trainSuggestions = routes.map { route ->
+                                println(route)
                                 TrainSuggestion(
                                     number = route.nationalNumber ?: route.trainOrderId.toString(),
                                     category = route.commercialCategorySymbol,
                                     time = route.departureTime ?: route.arrivalTime ?: "",
                                     stationName = route.destStation?.name ?: route.originStation?.name ?: "",
-                                    carrierCode = route.carrierCode
+                                    carrierCode = route.carrierCode,
+                                    trainName = route.name.orEmpty()
                                 )
                             }
                         )
