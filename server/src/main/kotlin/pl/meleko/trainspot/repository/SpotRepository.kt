@@ -1,5 +1,6 @@
 package pl.meleko.trainspot.repository
 
+import org.jetbrains.exposed.v1.core.JoinType
 import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.inList
@@ -7,9 +8,15 @@ import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.insert
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.update
+import pl.meleko.trainspot.database.DbAliases
+import pl.meleko.trainspot.database.ScheduleTable
 import pl.meleko.trainspot.database.SpotsTable
+import pl.meleko.trainspot.database.StationsTable
+import pl.meleko.trainspot.database.TrainModelsTable
+import pl.meleko.trainspot.database.UsersTable
 import pl.meleko.trainspot.database.model.SpotDto
 import pl.meleko.trainspot.database.model.toSpotDto
+import pl.meleko.trainspot.database.model.toSpotResponse
 import pl.meleko.trainspot.model.Spot
 import pl.meleko.trainspot.requests.SpotRequest
 import pl.meleko.trainspot.response.PaginationResponse
@@ -18,9 +25,18 @@ import kotlin.math.ceil
 import kotlin.uuid.Uuid
 
 object SpotRepository {
+    private fun spotWithJoins() = SpotsTable
+        .join(UsersTable, JoinType.INNER, SpotsTable.userId, UsersTable.id)
+        .join(TrainModelsTable, JoinType.INNER, SpotsTable.modelId, TrainModelsTable.id)
+        .join(ScheduleTable, JoinType.INNER, SpotsTable.trainRunId, ScheduleTable.trainOrderId)
+        .join(StationsTable, JoinType.LEFT, SpotsTable.stationId, StationsTable.id)
+        .join(DbAliases.originStation, JoinType.LEFT, ScheduleTable.originStationId, DbAliases.originStation[StationsTable.id])
+        .join(DbAliases.destStation, JoinType.LEFT, ScheduleTable.destStationId, DbAliases.destStation[StationsTable.id])
+
     suspend fun create(userId: Uuid, request: SpotRequest, imageUrl: String, spotId: Uuid): Uuid {
         return dbTransaction {
             val trainModel = request.trainModel!!
+
             val trainModelId = TrainModelRepository.createOrInsert(
                 trainModel.model,
                 trainModel.number,
@@ -30,9 +46,9 @@ object SpotRepository {
             SpotsTable.insert {
                 it[SpotsTable.id] = spotId
                 it[SpotsTable.userId] = userId
-                it[SpotsTable.modelId] = trainModelId
+                it[SpotsTable.modelId] = trainModelId!!
                 it[SpotsTable.stationId] = request.stationId
-                it[SpotsTable.trainRunId] = request.trainRunId
+                it[SpotsTable.trainRunId] = request.trainRunId!!
                 it[SpotsTable.imageUrl] = imageUrl
                 it[SpotsTable.description] = request.description
                 it[SpotsTable.lat] = request.lat
@@ -57,7 +73,7 @@ object SpotRepository {
             )?.id
 
             SpotsTable.update({ SpotsTable.id eq id }) { row ->
-                request.trainModel?.let { row[SpotsTable.modelId] = trainModelId }
+                request.trainModel?.let { row[SpotsTable.modelId] = trainModelId!! }
                 request.stationId?.let { row[SpotsTable.stationId] = it }
                 request.trainRunId?.let { row[SpotsTable.trainRunId] = it }
                 row[SpotsTable.imageUrl] = imageUrl
@@ -76,10 +92,11 @@ object SpotRepository {
 
     suspend fun findById(id: Uuid): SpotDto? {
         return dbTransaction {
-            SpotsTable.selectAll()
+            spotWithJoins()
+                .selectAll()
                 .where { SpotsTable.id eq id }
                 .firstOrNull()
-                ?.toSpotDto()
+                ?.toSpotDto(DbAliases.originStation, DbAliases.destStation)
         }
     }
 
@@ -87,14 +104,14 @@ object SpotRepository {
         return dbTransaction {
             val total = SpotsTable.selectAll().count()
 
-            val offset = (page * limit)
+            val offset = (page * limit).toLong()
 
-            val spots = SpotsTable
+            val spots = spotWithJoins()
                 .selectAll()
                 .orderBy(SpotsTable.spottedAt to SortOrder.DESC)
-                .offset(offset.toLong())
+                .offset(offset)
                 .limit(limit)
-                .map { row -> row.toSpotDto().toSpotResponse() }
+                .map { row -> row.toSpotDto(DbAliases.originStation, DbAliases.destStation).toSpotResponse() }
 
             PaginationResponse(
                 items = spots,
@@ -115,13 +132,13 @@ object SpotRepository {
 
             val offset = (page * limit).toLong()
 
-            val spots = SpotsTable
+            val spots = spotWithJoins()
                 .selectAll()
                 .where { SpotsTable.userId eq userId }
                 .orderBy(SpotsTable.spottedAt to SortOrder.DESC)
                 .offset(offset)
                 .limit(limit)
-                .map { row -> row.toSpotDto().toSpotResponse() }
+                .map { row -> row.toSpotDto(DbAliases.originStation, DbAliases.destStation).toSpotResponse() }
 
             PaginationResponse(
                 items = spots,
@@ -135,9 +152,10 @@ object SpotRepository {
 
     suspend fun findByIds(ids: List<Uuid>): List<Spot> {
         return dbTransaction {
-            SpotsTable.selectAll()
+            spotWithJoins()
+                .selectAll()
                 .where { SpotsTable.id inList ids }
-                .map { row -> row.toSpotDto().toSpotResponse() }
+                .map { row -> row.toSpotDto(DbAliases.originStation, DbAliases.destStation).toSpotResponse() }
         }
     }
 }

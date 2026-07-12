@@ -12,10 +12,12 @@ import pl.meleko.trainspot.plugins.configureDI
 import pl.meleko.trainspot.plugins.configureSerialization
 import pl.meleko.trainspot.plugins.configureStatusPages
 import pl.meleko.trainspot.routes.configureRouting
+import pl.meleko.trainspot.util.JwtUtil
 
 fun main(args: Array<String>): Unit = EngineMain.main(args)
 
 fun Application.module() {
+    JwtUtil.configure(environment.config)
     configureDI()
     configureSerialization()
     configureStatusPages()
