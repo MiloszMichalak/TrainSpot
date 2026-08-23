@@ -17,6 +17,6 @@ data class Spot(
     val lon: Double?,
     val spottedAt: Instant,
     val createdAt: Instant,
-    val likes: Int,
+    val likes: Long,
     val isLiked: Boolean = false
 )

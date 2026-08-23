@@ -24,7 +24,7 @@ class ScheduleEntity(id: EntityID<Int>) : Entity<Int>(id) {
 
     val stops by TrainStopEntity referrersOn TrainStopsTable.trainRunId
 
-    fun toDto() = ScheduleRouteDto(
+    fun toDto(arrivalTime: String? = null, departureTime: String? = null) = ScheduleRouteDto(
         scheduleId = scheduleId,
         orderId = id.value.toLong(),
         trainOrderId = id.value,
@@ -34,8 +34,8 @@ class ScheduleEntity(id: EntityID<Int>) : Entity<Int>(id) {
         commercialCategorySymbol = catSymbol,
         originStation = originStation.toDto(),
         destStation = destStation.toDto(),
-        arrivalTime = null,
-        departureTime = null
+        arrivalTime = arrivalTime,
+        departureTime = departureTime
     )
 
     fun toStopsDto() = ScheduleRouteStopsDto(
