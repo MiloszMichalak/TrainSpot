@@ -37,7 +37,7 @@ object PkpImportRepository {
         return dbTransaction {
             carriers.forEach { carrier ->
                 CarriersTable.insert {
-                    it[code] = carrier.code
+                    it[id] = carrier.code
                     it[name] = carrier.name
                     it[validFrom] = carrier.validFrom.toInstant()
                     it[validTo] = carrier.validTo?.toInstant()
@@ -62,8 +62,8 @@ object PkpImportRepository {
         val sortedStops = trainRun.stations.sortedBy { it.orderNumber }
         dbTransaction {
             ScheduleTable.insert {
+                it[id] = trainRun.trainOrderId
                 it[scheduleId] = trainRun.scheduleId
-                it[trainOrderId] = trainRun.trainOrderId
                 it[trainName] = trainRun.name
                 it[carrierCode] = trainRun.carrierCode
                 it[trainNumber] = trainRun.nationalNumber
@@ -71,8 +71,8 @@ object PkpImportRepository {
                 it[operatingDate] = trainRun.operatingDates.firstOrNull()?.toLocalDate() ?: LocalDate.now().toKotlinLocalDate()
                 it[internationalArrivalNumber] = trainRun.internationalArrivalNumber
                 it[internationalDepartureNumber] = trainRun.internationalDepartureNumber
-                it[originStationId] = sortedStops.firstOrNull()?.stationId
-                it[destStationId] = sortedStops.lastOrNull()?.stationId
+                it[originStationId] = sortedStops.first().stationId
+                it[destStationId] = sortedStops.last().stationId
             }
         }
     }

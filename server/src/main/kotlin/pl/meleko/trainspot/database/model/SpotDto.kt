@@ -1,16 +1,10 @@
 package pl.meleko.trainspot.database.model
 
-import org.jetbrains.exposed.v1.core.Alias
-import org.jetbrains.exposed.v1.core.ResultRow
-import pl.meleko.trainspot.database.SpotsTable
-import pl.meleko.trainspot.database.StationsTable
 import pl.meleko.trainspot.model.Spot
 import pl.meleko.trainspot.network.dto.ScheduleRouteDto
 import pl.meleko.trainspot.network.dto.StationDto
 import pl.meleko.trainspot.network.dto.toScheduleRoute
-import pl.meleko.trainspot.network.dto.toScheduleRouteDto
 import pl.meleko.trainspot.network.dto.toStation
-import pl.meleko.trainspot.network.dto.toStationDto
 import java.time.OffsetDateTime
 import kotlin.time.Instant
 import kotlin.time.toKotlinInstant
@@ -28,7 +22,7 @@ data class SpotDto(
     val lon: Double?,
     val spottedAt: OffsetDateTime,
     val createdAt: Instant,
-    val likesCount: Int = 0
+    val likesCount: Long = 0
 )
 
 fun SpotDto.toSpotResponse(): Spot {
@@ -47,20 +41,3 @@ fun SpotDto.toSpotResponse(): Spot {
         likes = this.likesCount
     )
 }
-
-fun ResultRow.toSpotDto(
-    originAlias: Alias<StationsTable>? = null,
-    destAlias: Alias<StationsTable>? = null
-) = SpotDto(
-    id = this[SpotsTable.id].value,
-    user = this.toUserDto(),
-    model = this.toTrainModelDto(),
-    station = this.toStationDto(),
-    trainRun = this.toScheduleRouteDto(originAlias, destAlias),
-    imageUrl = this[SpotsTable.imageUrl],
-    description = this[SpotsTable.description],
-    lat = this[SpotsTable.lat],
-    lon = this[SpotsTable.lon],
-    spottedAt = this[SpotsTable.spottedAt],
-    createdAt = this[SpotsTable.createdAt]
-)

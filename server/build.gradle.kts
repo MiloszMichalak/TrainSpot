@@ -46,6 +46,7 @@ dependencies {
     // Database
     implementation(libs.postgresql)
     implementation(libs.exposed.core)
+    implementation(libs.exposed.dao)
     implementation(libs.exposed.jdbc)
     implementation(libs.exposed.datetime)
 
