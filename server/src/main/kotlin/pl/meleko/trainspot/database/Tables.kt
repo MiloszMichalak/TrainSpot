@@ -1,7 +1,7 @@
 package pl.meleko.trainspot.database
 
 import org.jetbrains.exposed.v1.core.ReferenceOption
-import org.jetbrains.exposed.v1.core.Table
+import org.jetbrains.exposed.v1.core.dao.id.IdTable
 import org.jetbrains.exposed.v1.core.dao.id.IntIdTable
 import org.jetbrains.exposed.v1.core.dao.id.UuidTable
 import org.jetbrains.exposed.v1.datetime.CurrentTimestamp
@@ -16,19 +16,20 @@ object StationsTable : IntIdTable("stations") {
     val fetchedAt = timestamp("fetched_at").defaultExpression(CurrentTimestamp)
 }
 
-object CarriersTable : Table("carriers") {
-    val code = varchar("code", 16).uniqueIndex()
+object CarriersTable : IdTable<String>("carriers") {
+    val code = varchar("code", 16)
     val name = varchar("name", 100)
     val validFrom = timestamp("valid_from").nullable()
     val validTo = timestamp("valid_to").nullable()
 
-    override val primaryKey = PrimaryKey(code)
+    override val id = code.entityId()
+    override val primaryKey = PrimaryKey(id)
 }
 
 object CommercialCategoriesTable : IntIdTable("commercial_categories") {
     val code = varchar("code", 20)
-    val name = varchar("name", 100).nullable()
-    val carrierCode = varchar("carrier_code", 16).references(CarriersTable.code, onDelete = ReferenceOption.SET_NULL).nullable()
+    val name = varchar("name", 100)
+    val carrierCode = reference("carrier_code", CarriersTable, onDelete = ReferenceOption.SET_NULL)
 }
 
 object UsersTable : UuidTable("users") {
@@ -41,7 +42,7 @@ object UsersTable : UuidTable("users") {
 }
 
 object SessionsTable : UuidTable("sessions") {
-    val userId = uuid("user_id").references(UsersTable.id, onDelete = ReferenceOption.CASCADE)
+    val userId = reference("user_id", UsersTable, onDelete = ReferenceOption.CASCADE)
     val createdAt = timestamp("created_at").defaultExpression(CurrentTimestamp)
     val lastSeen = timestampWithTimeZone("last_seen").defaultExpression(CurrentTimestampWithTimeZone)
 }
@@ -49,15 +50,15 @@ object SessionsTable : UuidTable("sessions") {
 object TrainModelsTable : UuidTable("train_models") {
     val model = varchar("model", 32)
     val number = varchar("number", 16)
-    val carrierCode = varchar("carrier_code", 10).references(CarriersTable.code, onDelete = ReferenceOption.SET_NULL)
+    val carrierCode = reference("carrier_code", CarriersTable, onDelete = ReferenceOption.SET_NULL)
     val createdAt = timestamp("created_at").defaultExpression(CurrentTimestamp)
 }
 
 object SpotsTable : UuidTable("spots") {
-    val userId = uuid("user_id").references(UsersTable.id, onDelete = ReferenceOption.CASCADE)
-    val modelId = uuid("model_id").references(TrainModelsTable.id, onDelete = ReferenceOption.SET_NULL)
-    val stationId = integer("station_id").references(StationsTable.id, onDelete = ReferenceOption.SET_NULL).nullable()
-    val trainRunId = integer("train_run_id")
+    val userId = reference("user_id", UsersTable, onDelete = ReferenceOption.CASCADE)
+    val modelId = reference("model_id", TrainModelsTable, onDelete = ReferenceOption.CASCADE)
+    val stationId = optReference("station_id", StationsTable, onDelete = ReferenceOption.SET_NULL)
+    val trainRunId = reference("train_run_id", ScheduleTable, onDelete = ReferenceOption.CASCADE)
     val imageUrl = varchar("image_url", 255)
     val description = text("description").nullable()
     val lat = double("lat").nullable()
@@ -67,30 +68,31 @@ object SpotsTable : UuidTable("spots") {
 }
 
 object LikesTable : UuidTable("likes") {
-    val userId = uuid("user_id").references(UsersTable.id, onDelete = ReferenceOption.CASCADE)
-    val spotId = uuid("spot_id").references(SpotsTable.id, onDelete = ReferenceOption.CASCADE)
+    val userId = reference("user_id", UsersTable, onDelete = ReferenceOption.CASCADE)
+    val spotId = reference("spot_id", SpotsTable, onDelete = ReferenceOption.CASCADE)
     val createdAt = timestamp("created_at").defaultExpression(CurrentTimestamp)
 }
 
-object ScheduleTable : Table("train_runs") {
+object ScheduleTable : IdTable<Int>("train_runs") {
     val trainOrderId = integer("train_order_id")
-    val scheduleId = integer("schedule_id").nullable()
+    val scheduleId = integer("schedule_id")
     val trainName = varchar("train_name", 32).nullable()
-    val carrierCode = varchar("carrier_code", 16).references(CarriersTable.code, onDelete = ReferenceOption.SET_NULL).nullable()
+    val carrierCode = reference("carrier_code", CarriersTable, onDelete = ReferenceOption.CASCADE)
     val trainNumber = varchar("train_number", 50).nullable()
-    val catSymbol = varchar("cat_symbol", 16).nullable()
+    val catSymbol = varchar("cat_symbol", 16)
     val operatingDate = date("operating_date")
     val internationalArrivalNumber = varchar("international_arrival_number", 50).nullable()
     val internationalDepartureNumber = varchar("international_departure_number", 50).nullable()
-    val originStationId = integer("origin_station_id").references(StationsTable.id, onDelete = ReferenceOption.SET_NULL).nullable()
-    val destStationId = integer("dest_station_id").references(StationsTable.id, onDelete = ReferenceOption.SET_NULL).nullable()
+    val originStationId = reference("origin_station_id", StationsTable, onDelete = ReferenceOption.CASCADE)
+    val destStationId = reference("dest_station_id", StationsTable, onDelete = ReferenceOption.CASCADE)
 
-    override val primaryKey = PrimaryKey(trainOrderId)
+    override val id = trainOrderId.entityId()
+    override val primaryKey = PrimaryKey(id)
 }
 
 object TrainStopsTable : IntIdTable("train_stops") {
-    val trainRunId = integer("train_run_id").references(ScheduleTable.trainOrderId, onDelete = ReferenceOption.CASCADE)
-    val stationId = integer("station_id").references(StationsTable.id, onDelete = ReferenceOption.CASCADE)
+    val trainRunId = reference("train_run_id", ScheduleTable, onDelete = ReferenceOption.CASCADE)
+    val stationId = reference("station_id", StationsTable, onDelete = ReferenceOption.CASCADE)
     val orderNumber = integer("order_number")
     val arrCat = varchar("arr_cat", 10).nullable()
     val arrTrainNum = varchar("arr_train_num", 50).nullable()

@@ -1,11 +1,6 @@
 package pl.meleko.trainspot.network.dto
 
 import kotlinx.serialization.Serializable
-import org.jetbrains.exposed.v1.core.Alias
-import org.jetbrains.exposed.v1.core.ResultRow
-import pl.meleko.trainspot.database.ScheduleTable
-import pl.meleko.trainspot.database.StationsTable
-import pl.meleko.trainspot.database.TrainStopsTable
 
 @Serializable
 data class SchedulesResponse(
@@ -83,42 +78,3 @@ data class StationStopDto(
 //    stopTypeId = this.stopTypeId,
 //    stopTypeName = this.stopTypeName
 //)
-
-fun ResultRow.toScheduleRouteStopsDto(
-    stations: List<StationStopDto>,
-    originAlias: Alias<StationsTable>? = null,
-    destAlias: Alias<StationsTable>? = null
-): ScheduleRouteStopsDto {
-    return ScheduleRouteStopsDto(
-        scheduleId = this[ScheduleTable.trainOrderId],
-        orderId = this[ScheduleTable.trainOrderId].toLong(),
-        trainOrderId = this[ScheduleTable.trainOrderId],
-        name = this[ScheduleTable.trainName].orEmpty(),
-        carrierCode = this[ScheduleTable.carrierCode].orEmpty(),
-        nationalNumber = this[ScheduleTable.trainNumber].orEmpty(),
-        internationalArrivalNumber = this[ScheduleTable.internationalArrivalNumber].orEmpty(),
-        internationalDepartureNumber = this[ScheduleTable.internationalDepartureNumber].orEmpty(),
-        commercialCategorySymbol = this[ScheduleTable.catSymbol].orEmpty(),
-        stations = stations,
-        operatingDates = listOf(this[ScheduleTable.operatingDate].toString()),
-        originStation = toStationDto(originAlias),
-        destStation = toStationDto(destAlias)
-    )
-}
-
-fun ResultRow.toStationStopDto() = StationStopDto(
-    stationId = this[TrainStopsTable.stationId],
-    orderNumber = this[TrainStopsTable.orderNumber],
-    arrivalCommercialCategory = this[TrainStopsTable.arrCat],
-    arrivalTrainNumber = this[TrainStopsTable.arrTrainNum],
-    arrivalPlatform = this[TrainStopsTable.arrivalPlatform],
-    arrivalTrack = this[TrainStopsTable.arrivalTrack],
-    arrivalDay = this[TrainStopsTable.arrDayOffset],
-    arrivalTime = this[TrainStopsTable.arrivalTime]?.toString(),
-    departureCommercialCategory = this[TrainStopsTable.depCat],
-    departureTrainNumber = this[TrainStopsTable.depTrainNum],
-    departurePlatform = this[TrainStopsTable.platform],
-    departureTrack = this[TrainStopsTable.track],
-    departureDay = this[TrainStopsTable.depDayOffset],
-    departureTime = this[TrainStopsTable.departureTime]?.toString()
-)
