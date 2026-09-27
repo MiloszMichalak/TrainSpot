@@ -1,0 +1,26 @@
+name: Deploy to dev server
+
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          port: 22
+          script: |
+            cd /opt/TrainSpot || exit 1
+            git fetch origin dev
+            git checkout dev
+            git reset --hard origin/dev
+            sudo sed -i 's/\r$//' gradlew && sudo chmod +x ./gradlew
+            ./gradlew clean build -x test
+            sudo systemctl restart trainspot.service
