@@ -1,0 +1,68 @@
+<resources>
+    <string name="app_name">TrainSpot</string>
+
+    <!-- Login Screen -->
+    <string name="login_title_part1">SPOT\nYOUR</string>
+    <string name="login_title_part2">TRAIN</string>
+    <string name="login_subtitle">Dokumentuj pociągi. Dziel się historią.</string>
+    <string name="email">E-mail</string>
+    <string name="email_placeholder">stacja@kolej.pl</string>
+    <string name="password">Hasło</string>
+    <string name="password_placeholder">••••••••</string>
+    <string name="forgot_password">Zapomniałem hasła</string>
+    <string name="login_button">Zaloguj się →</string>
+    <string name="create_account">Utwórz konto</string>
+
+    <!-- Register Screen -->
+    <string name="register_title_part1">CREATE\nYOUR</string>
+    <string name="register_title_part2">ACCOUNT</string>
+    <string name="register_subtitle">Dołącz do społeczności spotterów.</string>
+    <string name="repeat_password">Powtórz hasło</string>
+    <string name="register_button">Zarejestruj się →</string>
+    <string name="login_ghost_button">Zaloguj się</string>
+
+    <!-- Username Screen -->
+    <string name="username_title_part1">WYBIERZ\nSWOJĄ</string>
+    <string name="username_title_part2">NAZWĘ</string>
+    <string name="username_subtitle">Jak mamy Cię nazywać? Możesz to pominąć, a my wybierzemy coś dla Ciebie.</string>
+    <string name="username_label">Nazwa użytkownika</string>
+    <string name="username_placeholder">spotter123</string>
+    <string name="username_available">Nazwa jest dostępna!</string>
+    <string name="username_taken">Ta nazwa jest już zajęta</string>
+    <string name="username_submit">Kontynuuj →</string>
+    <string name="username_skip">Pomiń na razie</string>
+
+    <!-- Common -->
+    <string name="footer_text">Kontynuując akceptujesz </string>
+    <string name="terms_of_service">regulamin</string>
+
+    <!-- Errors -->
+    <string name="error_service_unavailable">Usługa niedostępna</string>
+    <string name="error_client">Błąd klienta</string>
+    <string name="error_server">Błąd serwera</string>
+    <string name="error_serialization">Błąd serializacji</string>
+    <string name="error_unauthorized">Brak autoryzacji</string>
+    <string name="error_not_found">Nie znaleziono</string>
+    <string name="error_conflict">Konflikt danych</string>
+    <string name="error_invalid_data">Nieprawidłowe dane</string>
+    <string name="error_network">Błąd sieci</string>
+    <string name="error_unknown">Nieznany błąd</string>
+    <string name="error_disk_full">Dysk pełny</string>
+    <string name="error_unknown_local">Nieznany błąd lokalny</string>
+    <string name="error_unexpected">Wystąpił nieoczekiwany błąd</string>
+
+    <!-- Add Spot Screen -->
+    <string name="station_label">Stacja</string>
+    <string name="station_placeholder">Gdzie jesteś?</string>
+    <string name="train_number_label">Numer pociągu</string>
+    <string name="train_number_placeholder">np. IC 1307</string>
+    <string name="rolling_stock_model_label">Model taboru</string>
+    <string name="rolling_stock_model_placeholder">np. EU07-085</string>
+    <string name="description_label">Opis</string>
+    <string name="description_placeholder">Co ciekawego widzisz?</string>
+    <string name="add_spot_title">Nowy spot</string>
+    <string name="publish_button">Opublikuj</string>
+    <string name="add_photo_label">DODAJ ZDJĘCIE</string>
+    <string name="add_photo_subtitle">tap lub z galerii</string>
+    <string name="train_suggestions_header">POCIĄGI NA TEJ STACJI — OSTATNIA GODZINA</string>
+</resources>

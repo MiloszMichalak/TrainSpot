@@ -5,9 +5,6 @@ plugins {
     alias(libs.plugins.androidMultiplatformLibrary)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
-    alias(libs.plugins.ksp)
-    alias(libs.plugins.androidx.room)
-    alias(libs.plugins.kotlin.serialization)
 }
 
 kotlin {
@@ -15,41 +12,36 @@ kotlin {
     iosSimulatorArm64()
 
     android {
-       namespace = "pl.meleko.trainspot.app.shared"
-       compileSdk = libs.versions.android.compileSdk.get().toInt()
-       minSdk = libs.versions.android.minSdk.get().toInt()
-    
-       compilerOptions {
-           jvmTarget = JvmTarget.JVM_11
-       }
-       androidResources {
-           enable = true
-       }
-       withHostTest {
-           isIncludeAndroidResources = true
-       }
-    }
-    
-    sourceSets {
-        androidMain.dependencies {
-            implementation(libs.compose.uiToolingPreview)
+        namespace = "pl.meleko.trainspot.app.home"
+        compileSdk = libs.versions.android.compileSdk.get().toInt()
+        minSdk = libs.versions.android.minSdk.get().toInt()
+
+        compilerOptions {
+            jvmTarget = JvmTarget.JVM_11
         }
+
+        androidResources {
+            enable = true
+        }
+    }
+
+    sourceSets {
         commonMain.dependencies {
+            implementation(projects.app.shared)
+
             implementation(libs.androidx.room.runtime)
             implementation(libs.androidx.sqlite.bundled)
-            
+
             implementation(libs.ktor.client.core)
             implementation(libs.ktor.client.content.negotiation)
             implementation(libs.ktor.client.serialization.json)
             implementation(libs.ktor.client.auth)
             implementation(libs.ktor.client.cio)
             implementation(libs.ktor.client.logging)
-
+            
             implementation(libs.kotlinx.serialization.json)
-            
-            implementation(libs.androidx.datastore.preferences)
-            
-            api(projects.core)
+
+            implementation(projects.core)
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
             implementation(libs.compose.material3)
@@ -67,38 +59,11 @@ kotlin {
             implementation(libs.jetbrains.navigation3.adaptive)
 
             implementation(libs.jetbrains.material.icons.extended)
-
             implementation(libs.coil.compose)
-            implementation(libs.coil.network.ktor)
-
-            implementation(libs.napier)
-
-            implementation(libs.krop.ui)
-            implementation(libs.krop.filekit)
-
-            implementation(libs.filekit.core)
-            implementation(libs.filekit.dialogs.compose)
-            implementation(libs.filekit.coil)
-
-        }
-        commonTest.dependencies {
-            implementation(libs.kotlin.test)
         }
     }
-    
-    room {
-        schemaDirectory("$projectDir/schemas")
-    }
-}
-
-dependencies {
-    add("kspAndroid", libs.androidx.room.compiler)
-    add("kspIosSimulatorArm64", libs.androidx.room.compiler)
-    add("kspIosArm64", libs.androidx.room.compiler)
-    
-    androidRuntimeClasspath(libs.compose.uiTooling)
 }
 
 compose.resources {
-    publicResClass = true
+    generateResClass = always
 }

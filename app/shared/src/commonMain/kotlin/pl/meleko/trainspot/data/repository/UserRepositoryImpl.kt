@@ -3,7 +3,7 @@ package pl.meleko.trainspot.data.repository
 import pl.meleko.trainspot.core.DataError
 import pl.meleko.trainspot.core.Result
 import pl.meleko.trainspot.data.remote.UserService
-import pl.meleko.trainspot.domain.repository.UserRepository
+import pl.meleko.trainspot.domain.UserRepository
 import pl.meleko.trainspot.model.User
 import pl.meleko.trainspot.requests.UpdateProfileRequest
 

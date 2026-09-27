@@ -1,0 +1,68 @@
+<resources>
+    <string name="app_name">TrainSpot</string>
+
+    <!-- Login Screen -->
+    <string name="login_title_part1">SPOT\nYOUR</string>
+    <string name="login_title_part2">TRAIN</string>
+    <string name="login_subtitle">Document trains. Share the history.</string>
+    <string name="email">E-mail</string>
+    <string name="email_placeholder">station@rail.com</string>
+    <string name="password">Password</string>
+    <string name="password_placeholder">••••••••</string>
+    <string name="forgot_password">Forgot password</string>
+    <string name="login_button">Login →</string>
+    <string name="create_account">Create account</string>
+
+    <!-- Register Screen -->
+    <string name="register_title_part1">CREATE\nYOUR</string>
+    <string name="register_title_part2">ACCOUNT</string>
+    <string name="register_subtitle">Join the spotter community.</string>
+    <string name="repeat_password">Repeat password</string>
+    <string name="register_button">Register →</string>
+    <string name="login_ghost_button">Log in</string>
+
+    <!-- Username Screen -->
+    <string name="username_title_part1">CHOOSE\nYOUR</string>
+    <string name="username_title_part2">NAME</string>
+    <string name="username_subtitle">How should we call you? You can skip this and we will pick something for you.</string>
+    <string name="username_label">Username</string>
+    <string name="username_placeholder">spotter123</string>
+    <string name="username_available">Username available!</string>
+    <string name="username_taken">This username is already taken</string>
+    <string name="username_submit">Continue →</string>
+    <string name="username_skip">Skip for now</string>
+
+    <!-- Common -->
+    <string name="footer_text">By continuing you accept </string>
+    <string name="terms_of_service">terms of service</string>
+
+    <!-- Errors -->
+    <string name="error_service_unavailable">Service Unavailable</string>
+    <string name="error_client">Client Error</string>
+    <string name="error_server">Server Error</string>
+    <string name="error_serialization">Serialization Error</string>
+    <string name="error_unauthorized">Unauthorized</string>
+    <string name="error_not_found">Not Found</string>
+    <string name="error_conflict">Conflict</string>
+    <string name="error_invalid_data">Invalid Data</string>
+    <string name="error_network">Network Error</string>
+    <string name="error_unknown">Unknown Error</string>
+    <string name="error_disk_full">Disk Full</string>
+    <string name="error_unknown_local">Unknown Local Error</string>
+    <string name="error_unexpected">An unexpected error occurred</string>
+
+    <!-- Add Spot Screen -->
+    <string name="station_label">Station</string>
+    <string name="station_placeholder">Where are you?</string>
+    <string name="train_number_label">Train number</string>
+    <string name="train_number_placeholder">e.g. IC 1307</string>
+    <string name="rolling_stock_model_label">Rolling stock model</string>
+    <string name="rolling_stock_model_placeholder">e.g. EU07-085</string>
+    <string name="description_label">Description</string>
+    <string name="description_placeholder">What do you see interesting?</string>
+    <string name="add_spot_title">New spot</string>
+    <string name="publish_button">Publish</string>
+    <string name="add_photo_label">ADD PHOTO</string>
+    <string name="add_photo_subtitle">tap or from gallery</string>
+    <string name="train_suggestions_header">TRAINS AT THIS STATION — LAST HOUR</string>
+</resources>

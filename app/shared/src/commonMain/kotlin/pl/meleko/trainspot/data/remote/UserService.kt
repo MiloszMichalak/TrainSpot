@@ -42,16 +42,20 @@ class UserService(private val client: HttpClient) {
     suspend fun updateAvatar(avatarBytes: ByteArray?): Result<User, DataError.Network> {
         return safeCall {
             client.put("/users/me") {
-                setBody(MultiPartFormDataContent(
-                    formData {
-                        if (avatarBytes != null) {
-                            append("image", avatarBytes, Headers.build {
-                                append(HttpHeaders.ContentDisposition, "filename=\"avatar.jpg\"")
-                                append(HttpHeaders.ContentType, "image/jpeg")
-                            })
+                setBody(
+                    MultiPartFormDataContent(
+                        formData {
+                            if (avatarBytes != null) {
+                                append("image", avatarBytes, Headers.build {
+                                    append(
+                                        HttpHeaders.ContentDisposition,
+                                        "filename=\"avatar.jpg\""
+                                    )
+                                    append(HttpHeaders.ContentType, "image/jpeg")
+                                })
+                            }
                         }
-                    }
-                ))
+                    ))
             }
         }
     }
