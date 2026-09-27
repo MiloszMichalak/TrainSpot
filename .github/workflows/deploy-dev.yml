@@ -22,5 +22,5 @@ jobs:
             git checkout dev
             git reset --hard origin/dev
             sudo sed -i 's/\r$//' gradlew && sudo chmod +x ./gradlew
-            ./gradlew clean build -x test
+            ./gradlew :server:build -x test --configure-on-demand
             sudo systemctl restart trainspot.service
