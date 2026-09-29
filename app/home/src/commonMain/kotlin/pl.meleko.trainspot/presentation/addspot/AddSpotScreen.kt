@@ -35,6 +35,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -46,6 +48,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil3.ImageLoader
+import coil3.compose.AsyncImage
+import coil3.compose.LocalPlatformContext
+import io.github.vinceglb.filekit.FileKit
+import io.github.vinceglb.filekit.coil.addPlatformFileSupport
+import io.github.vinceglb.filekit.coil.securelyAccessFile
+import io.github.vinceglb.filekit.dialogs.FileKitType
+import io.github.vinceglb.filekit.dialogs.openFilePicker
+import io.github.vinceglb.filekit.mimeType
+import io.github.vinceglb.filekit.name
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -96,12 +110,15 @@ fun AddSpotScreen(
     state: AddSpotState,
     onAction: (AddSpotAction) -> Unit
 ) {
+    val pickerScope = rememberCoroutineScope()
+
     Scaffold(
         topBar = {
             AddSpotHeader(
                 onBackClick = { onAction(AddSpotAction.OnBackClick) },
                 onPublishClick = { onAction(AddSpotAction.OnPublishClick) },
-                isPublishing = state.isPublishing
+                isPublishing = state.isPublishing,
+                canPublish = state.canPublish
             )
         },
         containerColor = Color(0xFF0D0E0F)
@@ -115,9 +132,30 @@ fun AddSpotScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             PhotoZone(
-                selectedImageUri = state.selectedImageUri,
+                selectedMedia = state.selectedMedia,
                 initialImageUrl = state.initialImageUrl,
-                onClick = { /* TODO: Launch Image Picker */ }
+                onClick = {
+                    pickerScope.launch {
+                        try {
+                            val file = FileKit.openFilePicker(type = FileKitType.ImageAndVideo)
+                                ?: return@launch
+                            val mimeType = file.mimeType()
+                            onAction(
+                                AddSpotAction.OnMediaPicked(
+                                    SelectedSpotMedia(
+                                        file = file,
+                                        fileName = file.name,
+                                        contentType = mimeType?.toString()
+                                    )
+                                )
+                            )
+                        } catch (cancellation: CancellationException) {
+                            throw cancellation
+                        } catch (_: Throwable) {
+                            onAction(AddSpotAction.OnMediaPickFailed)
+                        }
+                    }
+                }
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -215,7 +253,8 @@ fun AddSpotScreen(
 fun AddSpotHeader(
     onBackClick: () -> Unit,
     onPublishClick: () -> Unit,
-    isPublishing: Boolean
+    isPublishing: Boolean,
+    canPublish: Boolean
 ) {
     Row(
         modifier = Modifier
@@ -258,7 +297,7 @@ fun AddSpotHeader(
                 containerColor = Color(0xFFE8C547),
                 contentColor = Color(0xFF0D0E0F)
             ),
-            enabled = !isPublishing,
+            enabled = canPublish,
             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 0.dp)
         ) {
             if (isPublishing) {
@@ -283,7 +322,7 @@ fun AddSpotHeader(
 
 @Composable
 fun PhotoZone(
-    selectedImageUri: String?,
+    selectedMedia: SelectedSpotMedia?,
     initialImageUrl: String?,
     onClick: () -> Unit
 ) {
@@ -296,17 +335,25 @@ fun PhotoZone(
             .clickable { onClick() }
             .border(
                 width = 1.5.dp,
-                color = if (selectedImageUri != null || initialImageUrl != null) Color(0xFFE8C547) else Color(0xFF3A3E45),
+                color = if (selectedMedia != null || initialImageUrl != null) Color(0xFFE8C547) else Color(0xFF3A3E45),
                 shape = RoundedCornerShape(14.dp)
             ),
         contentAlignment = Alignment.Center
     ) {
-        if (selectedImageUri != null || initialImageUrl != null) {
-             coil3.compose.AsyncImage(
-                model = selectedImageUri ?: initialImageUrl,
-                contentDescription = null,
+        if (selectedMedia != null) {
+            val platformContext = LocalPlatformContext.current
+            val imageLoader = remember(platformContext) {
+                ImageLoader.Builder(platformContext)
+                    .components { addPlatformFileSupport() }
+                    .build()
+            }
+            AsyncImage(
+                model = selectedMedia.file,
+                imageLoader = imageLoader,
+                contentDescription = selectedMedia.fileName,
                 modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop
+                contentScale = ContentScale.Crop,
+                onState = { it.securelyAccessFile(selectedMedia.file) }
             )
         } else {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {

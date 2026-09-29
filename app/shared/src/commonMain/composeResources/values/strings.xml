@@ -62,7 +62,9 @@
     <string name="description_placeholder">What do you see interesting?</string>
     <string name="add_spot_title">New spot</string>
     <string name="publish_button">Publish</string>
-    <string name="add_photo_label">ADD PHOTO</string>
-    <string name="add_photo_subtitle">tap or from gallery</string>
+    <string name="add_photo_label">ADD PHOTO OR VIDEO</string>
+    <string name="add_photo_subtitle">tap to choose from device</string>
+    <string name="video_selected">Selected video</string>
+    <string name="error_media_file">The selected photo or video could not be read.</string>
     <string name="train_suggestions_header">TRAINS AT THIS STATION — LAST HOUR</string>
 </resources>

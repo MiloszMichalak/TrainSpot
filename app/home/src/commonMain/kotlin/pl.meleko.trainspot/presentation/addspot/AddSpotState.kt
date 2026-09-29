@@ -1,11 +1,11 @@
 package pl.meleko.trainspot.presentation.addspot
 
+import io.github.vinceglb.filekit.PlatformFile
 import pl.meleko.trainspot.model.Station
 
 data class AddSpotState(
     val spotId: String? = null,
-    val selectedImageUri: String? = null,
-    val selectedImageBytes: ByteArray? = null,
+    val selectedMedia: SelectedSpotMedia? = null,
     val initialImageUrl: String? = null,
     val stationSearchQuery: String = "",
     val stationSuggestions: List<Station> = emptyList(),
@@ -18,9 +18,21 @@ data class AddSpotState(
     val isLoading: Boolean = false,
     val isPublishing: Boolean = false,
     val isEditMode: Boolean = false
+) {
+    val canPublish: Boolean
+        get() = !isPublishing &&
+            (selectedMedia != null || (isEditMode && initialImageUrl != null)) &&
+            (isEditMode || selectedTrainSuggestion != null)
+}
+
+data class SelectedSpotMedia(
+    val file: PlatformFile,
+    val fileName: String,
+    val contentType: String?,
 )
 
 data class TrainSuggestion(
+    val scheduleId: Int,
     val number: String,
     val category: String,
     val time: String,

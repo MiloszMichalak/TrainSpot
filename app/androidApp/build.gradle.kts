@@ -20,6 +20,7 @@ dependencies {
     implementation(libs.androidx.navigation3.runtime)
 
     implementation(libs.filekit.core)
+    implementation(libs.filekit.dialogs.compose)
 
     implementation(libs.compose.uiToolingPreview)
     debugImplementation(libs.compose.uiTooling)

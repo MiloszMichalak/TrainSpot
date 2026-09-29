@@ -2,6 +2,7 @@ package pl.meleko.trainspot.presentation.addspot
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -14,8 +15,12 @@ import pl.meleko.trainspot.domain.DictionaryRepository
 import pl.meleko.trainspot.domain.ScheduleRepository
 import pl.meleko.trainspot.domain.SpotRepository
 import pl.meleko.trainspot.model.TrainModel
+import pl.meleko.trainspot.presentation.util.UiText
 import pl.meleko.trainspot.presentation.util.toUiText
 import pl.meleko.trainspot.requests.SpotRequest
+import trainspot.app.shared.generated.resources.Res
+import trainspot.app.shared.generated.resources.error_invalid_data
+import trainspot.app.shared.generated.resources.error_media_file
 
 class AddSpotViewModel(
     private val spotId: String? = null,
@@ -63,8 +68,13 @@ class AddSpotViewModel(
 
     fun onAction(action: AddSpotAction) {
         when (action) {
-            is AddSpotAction.OnImagePicked -> {
-                _state.update { it.copy(selectedImageUri = action.uri, selectedImageBytes = action.bytes) }
+            is AddSpotAction.OnMediaPicked -> {
+                _state.update { it.copy(selectedMedia = action.media) }
+            }
+            AddSpotAction.OnMediaPickFailed -> {
+                viewModelScope.launch {
+                    _events.send(AddSpotEvent.Error(UiText.ResString(Res.string.error_media_file)))
+                }
             }
             is AddSpotAction.OnStationSearchQueryChanged -> {
                 _state.update { it.copy(stationSearchQuery = action.query) }
@@ -130,8 +140,8 @@ class AddSpotViewModel(
                     _state.update {
                         it.copy(
                             trainSuggestions = routes.map { route ->
-                                println(route)
                                 TrainSuggestion(
+                                    scheduleId = route.scheduleId,
                                     number = route.nationalNumber ?: route.trainOrderId.toString(),
                                     category = route.commercialCategorySymbol,
                                     time = route.departureTime ?: route.arrivalTime ?: "",
@@ -147,39 +157,32 @@ class AddSpotViewModel(
     }
 
     private fun publishSpot() {
-        val imageBytes = state.value.selectedImageBytes ?: return // Should show error if no image
-        
+        val currentState = state.value
+        val selectedMedia = currentState.selectedMedia
+        if (selectedMedia == null || currentState.selectedTrainSuggestion == null) {
+            viewModelScope.launch {
+                _events.send(AddSpotEvent.Error(UiText.ResString(Res.string.error_invalid_data)))
+            }
+            return
+        }
+
         viewModelScope.launch {
             _state.update { it.copy(isPublishing = true) }
-            
-            val request = SpotRequest(
-                trainModel = TrainModel(
-                    model = state.value.rollingStockModel,
-                    number = state.value.trainNumber,
-                    carrierCode = state.value.selectedTrainSuggestion?.carrierCode ?: ""
-                ),
-                stationId = state.value.selectedStation?.id,
-                trainRunId = null,
-                description = state.value.description,
-                lat = null,
-                lon = null
-            )
-
-            spotRepository.createSpot(request)
-                .onSuccess { spot ->
-                    spotRepository.updateSpotImage(spot.id.toString(), imageBytes)
-                        .onSuccess {
-                            _events.send(AddSpotEvent.SpotPublished)
-                        }
-                        .onFailure { error ->
-                            _events.send(AddSpotEvent.Error(error.toUiText()))
-                        }
-                }
-                .onFailure { error ->
-                    _events.send(AddSpotEvent.Error(error.toUiText()))
-                }
-            
-            _state.update { it.copy(isPublishing = false) }
+            try {
+                spotRepository.createSpot(
+                    request = currentState.toSpotRequest()
+                )
+                    .onSuccess { _events.send(AddSpotEvent.SpotPublished) }
+                    .onFailure { error ->
+                        _events.send(AddSpotEvent.Error(error.toUiText()))
+                    }
+            } catch (cancellation: CancellationException) {
+                throw cancellation
+            } catch (_: Throwable) {
+                _events.send(AddSpotEvent.Error(UiText.ResString(Res.string.error_media_file)))
+            } finally {
+                _state.update { it.copy(isPublishing = false) }
+            }
         }
     }
 
@@ -188,40 +191,36 @@ class AddSpotViewModel(
         
         viewModelScope.launch {
             _state.update { it.copy(isPublishing = true) }
-
-            val request = SpotRequest(
-                trainModel = TrainModel(
-                    model = state.value.rollingStockModel,
-                    number = state.value.trainNumber,
-                    carrierCode = state.value.selectedTrainSuggestion?.carrierCode ?: ""
-                ),
-                stationId = state.value.selectedStation?.id,
-                trainRunId = null,
-                description = state.value.description,
-                lat = null,
-                lon = null
-            )
-
-            spotRepository.updateSpot(id, request)
-                .onSuccess {
-                    val imageBytes = state.value.selectedImageBytes
-                    if (imageBytes != null) {
-                        spotRepository.updateSpotImage(id, imageBytes)
-                            .onSuccess {
-                                _events.send(AddSpotEvent.SpotPublished)
-                            }
-                            .onFailure { error ->
-                                _events.send(AddSpotEvent.Error(error.toUiText()))
-                            }
-                    } else {
-                        _events.send(AddSpotEvent.SpotPublished)
+            try {
+                val currentState = state.value
+                spotRepository.updateSpot(
+                    id = id,
+                    request = currentState.toSpotRequest()
+                )
+                    .onSuccess { _events.send(AddSpotEvent.SpotPublished) }
+                    .onFailure { error ->
+                        _events.send(AddSpotEvent.Error(error.toUiText()))
                     }
-                }
-                .onFailure { error ->
-                    _events.send(AddSpotEvent.Error(error.toUiText()))
-                }
-
-            _state.update { it.copy(isPublishing = false) }
+            } catch (cancellation: CancellationException) {
+                throw cancellation
+            } catch (_: Throwable) {
+                _events.send(AddSpotEvent.Error(UiText.ResString(Res.string.error_media_file)))
+            } finally {
+                _state.update { it.copy(isPublishing = false) }
+            }
         }
     }
+
+    private fun AddSpotState.toSpotRequest() = SpotRequest(
+        trainModel = TrainModel(
+            model = rollingStockModel,
+            number = trainNumber,
+            carrierCode = selectedTrainSuggestion?.carrierCode ?: ""
+        ),
+        stationId = selectedStation?.id,
+        trainRunId = selectedTrainSuggestion?.scheduleId,
+        description = description,
+        lat = null,
+        lon = null
+    )
 }

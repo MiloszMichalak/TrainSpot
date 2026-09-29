@@ -62,7 +62,9 @@
     <string name="description_placeholder">Co ciekawego widzisz?</string>
     <string name="add_spot_title">Nowy spot</string>
     <string name="publish_button">Opublikuj</string>
-    <string name="add_photo_label">DODAJ ZDJĘCIE</string>
-    <string name="add_photo_subtitle">tap lub z galerii</string>
+    <string name="add_photo_label">DODAJ ZDJĘCIE LUB FILM</string>
+    <string name="add_photo_subtitle">dotknij, aby wybrać z urządzenia</string>
+    <string name="video_selected">Wybrany film</string>
+    <string name="error_media_file">Nie udało się odczytać wybranego zdjęcia lub filmu.</string>
     <string name="train_suggestions_header">POCIĄGI NA TEJ STACJI — OSTATNIA GODZINA</string>
 </resources>

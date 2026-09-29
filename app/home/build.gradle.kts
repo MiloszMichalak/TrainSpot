@@ -60,6 +60,10 @@ kotlin {
 
             implementation(libs.jetbrains.material.icons.extended)
             implementation(libs.coil.compose)
+
+            implementation(libs.filekit.core)
+            implementation(libs.filekit.dialogs.compose)
+            implementation(libs.filekit.coil)
         }
     }
 }
