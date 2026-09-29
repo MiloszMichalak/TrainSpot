@@ -13,7 +13,7 @@ fun Routing.installScheduleRoutes() {
             // GET /station/{id}/recent - Get recent trains at a station
             get("/station/{id}/recent") {
                 val stationId = call.parameters["id"]?.toInt()
-                val minutes = call.parameters["minutes"]?.toLongOrNull() ?: 60
+                val minutes = call.request.queryParameters["minutes"]?.toLongOrNull() ?: 60
 
                 ScheduleService.getRecentTrains(stationId, minutes).mapToResponse()
             }
