@@ -2,6 +2,7 @@ package pl.meleko.trainspot.presentation.addspot
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import io.github.vinceglb.filekit.readBytes
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -167,15 +168,41 @@ class AddSpotViewModel(
         }
 
         viewModelScope.launch {
+            if (state.value.isPublishing) return@launch
             _state.update { it.copy(isPublishing = true) }
             try {
-                spotRepository.createSpot(
-                    request = currentState.toSpotRequest()
-                )
-                    .onSuccess { _events.send(AddSpotEvent.SpotPublished) }
-                    .onFailure { error ->
-                        _events.send(AddSpotEvent.Error(error.toUiText()))
+                // Read the file before creating the database row so file access failures
+                // cannot leave an orphaned spot.
+                val imageBytes = selectedMedia.file.readBytes()
+                val existingDraftId = currentState.spotId
+                val draftId = existingDraftId
+                    ?: when (val creation = spotRepository.createSpot(currentState.toSpotRequest())) {
+                        is pl.meleko.trainspot.core.Result.Success -> {
+                            creation.data.id.toString().also { id ->
+                                _state.update { it.copy(spotId = id) }
+                            }
+                        }
+
+                        is pl.meleko.trainspot.core.Result.Error -> {
+                            _events.send(AddSpotEvent.Error(creation.error.toUiText()))
+                            return@launch
+                        }
                     }
+
+                when (val upload = spotRepository.updateSpotImage(
+                    id = draftId,
+                    image = imageBytes,
+                    fileName = selectedMedia.fileName,
+                    mimeType = selectedMedia.contentType ?: "image/jpeg"
+                )) {
+                    is pl.meleko.trainspot.core.Result.Success -> {
+                        _state.update { it.copy(spotId = null) }
+                        _events.send(AddSpotEvent.SpotPublished)
+                    }
+                    is pl.meleko.trainspot.core.Result.Error -> {
+                        _events.send(AddSpotEvent.Error(upload.error.toUiText()))
+                    }
+                }
             } catch (cancellation: CancellationException) {
                 throw cancellation
             } catch (_: Throwable) {

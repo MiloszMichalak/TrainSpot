@@ -15,11 +15,7 @@ import kotlin.uuid.Uuid
 
 object SpotsService {
     @OptIn(ExperimentalUuidApi::class)
-    suspend fun create(userId: Uuid, request: SpotRequest, incomingImage: IncomingImage?): NetworkResult<Spot> {
-        if (incomingImage == null) {
-            return NetworkResult.Error(HttpStatusCode.BadRequest)
-        }
-
+    suspend fun create(userId: Uuid, request: SpotRequest): NetworkResult<Spot> {
         val trainModel = request.trainModel
         if (
             trainModel == null ||
@@ -41,13 +37,7 @@ object SpotsService {
         }
 
         val spotId = Uuid.generateV4()
-        val imageUrl = ImageStorage.save(
-            image = incomingImage,
-            id = spotId,
-            subdir = "spots",
-        )
-
-        val createdId = SpotRepository.create(userId, request, imageUrl, spotId)
+        val createdId = SpotRepository.create(userId, request, spotId)
             ?: return NetworkResult.Error(HttpStatusCode.BadRequest)
 
         val spot = SpotRepository.findById(createdId)?.toSpotResponse()
@@ -79,16 +69,12 @@ object SpotsService {
         return NetworkResult.Success(result)
     }
 
-    suspend fun update(id: Uuid, userId: Uuid, request: SpotRequest, incomingImage: IncomingImage?): NetworkResult<Spot> {
+    suspend fun update(id: Uuid, userId: Uuid, request: SpotRequest): NetworkResult<Spot> {
         val existingSpot = SpotRepository.findById(id)
             ?: return NetworkResult.Error(HttpStatusCode.NotFound)
 
-        if (existingSpot.user != userId) {
+        if (existingSpot.user.id != userId) {
             return NetworkResult.Error(HttpStatusCode.Forbidden)
-        }
-
-        if (incomingImage == null) {
-            return NetworkResult.Error(HttpStatusCode.BadRequest)
         }
 
         request.lat?.let { lat ->
@@ -102,13 +88,7 @@ object SpotsService {
             }
         }
 
-        val imageUrl = ImageStorage.save(
-            image = incomingImage,
-            id = id,
-            subdir = "spots",
-        )
-
-        SpotRepository.update(id, request, imageUrl)
+        SpotRepository.update(id, request)
             ?: return NetworkResult.Error(HttpStatusCode.Conflict)
 
         val updatedSpot = SpotRepository.findById(id)?.toSpotResponse()
@@ -117,11 +97,37 @@ object SpotsService {
         return NetworkResult.Success(updatedSpot)
     }
 
+    suspend fun uploadImage(id: Uuid, userId: Uuid, incomingImage: IncomingImage?): NetworkResult<Spot> {
+        val existingSpot = SpotRepository.findById(id)
+            ?: return NetworkResult.Error(HttpStatusCode.NotFound)
+        if (existingSpot.user.id != userId) {
+            return NetworkResult.Error(HttpStatusCode.Forbidden)
+        }
+        if (incomingImage == null || incomingImage.bytes.isEmpty()) {
+            return NetworkResult.Error(HttpStatusCode.BadRequest)
+        }
+
+        val imageUrl = try {
+            ImageStorage.save(incomingImage, id = id, subdir = "spots")
+        } catch (_: Exception) {
+            return NetworkResult.Error(HttpStatusCode.InternalServerError)
+        }
+
+        if (SpotRepository.updateImage(id, imageUrl) != true) {
+            ImageStorage.delete(imageUrl)
+            return NetworkResult.Error(HttpStatusCode.Conflict)
+        }
+
+        val updatedSpot = SpotRepository.findById(id)?.toSpotResponse()
+            ?: return NetworkResult.Error(HttpStatusCode.InternalServerError)
+        return NetworkResult.Success(updatedSpot)
+    }
+
     suspend fun delete(id: Uuid, userId: Uuid): NetworkResult<Unit> {
         val existingSpot = SpotRepository.findById(id)
             ?: return NetworkResult.Error(HttpStatusCode.NotFound)
 
-        if (existingSpot.user != userId) {
+        if (existingSpot.user.id != userId) {
             return NetworkResult.Error(HttpStatusCode.Forbidden)
         }
 

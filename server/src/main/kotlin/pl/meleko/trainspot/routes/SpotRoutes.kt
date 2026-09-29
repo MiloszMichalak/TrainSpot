@@ -33,9 +33,8 @@ fun Routing.installSpotRoutes() {
             post {
                 val userId = call.jwtUserId()
                 val request = call.receive<SpotRequest>()
-                val incomingImage = call.receiveImageData()
 
-                SpotsService.create(userId, request, incomingImage)
+                SpotsService.create(userId, request)
                     .mapToResponse()
             }
 
@@ -63,8 +62,21 @@ fun Routing.installSpotRoutes() {
                     return@put
                 }
 
-                val incomingImage = call.receiveImageData()
-                SpotsService.update(spotId, userId, request, incomingImage)
+                SpotsService.update(spotId, userId, request)
+                    .mapToResponse()
+            }
+
+            // PUT /{id}/image - Upload or replace the spot image
+            put("/{id}/image") {
+                val spotId = call.parameters["id"]?.let { Uuid.parse(it) }
+                val userId = call.jwtUserId()
+
+                if (spotId == null) {
+                    call.respond(HttpStatusCode.BadRequest)
+                    return@put
+                }
+
+                SpotsService.uploadImage(spotId, userId, call.receiveImageData())
                     .mapToResponse()
             }
 

@@ -27,8 +27,13 @@ class SpotRepositoryImpl(
         return spotService.updateSpot(id, request)
     }
 
-    override suspend fun updateSpotImage(id: String, image: ByteArray): Result<Spot, DataError.Network> {
-        return spotService.updateSpotImage(id, image)
+    override suspend fun updateSpotImage(
+        id: String,
+        image: ByteArray,
+        fileName: String,
+        mimeType: String
+    ): Result<Spot, DataError.Network> {
+        return spotService.updateSpotImage(id, image, fileName, mimeType)
     }
 
     override suspend fun deleteSpot(id: String): Result<Unit, DataError.Network> {

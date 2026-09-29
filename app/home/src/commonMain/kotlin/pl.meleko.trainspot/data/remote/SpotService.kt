@@ -53,14 +53,21 @@ class SpotService(private val client: HttpClient) {
         }
     }
 
-    suspend fun updateSpotImage(id: String, image: ByteArray): Result<Spot, DataError.Network> {
+    suspend fun updateSpotImage(
+        id: String,
+        image: ByteArray,
+        fileName: String = "spot.jpg",
+        mimeType: String = "image/jpeg"
+    ): Result<Spot, DataError.Network> {
         return safeCall {
-            client.put("/spot/$id") {
+            client.put("/spot/$id/image") {
                 setBody(MultiPartFormDataContent(
                     formData {
                         append("image", image, Headers.build {
-                            append(HttpHeaders.ContentDisposition, "filename=\"spot.jpg\"")
-                            append(HttpHeaders.ContentType, "image/jpeg")
+                            val safeFileName = fileName.substringAfterLast('/').substringAfterLast('\\')
+                                .filter { it.isLetterOrDigit() || it == '.' || it == '-' || it == '_' }
+                            append(HttpHeaders.ContentDisposition, "filename=\"${safeFileName.ifBlank { "spot.jpg" }}\"")
+                            append(HttpHeaders.ContentType, mimeType)
                         })
                     }
                 ))

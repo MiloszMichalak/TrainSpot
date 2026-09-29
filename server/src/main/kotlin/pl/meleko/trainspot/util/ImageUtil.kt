@@ -37,16 +37,24 @@ object ImageStorage {
         subdir: String,
         id: Uuid,
         baseUrl: String = "https://trainspot.meleko.pl",
-        basePath: String = "/var/www"
+        basePath: String = "/var/www/trainspot"
     ): String {
-        val extension = image.originalFileName?.substringAfterLast(".", "jpg") ?: "jpg"
+        val extension = image.originalFileName?.substringAfterLast(".", "jpg")
+            ?.lowercase()
+            ?.takeIf { it.matches(Regex("[a-z0-9]{1,10}")) }
+            ?: "jpg"
         val fileName = "${Uuid.generateV4()}.$extension"
 
         val dir = File("$basePath/$subdir/$id")
-        dir.mkdirs()
+        check(dir.exists() || dir.mkdirs()) { "Unable to create image directory" }
 
         File(dir, fileName).writeBytes(image.bytes)
 
         return "$baseUrl/$subdir/$id/$fileName"
+    }
+
+    fun delete(imageUrl: String) {
+        val relativePath = imageUrl.removePrefix("https://trainspot.meleko.pl/")
+        File("/var/www/trainspot", relativePath).delete()
     }
 }

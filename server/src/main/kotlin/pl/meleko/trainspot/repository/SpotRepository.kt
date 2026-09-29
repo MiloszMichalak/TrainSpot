@@ -4,6 +4,9 @@ import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.inList
+import org.jetbrains.exposed.v1.core.or
+import org.jetbrains.exposed.v1.core.neq
+import pl.meleko.trainspot.database.ScheduleTable
 import pl.meleko.trainspot.database.SpotsTable
 import pl.meleko.trainspot.database.TrainModelsTable
 import pl.meleko.trainspot.database.entities.CarrierEntity
@@ -22,7 +25,7 @@ import kotlin.math.ceil
 import kotlin.uuid.Uuid
 
 object SpotRepository {
-    suspend fun create(userId: Uuid, request: SpotRequest, imageUrl: String, spotId: Uuid): Uuid? {
+    suspend fun create(userId: Uuid, request: SpotRequest, spotId: Uuid): Uuid? {
         return dbTransaction {
             val user = UserEntity.findById(userId) ?: return@dbTransaction null
             val trainModelDto = request.trainModel ?: return@dbTransaction null
@@ -42,14 +45,16 @@ object SpotRepository {
 
             val station = request.stationId?.let { StationEntity.findById(it) }
             val trainRunId = request.trainRunId ?: return@dbTransaction null
-            val trainRun = ScheduleEntity.findById(trainRunId) ?: return@dbTransaction null
+            val trainRun = ScheduleEntity.find {
+                (ScheduleTable.scheduleId eq trainRunId) or (ScheduleTable.id eq trainRunId)
+            }.firstOrNull() ?: return@dbTransaction null
 
             SpotEntity.new(spotId) {
                 this.user = user
                 this.model = trainModel
                 this.station = station
                 this.trainRun = trainRun
-                this.imageUrl = imageUrl
+                this.imageUrl = ""
                 this.description = request.description
                 this.lat = request.lat
                 this.lon = request.lon
@@ -57,7 +62,7 @@ object SpotRepository {
         }
     }
 
-    suspend fun update(id: Uuid, request: SpotRequest, imageUrl: String): Boolean? {
+    suspend fun update(id: Uuid, request: SpotRequest): Boolean? {
         return dbTransaction {
             val spot = SpotEntity.findById(id) ?: return@dbTransaction null
 
@@ -78,12 +83,23 @@ object SpotRepository {
             spot.apply {
                 this.model = trainModel
                 request.stationId?.let { this.station = StationEntity.findById(it) }
-                request.trainRunId?.let { this.trainRun = ScheduleEntity.findById(it) ?: return@dbTransaction null }
-                this.imageUrl = imageUrl
+                request.trainRunId?.let { runId ->
+                    this.trainRun = ScheduleEntity.find {
+                        (ScheduleTable.scheduleId eq runId) or (ScheduleTable.id eq runId)
+                    }.firstOrNull() ?: return@dbTransaction null
+                }
                 request.description?.let { this.description = it }
                 request.lat?.let { this.lat = it }
                 request.lon?.let { this.lon = it }
             }
+            true
+        }
+    }
+
+    suspend fun updateImage(id: Uuid, imageUrl: String): Boolean? {
+        return dbTransaction {
+            val spot = SpotEntity.findById(id) ?: return@dbTransaction null
+            spot.imageUrl = imageUrl
             true
         }
     }
@@ -103,10 +119,11 @@ object SpotRepository {
 
     suspend fun findAll(page: Int = 0, limit: Int = 20): PaginationResponse<Spot> {
         return dbTransaction {
-            val total = SpotEntity.count()
+            val visibleSpots = SpotEntity.find { SpotsTable.imageUrl neq "" }
+            val total = visibleSpots.count()
             val offset = (page * limit).toLong()
 
-            val spots = SpotEntity.all()
+            val spots = SpotEntity.find { SpotsTable.imageUrl neq "" }
                 .orderBy(SpotsTable.spottedAt to SortOrder.DESC)
                 .limit(limit)
                 .offset(offset)
@@ -124,10 +141,10 @@ object SpotRepository {
 
     suspend fun findByUser(userId: Uuid, page: Int = 0, limit: Int = 20): PaginationResponse<Spot> {
         return dbTransaction {
-            val total = SpotEntity.find { SpotsTable.userId eq userId }.count()
+            val total = SpotEntity.find { (SpotsTable.userId eq userId) and (SpotsTable.imageUrl neq "") }.count()
             val offset = (page * limit).toLong()
 
-            val spots = SpotEntity.find { SpotsTable.userId eq userId }
+            val spots = SpotEntity.find { (SpotsTable.userId eq userId) and (SpotsTable.imageUrl neq "") }
                 .orderBy(SpotsTable.spottedAt to SortOrder.DESC)
                 .limit(limit)
                 .offset(offset)
