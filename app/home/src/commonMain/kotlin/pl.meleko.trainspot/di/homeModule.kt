@@ -19,9 +19,11 @@ import pl.meleko.trainspot.domain.ScheduleRepository
 import pl.meleko.trainspot.domain.SpotRepository
 import pl.meleko.trainspot.presentation.addspot.AddSpotViewModel
 import pl.meleko.trainspot.presentation.feed.FeedViewModel
+import pl.meleko.trainspot.presentation.profile.ProfileViewModel
 
 val homeModule = module {
     viewModelOf(::FeedViewModel)
+    viewModelOf(::ProfileViewModel)
 
     viewModel {
         AddSpotViewModel(null, get(), get(), get())

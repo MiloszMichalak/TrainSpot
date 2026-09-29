@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -12,11 +13,13 @@ import pl.meleko.trainspot.core.onFailure
 import pl.meleko.trainspot.core.pagination.Paginator
 import pl.meleko.trainspot.domain.LikeRepository
 import pl.meleko.trainspot.domain.SpotRepository
+import pl.meleko.trainspot.domain.UserRepository
 import pl.meleko.trainspot.presentation.util.toUiText
 
 class FeedViewModel(
     private val spotRepository: SpotRepository,
-    private val likeRepository: LikeRepository
+    private val likeRepository: LikeRepository,
+    private val userRepository: UserRepository
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(FeedState())
@@ -54,6 +57,21 @@ class FeedViewModel(
     )
 
     init {
+        viewModelScope.launch {
+            userRepository.myProfile.collect { user ->
+                _state.update { state ->
+                    state.copy(
+                        currentUser = user,
+                        spots = if (user == null) state.spots else state.spots.map { spot ->
+                            if (spot.user.id == user.id) spot.copy(user = user) else spot
+                        }
+                    )
+                }
+            }
+        }
+        viewModelScope.launch {
+            userRepository.getMyProfile()
+        }
         loadSpots()
     }
 

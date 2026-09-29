@@ -33,6 +33,20 @@
     <string name="username_skip">Skip for now</string>
 
     <!-- Common -->
+    <plurals name="time_minutes_ago">
+        <item quantity="one">%d minute ago</item>
+        <item quantity="other">%d minutes ago</item>
+    </plurals>
+    <plurals name="time_hours_ago">
+        <item quantity="one">%d hour ago</item>
+        <item quantity="other">%d hours ago</item>
+    </plurals>
+    <plurals name="time_days_ago">
+        <item quantity="one">%d day ago</item>
+        <item quantity="other">%d days ago</item>
+    </plurals>
+    <string name="time_just_now">Just now</string>
+    <string name="time_date_format">%2$02d/%1$02d/%3$d</string>
     <string name="footer_text">By continuing you accept </string>
     <string name="terms_of_service">terms of service</string>
 
@@ -67,4 +81,8 @@
     <string name="video_selected">Selected video</string>
     <string name="error_media_file">The selected photo or video could not be read.</string>
     <string name="train_suggestions_header">TRAINS AT THIS STATION — LAST HOUR</string>
+    <string name="profile_title">Profile</string>
+    <string name="profile_change_photo">Change photo</string>
+    <string name="profile_change_username">Save username</string>
+    <string name="profile_saved">Profile updated</string>
 </resources>
