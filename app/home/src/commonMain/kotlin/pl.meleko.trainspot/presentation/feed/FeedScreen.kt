@@ -15,7 +15,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddAPhoto
-import androidx.compose.material.icons.filled.NotificationsNone
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -44,16 +44,22 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil3.compose.AsyncImage
+import androidx.compose.ui.layout.ContentScale
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import pl.meleko.trainspot.presentation.components.SpotCard
 import pl.meleko.trainspot.presentation.util.ObserveAsEvents
 import pl.meleko.trainspot.presentation.util.SnackbarController
+import trainspot.app.shared.generated.resources.Res
+import trainspot.app.shared.generated.resources.profile_title
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FeedRoot(
     onNavigateToCreate: () -> Unit,
     onNavigateToDetails: (String) -> Unit,
+    onNavigateToProfile: () -> Unit,
     viewModel: FeedViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -70,7 +76,8 @@ fun FeedRoot(
         state = state,
         onAction = viewModel::onAction,
         onNavigateToCreate = onNavigateToCreate,
-        onNavigateToDetails = onNavigateToDetails
+        onNavigateToDetails = onNavigateToDetails,
+        onNavigateToProfile = onNavigateToProfile
     )
 }
 
@@ -80,13 +87,14 @@ fun FeedScreen(
     state: FeedState,
     onAction: (FeedAction) -> Unit,
     onNavigateToCreate: () -> Unit,
-    onNavigateToDetails: (String) -> Unit
+    onNavigateToDetails: (String) -> Unit,
+    onNavigateToProfile: () -> Unit
 ) {
     val pullToRefreshState = rememberPullToRefreshState()
     
     Scaffold(
         topBar = {
-            FeedHeader()
+            FeedHeader(state.currentUser?.avatarUrl, onNavigateToProfile)
         },
         floatingActionButton = {
             FloatingActionButton(
@@ -153,7 +161,7 @@ fun FeedScreen(
 }
 
 @Composable
-fun FeedHeader() {
+fun FeedHeader(avatarUrl: String?, onProfileClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -198,18 +206,22 @@ fun FeedHeader() {
                 )
             }
             IconButton(
-                onClick = { /* TODO */ },
+                onClick = onProfileClick,
                 modifier = Modifier
-                    .size(36.dp)
+                    .size(40.dp)
                     .clip(CircleShape)
                     .background(Color(0xFF1F2124))
             ) {
-                Icon(
-                    imageVector = Icons.Default.NotificationsNone,
-                    contentDescription = null,
-                    modifier = Modifier.size(16.dp),
-                    tint = Color(0xFF9A9690)
-                )
+                if (avatarUrl != null) {
+                    AsyncImage(
+                        model = avatarUrl,
+                        contentDescription = stringResource(Res.string.profile_title),
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Icon(Icons.Default.Person, contentDescription = stringResource(Res.string.profile_title), tint = Color(0xFFE8C547))
+                }
             }
         }
     }

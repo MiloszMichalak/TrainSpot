@@ -19,6 +19,7 @@ import androidx.compose.material.icons.filled.ChatBubbleOutline
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -37,7 +38,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import pl.meleko.trainspot.model.Spot
+import pl.meleko.trainspot.presentation.util.toRelativeTimeString
 
 @Composable
 fun SpotCard(
@@ -45,6 +49,8 @@ fun SpotCard(
     onLikeClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val createdTime = spot.createdAt.toLocalDateTime(TimeZone.currentSystemDefault()).time
+
     Card(
         modifier = modifier
             .fillMaxWidth()
@@ -95,14 +101,33 @@ fun SpotCard(
                             color = MaterialTheme.colorScheme.onSurface
                         )
                     )
-                    Text(
-                        text = "${spot.station ?: "Unknown"} · 14 min temu", // TODO: Format date
-                        style = TextStyle(
-                            fontFamily = FontFamily.Monospace,
-                            fontSize = 10.sp,
-                            color = MaterialTheme.colorScheme.outline
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.LocationOn,
+                            contentDescription = null,
+                            modifier = Modifier.size(12.dp),
+                            tint = MaterialTheme.colorScheme.outline
                         )
-                    )
+                        Spacer(modifier = Modifier.width(2.dp))
+                        Text(
+                            text = spot.station?.name.orEmpty(),
+                            style = TextStyle(
+                                fontFamily = FontFamily.Monospace,
+                                fontSize = 10.sp,
+                                color = MaterialTheme.colorScheme.outline
+                            )
+                        )
+                        if (spot.station?.name?.isNotBlank() == true) {
+                            Text(
+                                text = " · ${spot.createdAt.toRelativeTimeString()}",
+                                style = TextStyle(
+                                    fontFamily = FontFamily.Monospace,
+                                    fontSize = 10.sp,
+                                    color = MaterialTheme.colorScheme.outline
+                                )
+                            )
+                        }
+                    }
                 }
 
                 Spacer(modifier = Modifier.weight(1f))
@@ -251,7 +276,7 @@ fun SpotCard(
                 Spacer(modifier = Modifier.weight(1f))
 
                 Text(
-                    text = "14:32", // TODO: Format time
+                    text = "${createdTime.hour.toString().padStart(2, '0')}:${createdTime.minute.toString().padStart(2, '0')}",
                     style = TextStyle(
                         fontFamily = FontFamily.Monospace,
                         fontSize = 10.sp,
