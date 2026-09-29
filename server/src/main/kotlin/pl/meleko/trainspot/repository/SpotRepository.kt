@@ -22,17 +22,17 @@ import kotlin.math.ceil
 import kotlin.uuid.Uuid
 
 object SpotRepository {
-    suspend fun create(userId: Uuid, request: SpotRequest, imageUrl: String, spotId: Uuid): Uuid {
+    suspend fun create(userId: Uuid, request: SpotRequest, imageUrl: String, spotId: Uuid): Uuid? {
         return dbTransaction {
-            val user = UserEntity.findById(userId) ?: throw IllegalArgumentException("User not found")
-            val trainModelDto = request.trainModel!!
+            val user = UserEntity.findById(userId) ?: return@dbTransaction null
+            val trainModelDto = request.trainModel ?: return@dbTransaction null
 
             val trainModel = TrainModelEntity.find {
                 (TrainModelsTable.number eq trainModelDto.number) and 
                 (TrainModelsTable.carrierCode eq trainModelDto.carrierCode) and 
                 (TrainModelsTable.model eq trainModelDto.model)
             }.firstOrNull() ?: run {
-                val carrier = CarrierEntity.findById(trainModelDto.carrierCode) ?: throw IllegalArgumentException("Carrier not found")
+                val carrier = CarrierEntity.findById(trainModelDto.carrierCode) ?: return@dbTransaction null
                 TrainModelEntity.new {
                     this.model = trainModelDto.model
                     this.number = trainModelDto.number
@@ -41,7 +41,8 @@ object SpotRepository {
             }
 
             val station = request.stationId?.let { StationEntity.findById(it) }
-            val trainRun = ScheduleEntity.findById(request.trainRunId!!) ?: throw IllegalArgumentException("Train run not found")
+            val trainRunId = request.trainRunId ?: return@dbTransaction null
+            val trainRun = ScheduleEntity.findById(trainRunId) ?: return@dbTransaction null
 
             SpotEntity.new(spotId) {
                 this.user = user
@@ -66,7 +67,7 @@ object SpotRepository {
                 (TrainModelsTable.carrierCode eq trainModelDto.carrierCode) and 
                 (TrainModelsTable.model eq trainModelDto.model)
             }.firstOrNull() ?: run {
-                val carrier = CarrierEntity.findById(trainModelDto.carrierCode) ?: throw IllegalArgumentException("Carrier not found")
+                val carrier = CarrierEntity.findById(trainModelDto.carrierCode) ?: return@dbTransaction null
                 TrainModelEntity.new {
                     this.model = trainModelDto.model
                     this.number = trainModelDto.number
@@ -77,7 +78,7 @@ object SpotRepository {
             spot.apply {
                 this.model = trainModel
                 request.stationId?.let { this.station = StationEntity.findById(it) }
-                request.trainRunId?.let { this.trainRun = ScheduleEntity.findById(it)!! }
+                request.trainRunId?.let { this.trainRun = ScheduleEntity.findById(it) ?: return@dbTransaction null }
                 this.imageUrl = imageUrl
                 request.description?.let { this.description = it }
                 request.lat?.let { this.lat = it }

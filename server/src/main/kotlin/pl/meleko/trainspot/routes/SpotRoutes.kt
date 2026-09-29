@@ -21,7 +21,7 @@ fun Routing.installSpotRoutes() {
     authenticate("auth-jwt") {
         route("/spot") {
             // GET  - Get all spots (paginated) - Used for feed
-            get("/") {
+            get {
                 val page = call.parameters["page"]?.toIntOrNull() ?: 0
                 val limit = call.parameters["limit"]?.toIntOrNull() ?: 20
 
@@ -30,7 +30,7 @@ fun Routing.installSpotRoutes() {
             }
 
             // POST  - Create a new spot
-            post("/") {
+            post {
                 val userId = call.jwtUserId()
                 val request = call.receive<SpotRequest>()
                 val incomingImage = call.receiveImageData()

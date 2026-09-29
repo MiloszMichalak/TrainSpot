@@ -20,6 +20,14 @@ object SpotsService {
             return NetworkResult.Error(HttpStatusCode.BadRequest)
         }
 
+        val trainModel = request.trainModel
+        if (
+            trainModel == null ||
+            request.trainRunId == null
+        ) {
+            return NetworkResult.Error(HttpStatusCode.BadRequest)
+        }
+
         request.lat?.let { lat ->
             if (lat < -90.0 || lat > 90.0) {
                 return NetworkResult.Error(HttpStatusCode.BadRequest)
@@ -40,6 +48,7 @@ object SpotsService {
         )
 
         val createdId = SpotRepository.create(userId, request, imageUrl, spotId)
+            ?: return NetworkResult.Error(HttpStatusCode.BadRequest)
 
         val spot = SpotRepository.findById(createdId)?.toSpotResponse()
             ?: return NetworkResult.Error(HttpStatusCode.InternalServerError)
