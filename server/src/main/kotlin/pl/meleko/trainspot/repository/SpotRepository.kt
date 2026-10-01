@@ -103,9 +103,9 @@ object SpotRepository {
         SpotsTable.deleteWhere { SpotsTable.id eq id } > 0
     }
 
-    suspend fun findById(id: Uuid): Spot? = dbTransaction { loadSpots(listOf(id)).singleOrNull() }
+    suspend fun findById(id: Uuid, viewerId: Uuid? = null): Spot? = dbTransaction { loadSpots(listOf(id), viewerId).singleOrNull() }
 
-    suspend fun findAll(page: Int = 0, limit: Int = 20): PaginationResponse<Spot> = dbTransaction {
+    suspend fun findAll(page: Int = 0, limit: Int = 20, viewerId: Uuid? = null): PaginationResponse<Spot> = dbTransaction {
         val condition = SpotsTable.imageUrl neq ""
 
         val total = SpotsTable
@@ -121,7 +121,7 @@ object SpotRepository {
             .offset((page * limit).toLong())
             .toList()
 
-        val spots = loadSpots(rows.map { it[SpotsTable.id].value })
+        val spots = loadSpots(rows.map { it[SpotsTable.id].value }, viewerId)
 
         PaginationResponse(
             spots,
@@ -132,7 +132,7 @@ object SpotRepository {
         )
     }
 
-    suspend fun findByUser(userId: Uuid, page: Int = 0, limit: Int = 20): PaginationResponse<Spot> = dbTransaction {
+    suspend fun findByUser(userId: Uuid, page: Int = 0, limit: Int = 20, viewerId: Uuid? = null): PaginationResponse<Spot> = dbTransaction {
         val condition = (SpotsTable.userId eq userId) and (SpotsTable.imageUrl neq "")
 
         val total = SpotsTable
@@ -147,7 +147,7 @@ object SpotRepository {
             .limit(limit)
             .offset((page * limit).toLong()).toList()
 
-        val spots = loadSpots(rows.map { it[SpotsTable.id].value })
+        val spots = loadSpots(rows.map { it[SpotsTable.id].value }, viewerId)
 
         PaginationResponse(
             spots,
@@ -158,11 +158,11 @@ object SpotRepository {
         )
     }
 
-    suspend fun findByIds(ids: List<Uuid>): List<Spot> = dbTransaction {
-        loadSpots(ids)
+    suspend fun findByIds(ids: List<Uuid>, viewerId: Uuid? = null): List<Spot> = dbTransaction {
+        loadSpots(ids, viewerId)
     }
 
-    private fun loadSpots(ids: List<Uuid>): List<Spot> {
+    private fun loadSpots(ids: List<Uuid>, viewerId: Uuid?): List<Spot> {
         if (ids.isEmpty()) return emptyList()
 
         val rows = SpotsTable
@@ -205,11 +205,10 @@ object SpotRepository {
             .where { StationsTable.id inList stationIds }
             .associateBy { it[StationsTable.id].value }
 
-        val likes = LikesTable
+        val likesBySpot = LikesTable
             .selectAll()
             .where { LikesTable.spotId inList ids }
             .groupBy { it[LikesTable.spotId].value }
-            .mapValues { it.value.size.toLong() }
 
         val spotsById = rows.mapNotNull { row ->
             val spotId = row[SpotsTable.id].value
@@ -242,7 +241,8 @@ object SpotRepository {
                 station = stationDto?.toStation(), trainRun = route.toScheduleRoute(), imageUrl = row[SpotsTable.imageUrl],
                 description = row[SpotsTable.description].orEmpty(), lat = row[SpotsTable.lat], lon = row[SpotsTable.lon],
                 spottedAt = row[SpotsTable.spottedAt].toInstant().toKotlinInstant(), createdAt = row[SpotsTable.createdAt],
-                likes = likes[row[SpotsTable.id].value] ?: 0
+                likes = likesBySpot[spotId]?.size?.toLong() ?: 0,
+                isLiked = viewerId != null && likesBySpot[spotId].orEmpty().any { it[LikesTable.userId].value == viewerId }
             )
         }.toMap()
 

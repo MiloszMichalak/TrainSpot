@@ -61,7 +61,7 @@ val dataModule = module {
                 }
             }
             defaultRequest {
-                url("http://192.168.0.10:8080")
+                url("http://10.0.2.2:8080")
             }
         }
     }

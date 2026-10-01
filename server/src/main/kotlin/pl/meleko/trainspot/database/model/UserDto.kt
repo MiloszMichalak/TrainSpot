@@ -34,10 +34,3 @@ fun ResultRow.toUserDto() = UserDto(
     passwordHash = this[UsersTable.passwordHash],
     createdAt = this[UsersTable.createdAt]
 )
-
-data class UserStatsDto(
-    val totalSpots: Int,
-    val totalLikes: Int,
-    val followers: Int,
-    val following: Int
-)
