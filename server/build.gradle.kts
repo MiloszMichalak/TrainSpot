@@ -46,7 +46,6 @@ dependencies {
     // Database
     implementation(libs.postgresql)
     implementation(libs.exposed.core)
-    implementation(libs.exposed.dao)
     implementation(libs.exposed.jdbc)
     implementation(libs.exposed.datetime)
 
@@ -56,6 +55,7 @@ dependencies {
     // Testing
     testImplementation(libs.ktor.serverTestHost)
     testImplementation(libs.kotlin.testJunit)
+    testImplementation(libs.h2)
 }
 val compileKotlin: KotlinCompile by tasks
 compileKotlin.compilerOptions {

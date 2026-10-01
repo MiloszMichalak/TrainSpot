@@ -1,7 +1,6 @@
 package pl.meleko.trainspot.service
 
 import io.ktor.http.HttpStatusCode
-import pl.meleko.trainspot.database.model.toSpotResponse
 import pl.meleko.trainspot.model.Spot
 import pl.meleko.trainspot.repository.LikesRepository
 import pl.meleko.trainspot.repository.SpotRepository
@@ -40,14 +39,14 @@ object SpotsService {
         val createdId = SpotRepository.create(userId, request, spotId)
             ?: return NetworkResult.Error(HttpStatusCode.BadRequest)
 
-        val spot = SpotRepository.findById(createdId)?.toSpotResponse()
+        val spot = SpotRepository.findById(createdId)
             ?: return NetworkResult.Error(HttpStatusCode.InternalServerError)
 
         return NetworkResult.Success(spot)
     }
 
     suspend fun getById(id: Uuid): NetworkResult<Spot> {
-        val spot = SpotRepository.findById(id)?.toSpotResponse()
+        val spot = SpotRepository.findById(id)
             ?: return NetworkResult.Error(HttpStatusCode.NotFound)
         return NetworkResult.Success(spot)
     }
@@ -91,7 +90,7 @@ object SpotsService {
         SpotRepository.update(id, request)
             ?: return NetworkResult.Error(HttpStatusCode.Conflict)
 
-        val updatedSpot = SpotRepository.findById(id)?.toSpotResponse()
+        val updatedSpot = SpotRepository.findById(id)
             ?: return NetworkResult.Error(HttpStatusCode.InternalServerError)
 
         return NetworkResult.Success(updatedSpot)
@@ -118,7 +117,7 @@ object SpotsService {
             return NetworkResult.Error(HttpStatusCode.Conflict)
         }
 
-        val updatedSpot = SpotRepository.findById(id)?.toSpotResponse()
+        val updatedSpot = SpotRepository.findById(id)
             ?: return NetworkResult.Error(HttpStatusCode.InternalServerError)
         return NetworkResult.Success(updatedSpot)
     }
