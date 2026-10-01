@@ -32,7 +32,7 @@ object CommentsRepository {
         val total = CommentsTable.selectAll().where { condition }.count().toInt()
         val rows = CommentsTable.selectAll()
             .where { condition }
-            .orderBy(CommentsTable.createdAt to SortOrder.ASC, CommentsTable.id to SortOrder.ASC)
+            .orderBy(CommentsTable.createdAt to SortOrder.DESC, CommentsTable.id to SortOrder.DESC)
             .limit(limit)
             .offset(page.toLong() * limit)
             .toList()

@@ -45,26 +45,26 @@ object SpotsService {
         return NetworkResult.Success(spot)
     }
 
-    suspend fun getById(id: Uuid): NetworkResult<Spot> {
-        val spot = SpotRepository.findById(id)
+    suspend fun getById(id: Uuid, viewerId: Uuid? = null): NetworkResult<Spot> {
+        val spot = SpotRepository.findById(id, viewerId)
             ?: return NetworkResult.Error(HttpStatusCode.NotFound)
         return NetworkResult.Success(spot)
     }
 
-    suspend fun findAll(page: Int = 0, limit: Int = 20): NetworkResult<PaginationResponse<Spot>> {
+    suspend fun findAll(page: Int = 0, limit: Int = 20, viewerId: Uuid? = null): NetworkResult<PaginationResponse<Spot>> {
         if (page < 0 || limit < 1 || limit > 100) {
             return NetworkResult.Error(HttpStatusCode.BadRequest)
         }
 
-        val result = SpotRepository.findAll(page, limit)
+        val result = SpotRepository.findAll(page, limit, viewerId)
         return NetworkResult.Success(result)
     }
 
-    suspend fun findByUser(userId: Uuid, page: Int = 0, limit: Int = 20): NetworkResult<PaginationResponse<Spot>> {
+    suspend fun findByUser(userId: Uuid, page: Int = 0, limit: Int = 20, viewerId: Uuid? = null): NetworkResult<PaginationResponse<Spot>> {
         if (page < 0 || limit < 1 || limit > 100) {
             return NetworkResult.Error(HttpStatusCode.BadRequest)
         }
-        val result = SpotRepository.findByUser(userId, page, limit)
+        val result = SpotRepository.findByUser(userId, page, limit, viewerId)
         return NetworkResult.Success(result)
     }
 
@@ -138,7 +138,7 @@ object SpotsService {
         }
     }
 
-     suspend fun getLikedSpots(userId: Uuid, page: Int = 0, limit: Int = 20): NetworkResult<PaginationResponse<Spot>> {
+     suspend fun getLikedSpots(userId: Uuid, page: Int = 0, limit: Int = 20, viewerId: Uuid? = null): NetworkResult<PaginationResponse<Spot>> {
          if (page < 0 || limit < 1 || limit > 100) {
              return NetworkResult.Error(HttpStatusCode.BadRequest)
          }
@@ -158,7 +158,7 @@ object SpotsService {
              )
          }
 
-         val spots = SpotRepository.findByIds(likedSpotIds)
+         val spots = SpotRepository.findByIds(likedSpotIds, viewerId)
 
          return NetworkResult.Success(
              PaginationResponse(

@@ -43,10 +43,15 @@ class FeedViewModel(
             _state.update { it.copy(isRefreshing = false) }
             _events.send(FeedEvent.Error(error.toUiText()))
         },
-        onSuccess = { response, _ ->
+        onSuccess = { response, page ->
             _state.update {
                 it.copy(
-                    spots = it.spots + response.items,
+                    spots = if (page == 0) response.items.map { fresh ->
+                        val pending = it.spots.find { old -> old.id == fresh.id }
+                        if (fresh.id.toString() in it.pendingLikeSpotIds && pending != null) {
+                            fresh.copy(isLiked = pending.isLiked, likes = pending.likes)
+                        } else fresh
+                    } else it.spots + response.items,
                     isRefreshing = false
                 )
             }
@@ -78,7 +83,7 @@ class FeedViewModel(
     fun onAction(action: FeedAction) {
         when (action) {
             FeedAction.OnRefresh -> {
-                _state.update { it.copy(isRefreshing = true, spots = emptyList()) }
+                _state.update { it.copy(isRefreshing = true) }
                 paginator.reset()
                 loadSpots()
             }
@@ -86,6 +91,7 @@ class FeedViewModel(
                 loadSpots()
             }
             is FeedAction.OnLikeClick -> {
+                if (action.spotId in _state.value.pendingLikeSpotIds) return
                 val spot = _state.value.spots.find { it.id.toString() == action.spotId } ?: return
                 val wasLiked = spot.isLiked
 
@@ -98,7 +104,8 @@ class FeedViewModel(
                                     likes = if (wasLiked) it.likes - 1 else it.likes + 1
                                 )
                             } else it
-                        }
+                        },
+                        pendingLikeSpotIds = state.pendingLikeSpotIds + action.spotId
                     )
                 }
 
@@ -110,21 +117,21 @@ class FeedViewModel(
                     }
 
                     result.onFailure { error ->
-                        _state.update { state ->
-                            state.copy(
-                                spots = state.spots.map {
-                                    if (it.id.toString() == action.spotId) {
-                                        it.copy(
-                                            isLiked = wasLiked,
-                                            likes = if (wasLiked) it.likes + 1 else it.likes - 1
-                                        )
-                                    } else it
-                                }
-                            )
-                        }
+                        _state.update { state -> state.copy(spots = state.spots.map {
+                            if (it.id.toString() == action.spotId) it.copy(
+                                isLiked = wasLiked,
+                                likes = if (wasLiked) it.likes + 1 else it.likes - 1
+                            ) else it
+                        }) }
                         _events.send(FeedEvent.Error(error.toUiText()))
                     }
+                    _state.update { it.copy(pendingLikeSpotIds = it.pendingLikeSpotIds - action.spotId) }
                 }
+            }
+            is FeedAction.OnCommentsCountChanged -> _state.update { state ->
+                state.copy(spots = state.spots.map { spot ->
+                    if (spot.id.toString() == action.spotId) spot.copy(commentsCount = action.count.toLong()) else spot
+                })
             }
         }
     }

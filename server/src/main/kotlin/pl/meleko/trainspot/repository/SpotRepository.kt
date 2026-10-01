@@ -12,6 +12,7 @@ import org.jetbrains.exposed.v1.jdbc.insertAndGetId
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.update
 import pl.meleko.trainspot.database.CarriersTable
+import pl.meleko.trainspot.database.CommentsTable
 import pl.meleko.trainspot.database.LikesTable
 import pl.meleko.trainspot.database.ScheduleTable
 import pl.meleko.trainspot.database.SpotsTable
@@ -103,9 +104,11 @@ object SpotRepository {
         SpotsTable.deleteWhere { SpotsTable.id eq id } > 0
     }
 
-    suspend fun findById(id: Uuid): Spot? = dbTransaction { loadSpots(listOf(id)).singleOrNull() }
+    suspend fun findById(id: Uuid, viewerId: Uuid? = null): Spot? = dbTransaction {
+        loadSpots(listOf(id), viewerId).singleOrNull()
+    }
 
-    suspend fun findAll(page: Int = 0, limit: Int = 20): PaginationResponse<Spot> = dbTransaction {
+    suspend fun findAll(page: Int = 0, limit: Int = 20, viewerId: Uuid? = null): PaginationResponse<Spot> = dbTransaction {
         val condition = SpotsTable.imageUrl neq ""
 
         val total = SpotsTable
@@ -121,7 +124,7 @@ object SpotRepository {
             .offset((page * limit).toLong())
             .toList()
 
-        val spots = loadSpots(rows.map { it[SpotsTable.id].value })
+        val spots = loadSpots(rows.map { it[SpotsTable.id].value }, viewerId)
 
         PaginationResponse(
             spots,
@@ -132,7 +135,7 @@ object SpotRepository {
         )
     }
 
-    suspend fun findByUser(userId: Uuid, page: Int = 0, limit: Int = 20): PaginationResponse<Spot> = dbTransaction {
+    suspend fun findByUser(userId: Uuid, page: Int = 0, limit: Int = 20, viewerId: Uuid? = null): PaginationResponse<Spot> = dbTransaction {
         val condition = (SpotsTable.userId eq userId) and (SpotsTable.imageUrl neq "")
 
         val total = SpotsTable
@@ -147,7 +150,7 @@ object SpotRepository {
             .limit(limit)
             .offset((page * limit).toLong()).toList()
 
-        val spots = loadSpots(rows.map { it[SpotsTable.id].value })
+        val spots = loadSpots(rows.map { it[SpotsTable.id].value }, viewerId)
 
         PaginationResponse(
             spots,
@@ -158,11 +161,11 @@ object SpotRepository {
         )
     }
 
-    suspend fun findByIds(ids: List<Uuid>): List<Spot> = dbTransaction {
-        loadSpots(ids)
+    suspend fun findByIds(ids: List<Uuid>, viewerId: Uuid? = null): List<Spot> = dbTransaction {
+        loadSpots(ids, viewerId)
     }
 
-    private fun loadSpots(ids: List<Uuid>): List<Spot> {
+    private fun loadSpots(ids: List<Uuid>, viewerId: Uuid?): List<Spot> {
         if (ids.isEmpty()) return emptyList()
 
         val rows = SpotsTable
@@ -205,10 +208,21 @@ object SpotRepository {
             .where { StationsTable.id inList stationIds }
             .associateBy { it[StationsTable.id].value }
 
-        val likes = LikesTable
+        val likeRows = LikesTable
             .selectAll()
             .where { LikesTable.spotId inList ids }
-            .groupBy { it[LikesTable.spotId].value }
+            .toList()
+        val likes = likeRows.groupBy { it[LikesTable.spotId].value }
+        val likedSpotIds = viewerId?.let { currentUserId ->
+            likeRows.asSequence()
+                .filter { it[LikesTable.userId].value == currentUserId }
+                .map { it[LikesTable.spotId].value }
+                .toSet()
+        }.orEmpty()
+        val commentsCounts = CommentsTable
+            .selectAll()
+            .where { CommentsTable.spotId inList ids }
+            .groupBy { it[CommentsTable.spotId].value }
             .mapValues { it.value.size.toLong() }
 
         val spotsById = rows.mapNotNull { row ->
@@ -242,7 +256,9 @@ object SpotRepository {
                 station = stationDto?.toStation(), trainRun = route.toScheduleRoute(), imageUrl = row[SpotsTable.imageUrl],
                 description = row[SpotsTable.description].orEmpty(), lat = row[SpotsTable.lat], lon = row[SpotsTable.lon],
                 spottedAt = row[SpotsTable.spottedAt].toInstant().toKotlinInstant(), createdAt = row[SpotsTable.createdAt],
-                likes = likes[row[SpotsTable.id].value] ?: 0
+                likes = likes[row[SpotsTable.id].value]?.size?.toLong() ?: 0,
+                isLiked = row[SpotsTable.id].value in likedSpotIds,
+                commentsCount = commentsCounts[row[SpotsTable.id].value] ?: 0
             )
         }.toMap()
 

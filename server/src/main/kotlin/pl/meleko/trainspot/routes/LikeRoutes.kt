@@ -72,7 +72,7 @@ fun Routing.installLikeRoutes() {
                 val page = call.parameters["page"]?.toIntOrNull() ?: 0
                 val limit = call.parameters["limit"]?.toIntOrNull() ?: 20
 
-                SpotsService.getLikedSpots(userId, page, limit)
+                SpotsService.getLikedSpots(userId, page, limit, call.jwtUserId())
                     .mapToResponse()
             }
 
@@ -83,7 +83,7 @@ fun Routing.installLikeRoutes() {
                 val page = call.parameters["page"]?.toIntOrNull() ?: 0
                 val limit = call.parameters["limit"]?.toIntOrNull() ?: 20
 
-                SpotsService.getLikedSpots(userId, page, limit)
+                SpotsService.getLikedSpots(userId, page, limit, userId)
                     .mapToResponse()
             }
         }

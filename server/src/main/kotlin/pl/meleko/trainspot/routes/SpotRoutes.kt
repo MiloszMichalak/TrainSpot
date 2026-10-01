@@ -25,7 +25,7 @@ fun Routing.installSpotRoutes() {
                 val page = call.parameters["page"]?.toIntOrNull() ?: 0
                 val limit = call.parameters["limit"]?.toIntOrNull() ?: 20
 
-                SpotsService.findAll(page, limit)
+                SpotsService.findAll(page, limit, call.jwtUserId())
                     .mapToResponse()
             }
 
@@ -47,7 +47,7 @@ fun Routing.installSpotRoutes() {
                     return@get
                 }
 
-                SpotsService.getById(spotId)
+                SpotsService.getById(spotId, call.jwtUserId())
                     .mapToResponse()
             }
 
@@ -106,7 +106,7 @@ fun Routing.installSpotRoutes() {
                 val page = call.parameters["page"]?.toIntOrNull() ?: 0
                 val limit = call.parameters["limit"]?.toIntOrNull() ?: 20
 
-                SpotsService.findByUser(userId, page, limit)
+                SpotsService.findByUser(userId, page, limit, call.jwtUserId())
                     .mapToResponse()
             }
 
@@ -117,7 +117,7 @@ fun Routing.installSpotRoutes() {
                 val page = call.parameters["page"]?.toIntOrNull() ?: 0
                 val limit = call.parameters["limit"]?.toIntOrNull() ?: 20
 
-                SpotsService.findByUser(userId, page, limit)
+                SpotsService.findByUser(userId, page, limit, userId)
                     .mapToResponse()
             }
         }
