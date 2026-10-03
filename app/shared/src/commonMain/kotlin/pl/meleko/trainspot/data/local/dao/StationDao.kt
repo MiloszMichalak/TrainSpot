@@ -15,6 +15,6 @@ interface StationDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertStations(stations: List<StationEntity>)
 
-    @Query("SELECT * FROM stations WHERE name LIKE :query LIMIT 20")
+    @Query("SELECT * FROM stations WHERE name LIKE :query AND latitude IS NOT NULL AND longitude IS NOT NULL LIMIT 20")
     suspend fun searchStations(query: String): List<StationEntity>
 }

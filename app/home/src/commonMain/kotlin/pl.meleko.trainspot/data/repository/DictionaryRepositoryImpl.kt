@@ -64,8 +64,22 @@ class DictionaryRepositoryImpl(
             .map { it.toStation() }
     }
 
-    private fun StationEntity.toStation() = Station(id = id, name = name)
-    private fun Station.toEntity() = StationEntity(id = id, name = name)
+    private fun StationEntity.toStation(): Station {
+        return Station(
+            id = id,
+            name = name,
+            latitude = latitude,
+            longitude = longitude
+        )
+    }
+
+    private fun Station.toEntity() = StationEntity(
+        id = id,
+        name = name,
+        latitude = latitude,
+        longitude = longitude
+    )
+
     private fun Carrier.toEntity() = CarrierEntity(
         code = code,
         name = name,
