@@ -31,15 +31,16 @@ class PkpDataSeeder(
     }
 
     private suspend fun uploadDictionariesToDatabase(){
-        PkpImportRepository.clearDictionariesData()
-
         val carriers = pkpApiClient.fetchCarriers()
         val commercialCategories = pkpApiClient.fetchCommercialCategories()
         val stations = pkpApiClient.fetchStations()
 
+        val stationsWithGeolocation = PkpImportRepository.withStationGeolocation(stations)
+
+        PkpImportRepository.clearDictionariesData()
         PkpImportRepository.importCarriersData(carriers)
         PkpImportRepository.importCommercialCategories(commercialCategories)
-        PkpImportRepository.importStations(stations)
+        PkpImportRepository.importStations(stationsWithGeolocation)
     }
 
     private suspend fun uploadScheduleToDatabase(schedules: SchedulesResponse) {

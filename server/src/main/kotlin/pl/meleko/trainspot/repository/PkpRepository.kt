@@ -31,7 +31,14 @@ object PkpRepository {
     suspend fun getAllStations(): List<StationDto> = dbTransaction {
         StationsTable
             .selectAll()
-            .map { StationDto(it[StationsTable.id].value, it[StationsTable.name]) }
+            .map {
+                StationDto(
+                    id = it[StationsTable.id].value,
+                    name = it[StationsTable.name],
+                    latitude = it[StationsTable.latitude],
+                    longitude = it[StationsTable.longitude]
+                )
+            }
     }
 
     suspend fun getAllCarriers(): List<CarrierDto> = dbTransaction {
@@ -168,5 +175,12 @@ object PkpRepository {
     }
 
     private fun station(id: Int): StationDto? = StationsTable.selectAll().where { StationsTable.id eq id }.singleOrNull()
-        ?.let { StationDto(it[StationsTable.id].value, it[StationsTable.name]) }
+        ?.let {
+            StationDto(
+                id = it[StationsTable.id].value,
+                name = it[StationsTable.name],
+                latitude = it[StationsTable.latitude],
+                longitude = it[StationsTable.longitude]
+            )
+        }
 }

@@ -51,30 +51,3 @@ data class StationStopDto(
     val stopTypeId: Int? = null,
     val stopTypeName: String? = null
 )
-
-//fun ScheduleRouteStopsDto.toScheduleRouteStops() = ScheduleRouteStops(
-//    scheduleId = this.scheduleId,
-//    orderId = this.orderId,
-//    trainOrderId = this.trainOrderId,
-//    name = this.name,
-//    carrierCode = this.carrierCode,
-//    nationalNumber = this.nationalNumber,
-//    internationalArrivalNumber = this.internationalArrivalNumber,
-//    internationalDepartureNumber = this.internationalDepartureNumber,
-//    commercialCategorySymbol = this.commercialCategorySymbol,
-//    stations = this.stations.map { it.toStationStop() }
-//)
-//
-//fun StationStopDto.toStationStop() = StationStop(
-//    stationId = Station(this.stationId, ""),
-//    orderNumber = this.orderNumber,
-//    departureCommercialCategory = this.arrivalCommercialCategory ?: this.departureCommercialCategory,
-//    departureTrainNumber = this.arrivalTrainNumber ?: this.departureTrainNumber,
-//    departurePlatform = this.arrivalPlatform ?: this.departurePlatform,
-//    departureTrack = this.arrivalTrack ?: this.departureTrack,
-//    departureDay = this.arrivalDay ?: this.departureDay,
-//    arrivalTime = this.arrivalTime,
-//    departureTime = this.departureTime,
-//    stopTypeId = this.stopTypeId,
-//    stopTypeName = this.stopTypeName
-//)

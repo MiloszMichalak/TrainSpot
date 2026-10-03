@@ -14,6 +14,8 @@ import org.jetbrains.exposed.v1.datetime.timestampWithTimeZone
 
 object StationsTable : IntIdTable("stations") {
     val name = varchar("name", 100)
+    val latitude = double("latitude").default(0.0)
+    val longitude = double("longitude").default(0.0)
     val fetchedAt = timestamp("fetched_at").defaultExpression(CurrentTimestamp)
 }
 

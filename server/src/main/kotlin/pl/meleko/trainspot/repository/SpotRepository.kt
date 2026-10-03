@@ -236,7 +236,12 @@ object SpotRepository {
 
             val stationDto = row[SpotsTable.stationId]?.value?.let { stationId ->
                 stations[stationId]?.let {
-                    StationDto(it[StationsTable.id].value, it[StationsTable.name])
+                    StationDto(
+                        id = it[StationsTable.id].value,
+                        name = it[StationsTable.name],
+                        latitude = it[StationsTable.latitude],
+                        longitude = it[StationsTable.longitude]
+                    )
                 }
             }
 
@@ -246,8 +251,18 @@ object SpotRepository {
                 trainOrderId = runRow[ScheduleTable.trainOrderId], name = runRow[ScheduleTable.trainName],
                 carrierCode = carrierRow[CarriersTable.code], nationalNumber = runRow[ScheduleTable.trainNumber],
                 commercialCategorySymbol = runRow[ScheduleTable.catSymbol],
-                originStation = StationDto(originRow[StationsTable.id].value, originRow[StationsTable.name]),
-                destStation = StationDto(destRow[StationsTable.id].value, destRow[StationsTable.name])
+                originStation = StationDto(
+                    id = originRow[StationsTable.id].value,
+                    name = originRow[StationsTable.name],
+                    latitude = originRow[StationsTable.latitude],
+                    longitude = originRow[StationsTable.longitude]
+                ),
+                destStation = StationDto(
+                    id = destRow[StationsTable.id].value,
+                    name = destRow[StationsTable.name],
+                    latitude = destRow[StationsTable.latitude],
+                    longitude = destRow[StationsTable.longitude]
+                )
             )
 
             spotId to Spot(
