@@ -35,6 +35,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -45,13 +46,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
-import androidx.compose.ui.layout.ContentScale
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
-import pl.meleko.trainspot.presentation.components.SpotCard
 import pl.meleko.trainspot.presentation.comments.CommentsAction
 import pl.meleko.trainspot.presentation.comments.CommentsBottomSheet
+import pl.meleko.trainspot.presentation.comments.CommentsEvent
+import pl.meleko.trainspot.presentation.comments.CommentsState
 import pl.meleko.trainspot.presentation.comments.CommentsViewModel
+import pl.meleko.trainspot.presentation.components.SpotCard
 import pl.meleko.trainspot.presentation.util.ObserveAsEvents
 import pl.meleko.trainspot.presentation.util.SnackbarController
 import trainspot.app.shared.generated.resources.Res
@@ -79,7 +81,7 @@ fun FeedRoot(
 
     ObserveAsEvents(commentsViewModel.events) { event ->
         when (event) {
-            is pl.meleko.trainspot.presentation.comments.CommentsEvent.Error ->
+            is CommentsEvent.Error ->
                 SnackbarController.onEvent(event.text.asText())
         }
     }
@@ -106,7 +108,7 @@ fun FeedRoot(
 @Composable
 fun FeedScreen(
     state: FeedState,
-    commentsState: pl.meleko.trainspot.presentation.comments.CommentsState,
+    commentsState: CommentsState,
     onAction: (FeedAction) -> Unit,
     onCommentsAction: (CommentsAction) -> Unit,
     onNavigateToCreate: () -> Unit,
