@@ -26,8 +26,12 @@ kotlin {
     }
 
     sourceSets {
+        androidMain.dependencies {
+            runtimeOnly(libs.maplibre.runtime.vulkan.android)
+        }
         commonMain.dependencies {
             implementation(projects.app.shared)
+            implementation(libs.maplibre.compose)
 
             implementation(libs.androidx.room.runtime)
             implementation(libs.androidx.sqlite.bundled)

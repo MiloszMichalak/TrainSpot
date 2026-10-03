@@ -1,6 +1,5 @@
 package pl.meleko.trainspot
 
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -25,7 +24,8 @@ fun App() {
             snackbarHost = { SnackbarHost(hostState = snackbarState) }
         ) { innerPadding ->
             RootNavigation(
-                modifier = Modifier.padding(innerPadding)
+                modifier = Modifier,
+                contentPadding = innerPadding
             )
         }
     }

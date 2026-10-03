@@ -105,4 +105,6 @@
     <string name="comment_unlike">Cofnij polubienie komentarza</string>
     <string name="comment_unknown_author">Spotter</string>
     <string name="cancel">Anuluj</string>
+    <string name="spot_location_title">Lokalizacja spotu</string>
+    <string name="navigate_back">Wróć</string>
 </resources>

@@ -99,4 +99,6 @@
     <string name="comment_unlike">Unlike comment</string>
     <string name="comment_unknown_author">Spotter</string>
     <string name="cancel">Cancel</string>
+    <string name="spot_location_title">Spot location</string>
+    <string name="navigate_back">Back</string>
 </resources>

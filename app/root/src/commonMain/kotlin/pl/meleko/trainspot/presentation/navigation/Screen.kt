@@ -25,5 +25,11 @@ sealed interface Screen: NavKey {
         data object Create: Screen
         @Serializable
         data object Profile: Screen
+        @Serializable
+        data class LocationMap(
+            val placeName: String,
+            val latitude: Double,
+            val longitude: Double
+        ): Screen
     }
 }

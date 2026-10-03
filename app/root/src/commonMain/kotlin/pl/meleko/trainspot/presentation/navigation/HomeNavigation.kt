@@ -1,6 +1,11 @@
 package pl.meleko.trainspot.presentation.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.Modifier
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
@@ -12,6 +17,7 @@ import kotlinx.serialization.modules.subclass
 import pl.meleko.trainspot.presentation.addspot.AddSpotRoot
 import pl.meleko.trainspot.presentation.feed.FeedRoot
 import pl.meleko.trainspot.presentation.profile.ProfileRoot
+import pl.meleko.trainspot.presentation.location.SpotLocationMapScreen
 
 private val homeNavigationConfig = SavedStateConfiguration {
     serializersModule = SerializersModule {
@@ -20,12 +26,13 @@ private val homeNavigationConfig = SavedStateConfiguration {
             subclass(Screen.Home.Details::class)
             subclass(Screen.Home.Create::class)
             subclass(Screen.Home.Profile::class)
+            subclass(Screen.Home.LocationMap::class)
         }
     }
 }
 
 @Composable
-fun HomeNavigation() {
+fun HomeNavigation(contentPadding: PaddingValues) {
     val backStack = rememberNavBackStack(homeNavigationConfig, Screen.Home.Feed)
 
     NavDisplay(
@@ -38,22 +45,39 @@ fun HomeNavigation() {
         predictivePopTransitionSpec = NavTransitions.slideBackwardPredictive(),
         entryProvider = entryProvider {
             entry<Screen.Home.Feed> {
-                FeedRoot(
-                    onNavigateToCreate = { backStack.add(Screen.Home.Create) },
-                    onNavigateToDetails = { /* backStack.add(Screen.Home.Details) */ },
-                    onNavigateToProfile = { backStack.add(Screen.Home.Profile) }
-                )
+                Box(Modifier.fillMaxSize().padding(contentPadding)) {
+                    FeedRoot(
+                        onNavigateToCreate = { backStack.add(Screen.Home.Create) },
+                        onNavigateToDetails = { /* backStack.add(Screen.Home.Details) */ },
+                        onNavigateToLocationMap = { placeName, latitude, longitude ->
+                            backStack.add(Screen.Home.LocationMap(placeName, latitude, longitude))
+                        },
+                        onNavigateToProfile = { backStack.add(Screen.Home.Profile) }
+                    )
+                }
             }
             entry<Screen.Home.Create> {
-                AddSpotRoot(
-                    onNavigateBack = { backStack.removeLastOrNull() }
-                )
+                Box(Modifier.fillMaxSize().padding(contentPadding)) {
+                    AddSpotRoot(
+                        onNavigateBack = { backStack.removeLastOrNull() }
+                    )
+                }
             }
             entry<Screen.Home.Details> {
                 // TODO: Implement SpotDetailsRoot
             }
             entry<Screen.Home.Profile> {
-                ProfileRoot(onNavigateBack = { backStack.removeLastOrNull() })
+                Box(Modifier.fillMaxSize().padding(contentPadding)) {
+                    ProfileRoot(onNavigateBack = { backStack.removeLastOrNull() })
+                }
+            }
+            entry<Screen.Home.LocationMap> { key ->
+                SpotLocationMapScreen(
+                    placeName = key.placeName,
+                    latitude = key.latitude,
+                    longitude = key.longitude,
+                    onNavigateBack = { backStack.removeLastOrNull() }
+                )
             }
         }
     )

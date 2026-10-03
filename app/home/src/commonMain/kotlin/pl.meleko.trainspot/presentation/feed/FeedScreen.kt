@@ -64,6 +64,7 @@ import trainspot.app.shared.generated.resources.profile_title
 fun FeedRoot(
     onNavigateToCreate: () -> Unit,
     onNavigateToDetails: (String) -> Unit,
+    onNavigateToLocationMap: (String, Double, Double) -> Unit,
     onNavigateToProfile: () -> Unit,
     viewModel: FeedViewModel = koinViewModel(),
     commentsViewModel: CommentsViewModel = koinViewModel()
@@ -100,6 +101,7 @@ fun FeedRoot(
         onCommentsAction = commentsViewModel::onAction,
         onNavigateToCreate = onNavigateToCreate,
         onNavigateToDetails = onNavigateToDetails,
+        onNavigateToLocationMap = onNavigateToLocationMap,
         onNavigateToProfile = onNavigateToProfile
     )
 }
@@ -113,6 +115,7 @@ fun FeedScreen(
     onCommentsAction: (CommentsAction) -> Unit,
     onNavigateToCreate: () -> Unit,
     onNavigateToDetails: (String) -> Unit,
+    onNavigateToLocationMap: (String, Double, Double) -> Unit,
     onNavigateToProfile: () -> Unit
 ) {
     val pullToRefreshState = rememberPullToRefreshState()
@@ -165,6 +168,7 @@ fun FeedScreen(
                         SpotCard(
                             spot = spot,
                             onLikeClick = { onAction(FeedAction.OnLikeClick(spot.id.toString())) },
+                            onLocationClick = onNavigateToLocationMap,
                             onCommentClick = { onCommentsAction(CommentsAction.Open(spot.id.toString())) },
                             isLikePending = spot.id.toString() in state.pendingLikeSpotIds,
                             modifier = Modifier.clickable { onNavigateToDetails(spot.id.toString()) }

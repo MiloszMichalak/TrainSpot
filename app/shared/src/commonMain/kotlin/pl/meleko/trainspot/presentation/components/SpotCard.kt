@@ -50,11 +50,19 @@ import trainspot.app.shared.generated.resources.comments_title
 fun SpotCard(
     spot: Spot,
     onLikeClick: () -> Unit,
+    onLocationClick: (String, Double, Double) -> Unit,
     onCommentClick: () -> Unit = {},
     isLikePending: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     val createdTime = spot.createdAt.toLocalDateTime(TimeZone.currentSystemDefault()).time
+
+    val spotLatitude = spot.lat
+    val spotLongitude = spot.lon
+
+    val canOpenLocation = spotLatitude != null && spotLongitude != null &&
+        spotLatitude.isFinite() && spotLatitude in -90.0..90.0 &&
+        spotLongitude.isFinite() && spotLongitude in -180.0..180.0
 
     Card(
         modifier = modifier
@@ -106,7 +114,16 @@ fun SpotCard(
                             color = MaterialTheme.colorScheme.onSurface
                         )
                     )
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                    Row(
+                        modifier = Modifier.clickable(enabled = canOpenLocation) {
+                            onLocationClick(
+                                spot.station?.name.orEmpty(),
+                                requireNotNull(spotLatitude),
+                                requireNotNull(spotLongitude)
+                            )
+                        },
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
                         Icon(
                             imageVector = Icons.Default.LocationOn,
                             contentDescription = null,

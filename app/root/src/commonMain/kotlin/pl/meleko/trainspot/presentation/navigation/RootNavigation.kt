@@ -2,7 +2,9 @@ package pl.meleko.trainspot.presentation.navigation
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -31,14 +33,15 @@ private val navigationConfig = SavedStateConfiguration {
 
 @Composable
 fun RootNavigation(
-    modifier: Modifier
+    modifier: Modifier,
+    contentPadding: PaddingValues
 ) {
     val mainViewModel = koinViewModel<MainViewModel>()
     val authState by mainViewModel.authState.collectAsStateWithLifecycle()
 
     if (authState == AuthState.Loading) {
         Box(
-            modifier = Modifier.fillMaxSize(),
+            modifier = modifier.fillMaxSize().padding(contentPadding),
             contentAlignment = Alignment.Center
         ) {
             CircularProgressIndicator()
@@ -49,7 +52,7 @@ fun RootNavigation(
     val startDestination = if (authState == AuthState.Authenticated) Screen.Home else Screen.Auth
     val backStack = rememberNavBackStack(navigationConfig, startDestination)
 
-    Column(modifier) {
+    Column(modifier.fillMaxSize()) {
         NavDisplay(
             backStack = backStack,
             onBack = { backStack.removeLastOrNull() },
@@ -58,15 +61,17 @@ fun RootNavigation(
             predictivePopTransitionSpec = NavTransitions.slideBackwardPredictive(),
             entryProvider = entryProvider {
                 entry<Screen.Auth> {
-                    AuthNavigation(
-                        onAuthSuccess = {
-                            backStack.removeLastOrNull()
-                            backStack.add(Screen.Home)
-                        }
-                    )
+                    Box(Modifier.fillMaxSize().padding(contentPadding)) {
+                        AuthNavigation(
+                            onAuthSuccess = {
+                                backStack.removeLastOrNull()
+                                backStack.add(Screen.Home)
+                            }
+                        )
+                    }
                 }
                 entry<Screen.Home>{
-                    HomeNavigation()
+                    HomeNavigation(contentPadding = contentPadding)
                 }
             }
         )
