@@ -17,6 +17,7 @@ data class AddSpotState(
     val selectedTrainSuggestion: TrainSuggestion? = null,
     val trainNumber: String = "",
     val rollingStockModel: String = "",
+    val rollingStockCarrierCode: String = "",
     val description: String = "",
     val isLoading: Boolean = false,
     val isPublishing: Boolean = false,
@@ -38,7 +39,7 @@ data class SelectedSpotMedia(
 )
 
 data class TrainSuggestion(
-    val scheduleId: Int,
+    val trainOrderId: Int,
     val number: String,
     val category: String,
     val time: String,

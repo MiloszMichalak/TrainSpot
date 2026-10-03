@@ -55,6 +55,14 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.ImageLoader
 import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
+import dev.icerock.moko.permissions.DeniedAlwaysException
+import dev.icerock.moko.permissions.DeniedException
+import dev.icerock.moko.permissions.Permission
+import dev.icerock.moko.permissions.PermissionsController
+import dev.icerock.moko.permissions.compose.BindEffect
+import dev.icerock.moko.permissions.compose.rememberPermissionsControllerFactory
+import dev.icerock.moko.permissions.location.COARSE_LOCATION
+import dev.icerock.moko.permissions.location.LOCATION
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.coil.addPlatformFileSupport
 import io.github.vinceglb.filekit.coil.securelyAccessFile
@@ -68,27 +76,24 @@ import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
+import org.maplibre.compose.location.LocationUnavailableReason
 import pl.meleko.trainspot.presentation.components.RailTextField
+import pl.meleko.trainspot.presentation.location.LocationReadException
+import pl.meleko.trainspot.presentation.location.rememberLocationReader
 import pl.meleko.trainspot.presentation.util.ObserveAsEvents
 import pl.meleko.trainspot.presentation.util.SnackbarController
 import pl.meleko.trainspot.presentation.util.UiText
-import pl.meleko.trainspot.presentation.location.LocationReadException
-import pl.meleko.trainspot.presentation.location.rememberLocationReader
-import dev.icerock.moko.permissions.DeniedAlwaysException
-import dev.icerock.moko.permissions.DeniedException
-import dev.icerock.moko.permissions.Permission
-import dev.icerock.moko.permissions.PermissionsController
-import dev.icerock.moko.permissions.compose.BindEffect
-import dev.icerock.moko.permissions.compose.rememberPermissionsControllerFactory
-import dev.icerock.moko.permissions.location.COARSE_LOCATION
-import dev.icerock.moko.permissions.location.LOCATION
-import org.maplibre.compose.location.LocationUnavailableReason
 import trainspot.app.shared.generated.resources.Res
 import trainspot.app.shared.generated.resources.add_photo_label
 import trainspot.app.shared.generated.resources.add_photo_subtitle
 import trainspot.app.shared.generated.resources.add_spot_title
 import trainspot.app.shared.generated.resources.description_label
 import trainspot.app.shared.generated.resources.description_placeholder
+import trainspot.app.shared.generated.resources.error_location_permission_denied
+import trainspot.app.shared.generated.resources.error_location_permission_settings
+import trainspot.app.shared.generated.resources.error_location_services_disabled
+import trainspot.app.shared.generated.resources.error_location_unavailable
+import trainspot.app.shared.generated.resources.locate_station
 import trainspot.app.shared.generated.resources.publish_button
 import trainspot.app.shared.generated.resources.rolling_stock_model_label
 import trainspot.app.shared.generated.resources.rolling_stock_model_placeholder
@@ -97,11 +102,6 @@ import trainspot.app.shared.generated.resources.station_placeholder
 import trainspot.app.shared.generated.resources.train_number_label
 import trainspot.app.shared.generated.resources.train_number_placeholder
 import trainspot.app.shared.generated.resources.train_suggestions_header
-import trainspot.app.shared.generated.resources.locate_station
-import trainspot.app.shared.generated.resources.error_location_permission_denied
-import trainspot.app.shared.generated.resources.error_location_permission_settings
-import trainspot.app.shared.generated.resources.error_location_services_disabled
-import trainspot.app.shared.generated.resources.error_location_unavailable
 
 @Composable
 fun AddSpotRoot(
@@ -503,10 +503,10 @@ private fun TrainSuggestionsSection(
         LazyRow(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items(suggestions) { suggestion ->
+            items(suggestions, key = { it.trainOrderId }) { suggestion ->
                 TrainChip(
                     suggestion = suggestion,
-                    isSelected = suggestion == selectedSuggestion,
+                    isSelected = suggestion.trainOrderId == selectedSuggestion?.trainOrderId,
                     onClick = { onSuggestionClick(suggestion) }
                 )
             }

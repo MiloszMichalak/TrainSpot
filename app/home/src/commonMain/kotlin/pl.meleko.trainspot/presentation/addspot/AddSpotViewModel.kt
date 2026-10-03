@@ -16,15 +16,16 @@ import pl.meleko.trainspot.core.onSuccess
 import pl.meleko.trainspot.domain.DictionaryRepository
 import pl.meleko.trainspot.domain.ScheduleRepository
 import pl.meleko.trainspot.domain.SpotRepository
-import pl.meleko.trainspot.model.TrainModel
+import pl.meleko.trainspot.model.ScheduleRoute
 import pl.meleko.trainspot.model.Station
+import pl.meleko.trainspot.model.TrainModel
 import pl.meleko.trainspot.presentation.util.UiText
 import pl.meleko.trainspot.presentation.util.toUiText
 import pl.meleko.trainspot.requests.SpotRequest
 import trainspot.app.shared.generated.resources.Res
 import trainspot.app.shared.generated.resources.error_invalid_data
-import trainspot.app.shared.generated.resources.error_media_file
 import trainspot.app.shared.generated.resources.error_location_unavailable
+import trainspot.app.shared.generated.resources.error_media_file
 import trainspot.app.shared.generated.resources.error_no_nearby_station
 
 class AddSpotViewModel(
@@ -60,8 +61,10 @@ class AddSpotViewModel(
                         it.copy(
                             isLoading = false,
                             initialImageUrl = spot.imageUrl,
+                            selectedTrainSuggestion = spot.trainRun.toTrainSuggestion(),
                             trainNumber = spot.model.number,
                             rollingStockModel = spot.model.model,
+                            rollingStockCarrierCode = spot.model.carrierCode,
                             description = spot.description,
                             selectedStation = spot.station,
                             latitude = spot.lat,
@@ -126,7 +129,8 @@ class AddSpotViewModel(
                 _state.update {
                     it.copy(
                         selectedTrainSuggestion = action.train,
-                        trainNumber = action.train.number
+                        trainNumber = action.train.number,
+                        rollingStockCarrierCode = action.train.carrierCode
                     )
                 }
             }
@@ -227,19 +231,9 @@ class AddSpotViewModel(
             scheduleRepository.getRecentTrains(stationId)
                 .onSuccess { routes ->
                     if (state.value.selectedStation?.id != stationId) return@launch
-                    _state.update {
-                        it.copy(
-                            trainSuggestions = routes.map { route ->
-                                TrainSuggestion(
-                                    scheduleId = route.scheduleId,
-                                    number = route.nationalNumber ?: route.trainOrderId.toString(),
-                                    category = route.commercialCategorySymbol,
-                                    time = route.departureTime ?: route.arrivalTime ?: "",
-                                    stationName = route.destStation?.name ?: route.originStation?.name ?: "",
-                                    carrierCode = route.carrierCode,
-                                    trainName = route.name.orEmpty()
-                                )
-                            }
+                    _state.update { state ->
+                        state.copy(
+                            trainSuggestions = routes.map { it.toTrainSuggestion() }
                         )
                     }
                 }
@@ -269,6 +263,16 @@ class AddSpotViewModel(
                 // cannot leave an orphaned spot.
                 val imageBytes = selectedMedia.file.readBytes()
                 val existingDraftId = currentState.spotId
+                // A retry may follow a change of train; save the latest form before the image.
+                if (existingDraftId != null) {
+                    when (val update = spotRepository.updateSpot(existingDraftId, currentState.toSpotRequest())) {
+                        is pl.meleko.trainspot.core.Result.Success -> Unit
+                        is pl.meleko.trainspot.core.Result.Error -> {
+                            _events.send(AddSpotEvent.Error(update.error.toUiText()))
+                            return@launch
+                        }
+                    }
+                }
                 val draftId = existingDraftId
                     ?: when (val creation = spotRepository.createSpot(currentState.toSpotRequest())) {
                         is pl.meleko.trainspot.core.Result.Success -> {
@@ -336,12 +340,22 @@ class AddSpotViewModel(
         trainModel = TrainModel(
             model = rollingStockModel,
             number = trainNumber,
-            carrierCode = selectedTrainSuggestion?.carrierCode ?: ""
+            carrierCode = rollingStockCarrierCode
         ),
         stationId = selectedStation?.id,
-        trainRunId = selectedTrainSuggestion?.scheduleId,
+        trainRunId = selectedTrainSuggestion?.trainOrderId,
         description = description,
         lat = latitude,
         lon = longitude
+    )
+
+    private fun ScheduleRoute.toTrainSuggestion() = TrainSuggestion(
+        trainOrderId = trainOrderId,
+        number = nationalNumber ?: trainOrderId.toString(),
+        category = commercialCategorySymbol,
+        time = departureTime ?: arrivalTime ?: "",
+        stationName = destStation?.name ?: originStation?.name ?: "",
+        carrierCode = carrierCode,
+        trainName = name.orEmpty()
     )
 }

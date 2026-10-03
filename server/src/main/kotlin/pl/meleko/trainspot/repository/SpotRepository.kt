@@ -5,7 +5,6 @@ import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.inList
 import org.jetbrains.exposed.v1.core.neq
-import org.jetbrains.exposed.v1.core.or
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.insert
 import org.jetbrains.exposed.v1.jdbc.insertAndGetId
@@ -46,7 +45,7 @@ object SpotRepository {
         val trainRunId = request.trainRunId ?: return@dbTransaction null
 
         val run = ScheduleTable.selectAll().where {
-            (ScheduleTable.scheduleId eq trainRunId) or (ScheduleTable.id eq trainRunId)
+            ScheduleTable.id eq trainRunId
         }.firstOrNull() ?: return@dbTransaction null
 
         if (request.stationId != null && !StationsTable.selectAll().where { StationsTable.id eq request.stationId }.any()) return@dbTransaction null
@@ -74,7 +73,7 @@ object SpotRepository {
         val runId = request.trainRunId?.let { value ->
             ScheduleTable
                 .selectAll()
-                .where { (ScheduleTable.scheduleId eq value) or (ScheduleTable.id eq value) }
+                .where { ScheduleTable.id eq value }
                 .firstOrNull()
                 ?.get(ScheduleTable.trainOrderId)
                 ?: return@dbTransaction null
