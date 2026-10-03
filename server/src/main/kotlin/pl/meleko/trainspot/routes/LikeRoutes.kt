@@ -17,6 +17,32 @@ import kotlin.uuid.Uuid
 fun Routing.installLikeRoutes() {
     route("/likes"){
         authenticate("auth-jwt") {
+            post("/comments/{commentId}") {
+                val commentId = call.parameters["commentId"]?.let { runCatching { Uuid.parse(it) }.getOrNull() }
+                if (commentId == null) {
+                    call.respond(HttpStatusCode.BadRequest)
+                    return@post
+                }
+
+                when (val result = pl.meleko.trainspot.service.CommentsService.like(commentId, call.jwtUserId())) {
+                    is pl.meleko.trainspot.util.NetworkResult.Success -> call.respond(HttpStatusCode.Created)
+                    is pl.meleko.trainspot.util.NetworkResult.Error -> call.respond(result.error)
+                }
+            }
+
+            delete("/comments/{commentId}") {
+                val commentId = call.parameters["commentId"]?.let { runCatching { Uuid.parse(it) }.getOrNull() }
+                if (commentId == null) {
+                    call.respond(HttpStatusCode.BadRequest)
+                    return@delete
+                }
+
+                when (val result = pl.meleko.trainspot.service.CommentsService.unlike(commentId, call.jwtUserId())) {
+                    is pl.meleko.trainspot.util.NetworkResult.Success -> call.respond(HttpStatusCode.NoContent)
+                    is pl.meleko.trainspot.util.NetworkResult.Error -> call.respond(result.error)
+                }
+            }
+
             // POST /spots/{spotId} - Like a spot
             post("/spots/{spotId}") {
                 val spotId = call.parameters["spotId"]?.let { Uuid.parse(it) }
@@ -46,7 +72,7 @@ fun Routing.installLikeRoutes() {
                 val page = call.parameters["page"]?.toIntOrNull() ?: 0
                 val limit = call.parameters["limit"]?.toIntOrNull() ?: 20
 
-                SpotsService.getLikedSpots(userId, page, limit, viewerId = call.jwtUserId())
+                SpotsService.getLikedSpots(userId, page, limit, call.jwtUserId())
                     .mapToResponse()
             }
 
@@ -57,7 +83,7 @@ fun Routing.installLikeRoutes() {
                 val page = call.parameters["page"]?.toIntOrNull() ?: 0
                 val limit = call.parameters["limit"]?.toIntOrNull() ?: 20
 
-                SpotsService.getLikedSpots(userId, page, limit, viewerId = userId)
+                SpotsService.getLikedSpots(userId, page, limit, userId)
                     .mapToResponse()
             }
         }

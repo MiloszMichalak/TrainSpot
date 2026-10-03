@@ -34,6 +34,8 @@ fun Application.configureDatabase() {
             TrainModelsTable,
             SpotsTable,
             LikesTable,
+            CommentsTable,
+            CommentLikesTable,
             ScheduleTable,
             TrainStopsTable,
             CarriersTable,

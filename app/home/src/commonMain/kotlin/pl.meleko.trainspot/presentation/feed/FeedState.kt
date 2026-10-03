@@ -9,5 +9,6 @@ data class FeedState(
     val isLoading: Boolean = false,
     val isRefreshing: Boolean = false,
     val error: UiText? = null,
-    val currentUser: User? = null
+    val currentUser: User? = null,
+    val pendingLikeSpotIds: Set<String> = emptySet()
 )

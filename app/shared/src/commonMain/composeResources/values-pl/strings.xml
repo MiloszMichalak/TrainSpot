@@ -91,4 +91,18 @@
     <string name="profile_change_photo">Zmień zdjęcie</string>
     <string name="profile_change_username">Zmień nazwę użytkownika</string>
     <string name="profile_saved">Profil został zaktualizowany</string>
+    <string name="comments_title">Komentarze</string>
+    <string name="comments_empty">Dodaj pierwszy komentarz.</string>
+    <string name="comments_loading">Wczytaj komentarze</string>
+    <string name="comments_load_more">Pokaż więcej</string>
+    <string name="comments_retry">Spróbuj ponownie</string>
+    <string name="comment_placeholder">Napisz komentarz…</string>
+    <string name="comment_send">Wyślij</string>
+    <string name="comment_delete">Usuń</string>
+    <string name="comment_delete_title">Usunąć komentarz?</string>
+    <string name="comment_delete_message">Ten komentarz zostanie trwale usunięty.</string>
+    <string name="comment_like">Polub komentarz</string>
+    <string name="comment_unlike">Cofnij polubienie komentarza</string>
+    <string name="comment_unknown_author">Spotter</string>
+    <string name="cancel">Anuluj</string>
 </resources>

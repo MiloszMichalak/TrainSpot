@@ -16,9 +16,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChatBubbleOutline
-import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -42,11 +42,16 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import pl.meleko.trainspot.model.Spot
 import pl.meleko.trainspot.presentation.util.toRelativeTimeString
+import org.jetbrains.compose.resources.stringResource
+import trainspot.app.shared.generated.resources.Res
+import trainspot.app.shared.generated.resources.comments_title
 
 @Composable
 fun SpotCard(
     spot: Spot,
     onLikeClick: () -> Unit,
+    onCommentClick: () -> Unit = {},
+    isLikePending: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     val createdTime = spot.createdAt.toLocalDateTime(TimeZone.currentSystemDefault()).time
@@ -231,7 +236,7 @@ fun SpotCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(
-                    modifier = Modifier.clickable { onLikeClick() },
+                    modifier = Modifier.clickable(enabled = !isLikePending) { onLikeClick() },
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
@@ -254,17 +259,18 @@ fun SpotCard(
                 Spacer(modifier = Modifier.width(16.dp))
 
                 Row(
+                    modifier = Modifier.clickable(onClick = onCommentClick),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
                         imageVector = Icons.Default.ChatBubbleOutline,
-                        contentDescription = null,
+                        contentDescription = stringResource(Res.string.comments_title),
                         modifier = Modifier.size(18.dp),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(modifier = Modifier.width(5.dp))
                     Text(
-                        text = "12", // TODO: Implement comments
+                        text = spot.commentsCount.toString(),
                         style = TextStyle(
                             fontFamily = FontFamily.Monospace,
                             fontSize = 11.sp,

@@ -18,5 +18,6 @@ data class Spot(
     val spottedAt: Instant,
     val createdAt: Instant,
     val likes: Long,
-    val isLiked: Boolean = false
+    val isLiked: Boolean = false,
+    val commentsCount: Long = 0
 )

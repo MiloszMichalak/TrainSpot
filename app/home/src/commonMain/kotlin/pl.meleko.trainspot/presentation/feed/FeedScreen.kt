@@ -35,6 +35,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -45,9 +46,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
-import androidx.compose.ui.layout.ContentScale
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+import pl.meleko.trainspot.presentation.comments.CommentsAction
+import pl.meleko.trainspot.presentation.comments.CommentsBottomSheet
+import pl.meleko.trainspot.presentation.comments.CommentsEvent
+import pl.meleko.trainspot.presentation.comments.CommentsState
+import pl.meleko.trainspot.presentation.comments.CommentsViewModel
 import pl.meleko.trainspot.presentation.components.SpotCard
 import pl.meleko.trainspot.presentation.util.ObserveAsEvents
 import pl.meleko.trainspot.presentation.util.SnackbarController
@@ -60,9 +65,11 @@ fun FeedRoot(
     onNavigateToCreate: () -> Unit,
     onNavigateToDetails: (String) -> Unit,
     onNavigateToProfile: () -> Unit,
-    viewModel: FeedViewModel = koinViewModel()
+    viewModel: FeedViewModel = koinViewModel(),
+    commentsViewModel: CommentsViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val commentsState by commentsViewModel.state.collectAsStateWithLifecycle()
 
     ObserveAsEvents(viewModel.events) { event ->
         when (event) {
@@ -72,9 +79,25 @@ fun FeedRoot(
         }
     }
 
+    ObserveAsEvents(commentsViewModel.events) { event ->
+        when (event) {
+            is CommentsEvent.Error ->
+                SnackbarController.onEvent(event.text.asText())
+        }
+    }
+
+    LaunchedEffect(commentsState.spotId, commentsState.total, commentsState.isLoading, commentsState.error) {
+        val spotId = commentsState.spotId
+        if (spotId != null && !commentsState.isLoading && commentsState.error == null) {
+            viewModel.onAction(FeedAction.OnCommentsCountChanged(spotId, commentsState.total))
+        }
+    }
+
     FeedScreen(
         state = state,
+        commentsState = commentsState,
         onAction = viewModel::onAction,
+        onCommentsAction = commentsViewModel::onAction,
         onNavigateToCreate = onNavigateToCreate,
         onNavigateToDetails = onNavigateToDetails,
         onNavigateToProfile = onNavigateToProfile
@@ -85,7 +108,9 @@ fun FeedRoot(
 @Composable
 fun FeedScreen(
     state: FeedState,
+    commentsState: CommentsState,
     onAction: (FeedAction) -> Unit,
+    onCommentsAction: (CommentsAction) -> Unit,
     onNavigateToCreate: () -> Unit,
     onNavigateToDetails: (String) -> Unit,
     onNavigateToProfile: () -> Unit
@@ -108,53 +133,66 @@ fun FeedScreen(
         },
         containerColor = Color(0xFF0D0E0F)
     ) { padding ->
-        PullToRefreshBox(
-            state = pullToRefreshState,
-            isRefreshing = state.isRefreshing,
-            onRefresh = { onAction(FeedAction.OnRefresh) },
-            modifier = Modifier.padding(padding)
-        ) {
-            val listState = rememberLazyListState()
-            
-            val shouldLoadMore by remember {
-                derivedStateOf {
-                    val layoutInfo = listState.layoutInfo
-                    val totalItemsNumber = layoutInfo.totalItemsCount
-                    val lastVisibleItemIndex = (layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0) + 1
-                    lastVisibleItemIndex > (totalItemsNumber - 5) && totalItemsNumber > 0
-                }
-            }
-
-            LaunchedEffect(shouldLoadMore) {
-                if (shouldLoadMore) {
-                    onAction(FeedAction.OnLoadMore)
-                }
-            }
-
-            LazyColumn(
-                state = listState,
-                modifier = Modifier.fillMaxSize()
+        Box(Modifier.fillMaxSize()) {
+            PullToRefreshBox(
+                state = pullToRefreshState,
+                isRefreshing = state.isRefreshing,
+                onRefresh = { onAction(FeedAction.OnRefresh) },
+                modifier = Modifier.padding(padding)
             ) {
-                items(state.spots) { spot ->
-                    SpotCard(
-                        spot = spot,
-                        onLikeClick = { onAction(FeedAction.OnLikeClick(spot.id.toString())) },
-                        modifier = Modifier.clickable { onNavigateToDetails(spot.id.toString()) }
-                    )
+                val listState = rememberLazyListState()
+            
+                val shouldLoadMore by remember {
+                    derivedStateOf {
+                        val layoutInfo = listState.layoutInfo
+                        val totalItemsNumber = layoutInfo.totalItemsCount
+                        val lastVisibleItemIndex = (layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0) + 1
+                        lastVisibleItemIndex > (totalItemsNumber - 5) && totalItemsNumber > 0
+                    }
                 }
-                
-                if (state.isLoading && !state.isRefreshing) {
-                    item {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            CircularProgressIndicator(color = Color(0xFFE8C547))
+
+                LaunchedEffect(shouldLoadMore) {
+                    if (shouldLoadMore) {
+                        onAction(FeedAction.OnLoadMore)
+                    }
+                }
+
+                LazyColumn(
+                    state = listState,
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    items(state.spots) { spot ->
+                        SpotCard(
+                            spot = spot,
+                            onLikeClick = { onAction(FeedAction.OnLikeClick(spot.id.toString())) },
+                            onCommentClick = { onCommentsAction(CommentsAction.Open(spot.id.toString())) },
+                            isLikePending = spot.id.toString() in state.pendingLikeSpotIds,
+                            modifier = Modifier.clickable { onNavigateToDetails(spot.id.toString()) }
+                        )
+                    }
+
+                    if (state.isLoading && !state.isRefreshing) {
+                        item {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                CircularProgressIndicator(color = Color(0xFFE8C547))
+                            }
                         }
                     }
                 }
+            }
+            if (commentsState.spotId != null) {
+                CommentsBottomSheet(
+                    state = commentsState,
+                    currentUserId = state.currentUser?.id?.toString(),
+                    scaffoldPadding = padding,
+                    onAction = onCommentsAction,
+                    onDismiss = { onCommentsAction(CommentsAction.Close) }
+                )
             }
         }
     }

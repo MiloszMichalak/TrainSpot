@@ -1,6 +1,7 @@
 package pl.meleko.trainspot.database
 
 import org.jetbrains.exposed.v1.core.ReferenceOption
+import org.jetbrains.exposed.v1.core.Table
 import org.jetbrains.exposed.v1.core.dao.id.IdTable
 import org.jetbrains.exposed.v1.core.dao.id.IntIdTable
 import org.jetbrains.exposed.v1.core.dao.id.UuidTable
@@ -71,6 +72,22 @@ object LikesTable : UuidTable("likes") {
     val userId = reference("user_id", UsersTable, onDelete = ReferenceOption.CASCADE)
     val spotId = reference("spot_id", SpotsTable, onDelete = ReferenceOption.CASCADE)
     val createdAt = timestamp("created_at").defaultExpression(CurrentTimestamp)
+}
+
+object CommentsTable : UuidTable("comments") {
+    val spotId = reference("spot_id", SpotsTable, onDelete = ReferenceOption.CASCADE)
+    val userId = reference("user_id", UsersTable, onDelete = ReferenceOption.CASCADE)
+    val text = text("text")
+    val createdAt = timestampWithTimeZone("created_at").defaultExpression(CurrentTimestampWithTimeZone)
+    val updatedAt = timestampWithTimeZone("updated_at").nullable()
+}
+
+object CommentLikesTable : Table("comment_likes") {
+    val commentId = reference("comment_id", CommentsTable, onDelete = ReferenceOption.CASCADE)
+    val userId = reference("user_id", UsersTable, onDelete = ReferenceOption.CASCADE)
+    val createdAt = timestampWithTimeZone("created_at").defaultExpression(CurrentTimestampWithTimeZone)
+
+    override val primaryKey = PrimaryKey(commentId, userId)
 }
 
 object ScheduleTable : IdTable<Int>("train_runs") {

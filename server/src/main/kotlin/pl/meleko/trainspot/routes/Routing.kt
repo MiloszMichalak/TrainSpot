@@ -30,6 +30,7 @@ fun Application.configureRouting() {
         installScheduleRoutes()
         installDictionaryRoutes()
         installLikeRoutes()
+        installCommentRoutes()
         installUserRoutes()
     }
 }

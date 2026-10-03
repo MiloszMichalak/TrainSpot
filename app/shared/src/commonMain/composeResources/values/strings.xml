@@ -85,4 +85,18 @@
     <string name="profile_change_photo">Change photo</string>
     <string name="profile_change_username">Save username</string>
     <string name="profile_saved">Profile updated</string>
+    <string name="comments_title">Comments</string>
+    <string name="comments_empty">Be the first to comment.</string>
+    <string name="comments_loading">Load comments</string>
+    <string name="comments_load_more">Show more</string>
+    <string name="comments_retry">Try again</string>
+    <string name="comment_placeholder">Write a comment…</string>
+    <string name="comment_send">Send</string>
+    <string name="comment_delete">Delete</string>
+    <string name="comment_delete_title">Delete comment?</string>
+    <string name="comment_delete_message">This comment will be removed permanently.</string>
+    <string name="comment_like">Like comment</string>
+    <string name="comment_unlike">Unlike comment</string>
+    <string name="comment_unknown_author">Spotter</string>
+    <string name="cancel">Cancel</string>
 </resources>
