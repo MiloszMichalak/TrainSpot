@@ -105,6 +105,12 @@
     <string name="comment_unlike">Cofnij polubienie komentarza</string>
     <string name="comment_unknown_author">Spotter</string>
     <string name="cancel">Anuluj</string>
+    <string name="locate_station">Znajdź stację za pomocą mojej lokalizacji</string>
+    <string name="error_location_permission_denied">Odmówiono dostępu do lokalizacji. Możesz wybrać stację ręcznie.</string>
+    <string name="error_location_permission_settings">Zezwól aplikacji TrainSpot na dostęp do lokalizacji w ustawieniach systemowych lub wybierz stację ręcznie.</string>
+    <string name="error_location_services_disabled">Włącz lokalizację urządzenia i spróbuj ponownie.</string>
+    <string name="error_location_unavailable">Nie udało się pobrać lokalizacji. Spróbuj ponownie lub wybierz stację ręcznie.</string>
+    <string name="error_no_nearby_station">Nie znaleziono stacji ze współrzędnymi w promieniu 5 km. Wybierz stację ręcznie.</string>
     <string name="spot_location_title">Lokalizacja spotu</string>
     <string name="navigate_back">Wróć</string>
 </resources>

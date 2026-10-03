@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.vinceglb.filekit.readBytes
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -16,12 +17,15 @@ import pl.meleko.trainspot.domain.DictionaryRepository
 import pl.meleko.trainspot.domain.ScheduleRepository
 import pl.meleko.trainspot.domain.SpotRepository
 import pl.meleko.trainspot.model.TrainModel
+import pl.meleko.trainspot.model.Station
 import pl.meleko.trainspot.presentation.util.UiText
 import pl.meleko.trainspot.presentation.util.toUiText
 import pl.meleko.trainspot.requests.SpotRequest
 import trainspot.app.shared.generated.resources.Res
 import trainspot.app.shared.generated.resources.error_invalid_data
 import trainspot.app.shared.generated.resources.error_media_file
+import trainspot.app.shared.generated.resources.error_location_unavailable
+import trainspot.app.shared.generated.resources.error_no_nearby_station
 
 class AddSpotViewModel(
     private val spotId: String? = null,
@@ -35,6 +39,11 @@ class AddSpotViewModel(
 
     private val _events = Channel<AddSpotEvent>()
     val events = _events.receiveAsFlow()
+
+    private var locationRequestCounter = 0
+    private var stationSearchJob: Job? = null
+    private var stationLocationJob: Job? = null
+    private var trainSearchJob: Job? = null
 
     init {
         if (spotId != null) {
@@ -55,6 +64,8 @@ class AddSpotViewModel(
                             rollingStockModel = spot.model.model,
                             description = spot.description,
                             selectedStation = spot.station,
+                            latitude = spot.lat,
+                            longitude = spot.lon,
                             stationSearchQuery = spot.station?.name ?: ""
                         )
                     }
@@ -78,18 +89,38 @@ class AddSpotViewModel(
                 }
             }
             is AddSpotAction.OnStationSearchQueryChanged -> {
-                _state.update { it.copy(stationSearchQuery = action.query) }
+                cancelStationLocation()
+                trainSearchJob?.cancel()
+                _state.update {
+                    it.copy(
+                        stationSearchQuery = action.query,
+                        selectedStation = null,
+                        selectedTrainSuggestion = null,
+                        trainSuggestions = emptyList()
+                    )
+                }
                 searchStations(action.query)
             }
             is AddSpotAction.OnStationSelected -> {
-                _state.update {
-                    it.copy(
-                        selectedStation = action.station,
-                        stationSearchQuery = action.station.name,
-                        stationSuggestions = emptyList()
-                    )
+                selectStation(action.station)
+            }
+            AddSpotAction.OnLocateStationClick -> {
+                if (!state.value.isLocatingStation && !state.value.isLoading && !state.value.isPublishing) {
+                    val requestId = ++locationRequestCounter
+                    _state.update { it.copy(locationRequestId = requestId) }
                 }
-                loadTrainsForStation(action.station.id)
+            }
+            is AddSpotAction.OnLocationResolved -> {
+                findStationForLocation(action)
+            }
+            is AddSpotAction.OnLocationFailed -> {
+                if (state.value.locationRequestId == action.requestId) {
+                    cancelStationLocation()
+                    viewModelScope.launch { _events.send(AddSpotEvent.Error(action.message)) }
+                }
+            }
+            is AddSpotAction.OnLocationCancelled -> {
+                if (state.value.locationRequestId == action.requestId) cancelStationLocation()
             }
             is AddSpotAction.OnTrainSelected -> {
                 _state.update {
@@ -123,21 +154,79 @@ class AddSpotViewModel(
         }
     }
 
+    private fun cancelStationLocation() {
+        stationLocationJob?.cancel()
+        _state.update { it.copy(locationRequestId = null) }
+    }
+
+    private fun selectStation(station: Station) {
+        stationSearchJob?.cancel()
+        cancelStationLocation()
+        _state.update {
+            it.copy(
+                selectedStation = station,
+                stationSearchQuery = station.name,
+                stationSuggestions = emptyList(),
+                selectedTrainSuggestion = null,
+                trainSuggestions = emptyList()
+            )
+        }
+        loadTrainsForStation(station.id)
+    }
+
+    private fun findStationForLocation(action: AddSpotAction.OnLocationResolved) {
+        if (state.value.locationRequestId != action.requestId) return
+        stationLocationJob?.cancel()
+        stationLocationJob = viewModelScope.launch {
+            try {
+                _state.update { it.copy(latitude = action.latitude, longitude = action.longitude) }
+
+                val station = dictionaryRepository.findNearestStation(
+                    latitude = action.latitude,
+                    longitude = action.longitude,
+                    maxDistanceMeters = 5_000.0
+                )
+
+                if (state.value.locationRequestId != action.requestId) return@launch
+
+                if (station == null) {
+                    _state.update { it.copy(locationRequestId = null) }
+                    _events.send(AddSpotEvent.Error(UiText.ResString(Res.string.error_no_nearby_station)))
+                } else {
+                    stationLocationJob = null
+                    selectStation(station)
+                }
+            } catch (cancellation: CancellationException) {
+                throw cancellation
+            } catch (_: Exception) {
+                if (state.value.locationRequestId == action.requestId) {
+                    _state.update { it.copy(locationRequestId = null) }
+                    _events.send(AddSpotEvent.Error(UiText.ResString(Res.string.error_location_unavailable)))
+                }
+            }
+        }
+    }
+
     private fun searchStations(query: String) {
+        stationSearchJob?.cancel()
         if (query.length < 2) {
             _state.update { it.copy(stationSuggestions = emptyList()) }
             return
         }
-        viewModelScope.launch {
+        stationSearchJob = viewModelScope.launch {
             val results = dictionaryRepository.searchStations(query)
-            _state.update { it.copy(stationSuggestions = results) }
+            if (state.value.stationSearchQuery == query && state.value.selectedStation == null) {
+                _state.update { it.copy(stationSuggestions = results) }
+            }
         }
     }
 
     private fun loadTrainsForStation(stationId: Int) {
-        viewModelScope.launch {
+        trainSearchJob?.cancel()
+        trainSearchJob = viewModelScope.launch {
             scheduleRepository.getRecentTrains(stationId)
                 .onSuccess { routes ->
+                    if (state.value.selectedStation?.id != stationId) return@launch
                     _state.update {
                         it.copy(
                             trainSuggestions = routes.map { route ->
@@ -152,6 +241,11 @@ class AddSpotViewModel(
                                 )
                             }
                         )
+                    }
+                }
+                .onFailure { error ->
+                    if (state.value.selectedStation?.id == stationId) {
+                        _events.send(AddSpotEvent.Error(error.toUiText()))
                     }
                 }
         }
@@ -247,7 +341,7 @@ class AddSpotViewModel(
         stationId = selectedStation?.id,
         trainRunId = selectedTrainSuggestion?.scheduleId,
         description = description,
-        lat = null,
-        lon = null
+        lat = latitude,
+        lon = longitude
     )
 }

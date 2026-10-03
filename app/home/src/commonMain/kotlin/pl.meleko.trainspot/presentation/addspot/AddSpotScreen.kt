@@ -24,6 +24,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddAPhoto
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -31,9 +32,11 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -45,6 +48,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -59,6 +63,7 @@ import io.github.vinceglb.filekit.dialogs.openFilePicker
 import io.github.vinceglb.filekit.mimeType
 import io.github.vinceglb.filekit.name
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -66,6 +71,18 @@ import org.koin.core.parameter.parametersOf
 import pl.meleko.trainspot.presentation.components.RailTextField
 import pl.meleko.trainspot.presentation.util.ObserveAsEvents
 import pl.meleko.trainspot.presentation.util.SnackbarController
+import pl.meleko.trainspot.presentation.util.UiText
+import pl.meleko.trainspot.presentation.location.LocationReadException
+import pl.meleko.trainspot.presentation.location.rememberLocationReader
+import dev.icerock.moko.permissions.DeniedAlwaysException
+import dev.icerock.moko.permissions.DeniedException
+import dev.icerock.moko.permissions.Permission
+import dev.icerock.moko.permissions.PermissionsController
+import dev.icerock.moko.permissions.compose.BindEffect
+import dev.icerock.moko.permissions.compose.rememberPermissionsControllerFactory
+import dev.icerock.moko.permissions.location.COARSE_LOCATION
+import dev.icerock.moko.permissions.location.LOCATION
+import org.maplibre.compose.location.LocationUnavailableReason
 import trainspot.app.shared.generated.resources.Res
 import trainspot.app.shared.generated.resources.add_photo_label
 import trainspot.app.shared.generated.resources.add_photo_subtitle
@@ -80,6 +97,11 @@ import trainspot.app.shared.generated.resources.station_placeholder
 import trainspot.app.shared.generated.resources.train_number_label
 import trainspot.app.shared.generated.resources.train_number_placeholder
 import trainspot.app.shared.generated.resources.train_suggestions_header
+import trainspot.app.shared.generated.resources.locate_station
+import trainspot.app.shared.generated.resources.error_location_permission_denied
+import trainspot.app.shared.generated.resources.error_location_permission_settings
+import trainspot.app.shared.generated.resources.error_location_services_disabled
+import trainspot.app.shared.generated.resources.error_location_unavailable
 
 @Composable
 fun AddSpotRoot(
@@ -88,6 +110,38 @@ fun AddSpotRoot(
     viewModel: AddSpotViewModel = koinViewModel(parameters = { parametersOf(spotId) })
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val permissionsFactory = rememberPermissionsControllerFactory()
+    val permissions = remember(permissionsFactory) { permissionsFactory.createPermissionsController() }
+    BindEffect(permissions)
+
+    val locationReader = rememberLocationReader()
+
+    LaunchedEffect(state.locationRequestId) {
+        val requestId = state.locationRequestId ?: return@LaunchedEffect
+        try {
+            provideLocationPermission(permissions)
+            val coordinates = locationReader.currentCoordinates()
+            viewModel.onAction(AddSpotAction.OnLocationResolved(requestId, coordinates.latitude, coordinates.longitude))
+        } catch (_: DeniedAlwaysException) {
+            viewModel.onAction(AddSpotAction.OnLocationFailed(requestId, UiText.ResString(Res.string.error_location_permission_settings)))
+        } catch (_: DeniedException) {
+            viewModel.onAction(AddSpotAction.OnLocationFailed(requestId, UiText.ResString(Res.string.error_location_permission_denied)))
+        } catch (_: TimeoutCancellationException) {
+            viewModel.onAction(AddSpotAction.OnLocationFailed(requestId, UiText.ResString(Res.string.error_location_unavailable)))
+        } catch (cancellation: CancellationException) {
+            viewModel.onAction(AddSpotAction.OnLocationCancelled(requestId))
+            throw cancellation
+        } catch (failure: LocationReadException) {
+            val message = when (failure.reason) {
+                LocationUnavailableReason.ServicesDisabled -> Res.string.error_location_services_disabled
+                LocationUnavailableReason.PermissionDenied -> Res.string.error_location_permission_denied
+                else -> Res.string.error_location_unavailable
+            }
+            viewModel.onAction(AddSpotAction.OnLocationFailed(requestId, UiText.ResString(message)))
+        } catch (_: Exception) {
+            viewModel.onAction(AddSpotAction.OnLocationFailed(requestId, UiText.ResString(Res.string.error_location_unavailable)))
+        }
+    }
 
     ObserveAsEvents(viewModel.events) { event ->
         when (event) {
@@ -103,6 +157,16 @@ fun AddSpotRoot(
         state = state,
         onAction = viewModel::onAction
     )
+}
+
+private suspend fun provideLocationPermission(controller: PermissionsController) {
+    try {
+        controller.providePermission(Permission.LOCATION)
+    } catch (failure: DeniedAlwaysException) {
+        if (!controller.isPermissionGranted(Permission.COARSE_LOCATION)) throw failure
+    } catch (failure: DeniedException) {
+        if (!controller.isPermissionGranted(Permission.COARSE_LOCATION)) throw failure
+    }
 }
 
 @Composable
@@ -165,7 +229,28 @@ fun AddSpotScreen(
                 value = state.stationSearchQuery,
                 onValueChange = { onAction(AddSpotAction.OnStationSearchQueryChanged(it)) },
                 placeholder = stringResource(Res.string.station_placeholder),
-                icon = Icons.Default.LocationOn
+                icon = Icons.Default.LocationOn,
+                keyboardType = KeyboardType.Text,
+                trailingContent = {
+                    IconButton(
+                        onClick = { onAction(AddSpotAction.OnLocateStationClick) },
+                        enabled = !state.isLocatingStation && !state.isLoading && !state.isPublishing
+                    ) {
+                        if (state.isLocatingStation) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(20.dp),
+                                strokeWidth = 2.dp,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        } else {
+                            Icon(
+                                imageVector = Icons.Default.MyLocation,
+                                contentDescription = stringResource(Res.string.locate_station),
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
+                }
             )
 
             if (state.stationSuggestions.isNotEmpty()) {

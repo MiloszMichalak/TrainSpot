@@ -17,4 +17,7 @@ interface StationDao {
 
     @Query("SELECT * FROM stations WHERE name LIKE :query AND latitude IS NOT NULL AND longitude IS NOT NULL LIMIT 20")
     suspend fun searchStations(query: String): List<StationEntity>
+
+    @Query("SELECT * FROM stations WHERE latitude BETWEEN -90 AND 90 AND longitude BETWEEN -180 AND 180 AND (latitude != 0 OR longitude != 0)")
+    suspend fun getStationsWithCoordinates(): List<StationEntity>
 }

@@ -38,13 +38,17 @@ napier = "2.7.1"
 
 krop = "0.2.0"
 filekit = "0.16.0"
+
 maplibre = "0.19.0"
+
+moko-permissions = "0.20.1"
+
+spatialk = "0.8.0"
+
 junitVersion = "1.3.0"
 material = "1.14.0"
 
 [libraries]
-maplibre-compose = { module = "org.maplibre.compose:maplibre-compose", version.ref = "maplibre" }
-maplibre-runtime-vulkan-android = { module = "org.maplibre.compose:maplibre-compose-runtime-vulkan-android", version.ref = "maplibre" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "datetime" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 kotlin-testJunit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
@@ -126,6 +130,16 @@ androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
 androidx-sqlite-bundled = { module = "androidx.sqlite:sqlite-bundled", version.ref = "sqlite" }
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences-core", version.ref = "datastore" }
+
+maplibre-location = { module = "org.maplibre.compose:location", version.ref = "maplibre" }
+maplibre-compose = { module = "org.maplibre.compose:maplibre-compose", version.ref = "maplibre" }
+maplibre-runtime-vulkan-android = { module = "org.maplibre.compose:maplibre-compose-runtime-vulkan-android", version.ref = "maplibre" }
+
+spatialk-turf = { module = "org.maplibre.spatialk:turf", version.ref = "spatialk" }
+
+moko-permissions-compose = { module = "dev.icerock.moko:permissions-compose", version.ref = "moko-permissions" }
+moko-permissions-location = { module = "dev.icerock.moko:permissions-location", version.ref = "moko-permissions" }
+
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 

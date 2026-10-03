@@ -23,6 +23,7 @@ kotlin {
         androidResources {
             enable = true
         }
+        withHostTest {}
     }
 
     sourceSets {
@@ -32,6 +33,9 @@ kotlin {
         commonMain.dependencies {
             implementation(projects.app.shared)
             implementation(libs.maplibre.compose)
+            implementation(libs.maplibre.location)
+            implementation(libs.moko.permissions.compose)
+            implementation(libs.moko.permissions.location)
 
             implementation(libs.androidx.room.runtime)
             implementation(libs.androidx.sqlite.bundled)
@@ -68,6 +72,8 @@ kotlin {
             implementation(libs.filekit.core)
             implementation(libs.filekit.dialogs.compose)
             implementation(libs.filekit.coil)
+
+            implementation(libs.spatialk.turf)
         }
     }
 }

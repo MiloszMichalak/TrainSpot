@@ -47,7 +47,8 @@ fun RailTextField(
     isPassword: Boolean = false,
     isPasswordVisible: Boolean = false,
     onToggleVisibility: (() -> Unit)? = null,
-    keyboardType: KeyboardType = if (isPassword) KeyboardType.Password else KeyboardType.Email
+    keyboardType: KeyboardType = if (isPassword) KeyboardType.Password else KeyboardType.Email,
+    trailingContent: (@Composable () -> Unit)? = null
 ) {
     val colorScheme = MaterialTheme.colorScheme
     
@@ -84,7 +85,7 @@ fun RailTextField(
                     color = if (isFocused) colorScheme.primary else colorScheme.outline,
                     shape = RoundedCornerShape(8.dp)
                 )
-                .padding(horizontal = 14.dp, vertical = 13.dp),
+                .padding(horizontal = 14.dp, vertical = if (trailingContent == null) 13.dp else 0.dp),
             decorationBox = { innerTextField ->
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -120,6 +121,7 @@ fun RailTextField(
                             tint = colorScheme.outline
                         )
                     }
+                    trailingContent?.invoke()
                 }
             }
         )

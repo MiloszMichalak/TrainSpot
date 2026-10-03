@@ -99,6 +99,12 @@
     <string name="comment_unlike">Unlike comment</string>
     <string name="comment_unknown_author">Spotter</string>
     <string name="cancel">Cancel</string>
+    <string name="locate_station">Find a station using my location</string>
+    <string name="error_location_permission_denied">Location permission was denied. You can select a station manually.</string>
+    <string name="error_location_permission_settings">Allow location access for TrainSpot in system settings, or select a station manually.</string>
+    <string name="error_location_services_disabled">Turn on device location services and try again.</string>
+    <string name="error_location_unavailable">Could not get your location. Try again or select a station manually.</string>
+    <string name="error_no_nearby_station">No station with coordinates was found within 5 km. Select a station manually.</string>
     <string name="spot_location_title">Spot location</string>
     <string name="navigate_back">Back</string>
 </resources>

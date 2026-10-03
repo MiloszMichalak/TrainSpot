@@ -64,6 +64,17 @@ class DictionaryRepositoryImpl(
             .map { it.toStation() }
     }
 
+    override suspend fun findNearestStation(
+        latitude: Double,
+        longitude: Double,
+        maxDistanceMeters: Double
+    ): Station? = nearestStation(
+        stations = stationDao.getStationsWithCoordinates().map { it.toStation() },
+        latitude = latitude,
+        longitude = longitude,
+        maxDistanceMeters = maxDistanceMeters
+    )
+
     private fun StationEntity.toStation(): Station {
         return Station(
             id = id,

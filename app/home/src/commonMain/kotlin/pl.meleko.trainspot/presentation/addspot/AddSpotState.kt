@@ -10,6 +10,9 @@ data class AddSpotState(
     val stationSearchQuery: String = "",
     val stationSuggestions: List<Station> = emptyList(),
     val selectedStation: Station? = null,
+    val locationRequestId: Int? = null,
+    val latitude: Double? = null,
+    val longitude: Double? = null,
     val trainSuggestions: List<TrainSuggestion> = emptyList(),
     val selectedTrainSuggestion: TrainSuggestion? = null,
     val trainNumber: String = "",
@@ -19,8 +22,11 @@ data class AddSpotState(
     val isPublishing: Boolean = false,
     val isEditMode: Boolean = false
 ) {
+    val isLocatingStation: Boolean
+        get() = locationRequestId != null
+
     val canPublish: Boolean
-        get() = !isPublishing &&
+        get() = !isPublishing && !isLocatingStation &&
             (selectedMedia != null || (isEditMode && initialImageUrl != null)) &&
             (isEditMode || selectedTrainSuggestion != null)
 }
