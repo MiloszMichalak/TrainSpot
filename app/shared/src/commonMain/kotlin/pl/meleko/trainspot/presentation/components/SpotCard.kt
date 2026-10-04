@@ -16,10 +16,10 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChatBubbleOutline
-import androidx.compose.material.icons.filled.FavoriteBorder
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -40,9 +40,9 @@ import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import org.jetbrains.compose.resources.stringResource
 import pl.meleko.trainspot.model.Spot
 import pl.meleko.trainspot.presentation.util.toRelativeTimeString
-import org.jetbrains.compose.resources.stringResource
 import trainspot.app.shared.generated.resources.Res
 import trainspot.app.shared.generated.resources.comments_title
 
@@ -91,15 +91,24 @@ fun SpotCard(
                         ),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = spot.user.username?.take(1)?.uppercase().orEmpty(),
-                        style = TextStyle(
-                            fontFamily = FontFamily.Monospace,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary
+                    if (!spot.user.avatarUrl.isNullOrBlank()) {
+                        AsyncImage(
+                            model = spot.user.avatarUrl,
+                            contentDescription = null,
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
                         )
-                    )
+                    } else {
+                        Text(
+                            text = spot.user.username?.take(1)?.uppercase().orEmpty(),
+                            style = TextStyle(
+                                fontFamily = FontFamily.Monospace,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        )
+                    }
                 }
 
                 Spacer(modifier = Modifier.width(10.dp))
@@ -244,6 +253,17 @@ fun SpotCard(
                         )
                     )
                 }
+            }
+
+            if (spot.description.isNotBlank()) {
+                Text(
+                    text = spot.description,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 6.dp),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
 
             Row(
