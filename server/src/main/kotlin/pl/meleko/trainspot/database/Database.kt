@@ -31,6 +31,8 @@ fun Application.configureDatabase() {
         SchemaUtils.create(
             UsersTable,
             SessionsTable,
+            TrainTypesTable,
+            TrainVehiclesTable,
             TrainModelsTable,
             SpotsTable,
             LikesTable,

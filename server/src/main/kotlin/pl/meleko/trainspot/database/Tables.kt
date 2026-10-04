@@ -50,10 +50,21 @@ object SessionsTable : UuidTable("sessions") {
     val lastSeen = timestampWithTimeZone("last_seen").defaultExpression(CurrentTimestampWithTimeZone)
 }
 
+object TrainTypesTable : UuidTable("train_type") {
+    val name = varchar("name", 32).uniqueIndex("train_type_name_unique")
+}
+
+object TrainVehiclesTable : UuidTable("train_vehicles") {
+    val typeId = reference("type_id", TrainTypesTable, onDelete = ReferenceOption.RESTRICT).index()
+    val model = varchar("model", 16).default("")
+    val isVerified = bool("is_verified").default(false)
+    val createdAt = timestamp("created_at").defaultExpression(CurrentTimestamp)
+}
+
 object TrainModelsTable : UuidTable("train_models") {
-    val model = varchar("model", 32)
+    val vehicle = reference("vehicle", TrainVehiclesTable, onDelete = ReferenceOption.RESTRICT).index()
     val number = varchar("number", 16)
-    val carrierCode = reference("carrier_code", CarriersTable, onDelete = ReferenceOption.SET_NULL)
+    val carrierCode = reference("carrier_code", CarriersTable, onDelete = ReferenceOption.RESTRICT)
     val createdAt = timestamp("created_at").defaultExpression(CurrentTimestamp)
 }
 
