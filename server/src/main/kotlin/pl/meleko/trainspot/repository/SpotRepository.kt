@@ -7,7 +7,6 @@ import org.jetbrains.exposed.v1.core.inList
 import org.jetbrains.exposed.v1.core.neq
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.insert
-import org.jetbrains.exposed.v1.jdbc.insertAndGetId
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.update
 import pl.meleko.trainspot.database.CarriersTable
@@ -17,10 +16,13 @@ import pl.meleko.trainspot.database.ScheduleTable
 import pl.meleko.trainspot.database.SpotsTable
 import pl.meleko.trainspot.database.StationsTable
 import pl.meleko.trainspot.database.TrainModelsTable
+import pl.meleko.trainspot.database.TrainTypesTable
+import pl.meleko.trainspot.database.TrainVehiclesTable
 import pl.meleko.trainspot.database.UsersTable
 import pl.meleko.trainspot.database.model.toUser
 import pl.meleko.trainspot.database.model.toUserDto
 import pl.meleko.trainspot.model.Spot
+import pl.meleko.trainspot.model.TrainModel
 import pl.meleko.trainspot.network.dto.ScheduleRouteDto
 import pl.meleko.trainspot.network.dto.StationDto
 import pl.meleko.trainspot.network.dto.toScheduleRoute
@@ -37,11 +39,10 @@ object SpotRepository {
         val trainModelDto = request.trainModel ?: return@dbTransaction null
 
         if (!UsersTable
-            .selectAll()
-            .where { UsersTable.id eq userId }
-            .any()) return@dbTransaction null
+                .selectAll()
+                .where { UsersTable.id eq userId }
+                .any()) return@dbTransaction null
 
-        val modelId = findOrCreateModelId(trainModelDto.model, trainModelDto.number, trainModelDto.carrierCode) ?: return@dbTransaction null
         val trainRunId = request.trainRunId ?: return@dbTransaction null
 
         val run = ScheduleTable.selectAll().where {
@@ -49,6 +50,8 @@ object SpotRepository {
         }.firstOrNull() ?: return@dbTransaction null
 
         if (request.stationId != null && !StationsTable.selectAll().where { StationsTable.id eq request.stationId }.any()) return@dbTransaction null
+
+        val modelId = TrainModelRepository.findOrCreateModelId(trainModelDto) ?: return@dbTransaction null
 
         SpotsTable.insert {
             it[SpotsTable.id] = spotId
@@ -68,7 +71,6 @@ object SpotRepository {
         if (!SpotsTable.selectAll().where { SpotsTable.id eq id }.any()) return@dbTransaction null
 
         val trainModelDto = request.trainModel ?: return@dbTransaction null
-        val modelId = findOrCreateModelId(trainModelDto.model, trainModelDto.number, trainModelDto.carrierCode) ?: return@dbTransaction null
 
         val runId = request.trainRunId?.let { value ->
             ScheduleTable
@@ -80,6 +82,8 @@ object SpotRepository {
         }
 
         if (request.stationId != null && !StationsTable.selectAll().where { StationsTable.id eq request.stationId }.any()) return@dbTransaction null
+
+        val modelId = TrainModelRepository.findOrCreateModelId(trainModelDto) ?: return@dbTransaction null
 
         SpotsTable.update({ SpotsTable.id eq id }) {
             it[SpotsTable.modelId] = modelId
@@ -93,7 +97,7 @@ object SpotRepository {
 
     suspend fun updateImage(id: Uuid, imageUrl: String): Boolean? = dbTransaction {
         if (!SpotsTable.selectAll()
-            .where { SpotsTable.id eq id }.any()) return@dbTransaction null
+                .where { SpotsTable.id eq id }.any()) return@dbTransaction null
 
         SpotsTable
             .update({ SpotsTable.id eq id }) { it[SpotsTable.imageUrl] = imageUrl } > 0
@@ -186,21 +190,40 @@ object SpotRepository {
             .where { TrainModelsTable.id inList modelIds }
             .associateBy { it[TrainModelsTable.id].value }
 
+        val vehicles = TrainVehiclesTable.selectAll()
+            .where {
+                TrainVehiclesTable.id inList models.values.map { it[TrainModelsTable.vehicle].value }
+                    .distinct()
+            }
+            .associateBy { it[TrainVehiclesTable.id].value }
+
+        val types = TrainTypesTable.selectAll()
+            .where {
+                TrainTypesTable.id inList vehicles.values.map { it[TrainVehiclesTable.typeId].value }
+                    .distinct()
+            }
+            .associateBy { it[TrainTypesTable.id].value }
+
         val runs = ScheduleTable
             .selectAll()
             .where { ScheduleTable.id inList runIds }
             .associateBy { it[ScheduleTable.trainOrderId] }
 
-        val carrierCodes = (models.values.map { it[TrainModelsTable.carrierCode].value } + runs.values.map { it[ScheduleTable.carrierCode].value }).distinct()
+        val carrierCodes =
+            (models.values.map { it[TrainModelsTable.carrierCode].value } + runs.values.map { it[ScheduleTable.carrierCode].value }).distinct()
 
         val carriers = CarriersTable
             .selectAll()
             .where { CarriersTable.id inList carrierCodes }
             .associateBy { it[CarriersTable.code] }
 
-        val stationIds = (rows.mapNotNull { it[SpotsTable.stationId]?.value } + runs.values.flatMap {
-            listOf(it[ScheduleTable.originStationId].value, it[ScheduleTable.destStationId].value)
-        }).distinct()
+        val stationIds =
+            (rows.mapNotNull { it[SpotsTable.stationId]?.value } + runs.values.flatMap {
+                listOf(
+                    it[ScheduleTable.originStationId].value,
+                    it[ScheduleTable.destStationId].value
+                )
+            }).distinct()
 
         val stations = StationsTable
             .selectAll()
@@ -228,10 +251,17 @@ object SpotRepository {
             val spotId = row[SpotsTable.id].value
             val userRow = users[row[SpotsTable.userId].value] ?: return@mapNotNull null
             val modelRow = models[row[SpotsTable.modelId].value] ?: return@mapNotNull null
+            val vehicleRow =
+                vehicles[modelRow[TrainModelsTable.vehicle].value] ?: return@mapNotNull null
+            val typeRow =
+                types[vehicleRow[TrainVehiclesTable.typeId].value] ?: return@mapNotNull null
             val runRow = runs[row[SpotsTable.trainRunId].value] ?: return@mapNotNull null
-            val carrierRow = carriers[runRow[ScheduleTable.carrierCode].value] ?: return@mapNotNull null
-            val originRow = stations[runRow[ScheduleTable.originStationId].value] ?: return@mapNotNull null
-            val destRow = stations[runRow[ScheduleTable.destStationId].value] ?: return@mapNotNull null
+            val carrierRow =
+                carriers[runRow[ScheduleTable.carrierCode].value] ?: return@mapNotNull null
+            val originRow =
+                stations[runRow[ScheduleTable.originStationId].value] ?: return@mapNotNull null
+            val destRow =
+                stations[runRow[ScheduleTable.destStationId].value] ?: return@mapNotNull null
 
             val stationDto = row[SpotsTable.stationId]?.value?.let { stationId ->
                 stations[stationId]?.let {
@@ -246,9 +276,12 @@ object SpotRepository {
 
             val modelCarrierCode = modelRow[TrainModelsTable.carrierCode].value
             val route = ScheduleRouteDto(
-                scheduleId = runRow[ScheduleTable.scheduleId], orderId = runRow[ScheduleTable.trainOrderId].toLong(),
-                trainOrderId = runRow[ScheduleTable.trainOrderId], name = runRow[ScheduleTable.trainName],
-                carrierCode = carrierRow[CarriersTable.code], nationalNumber = runRow[ScheduleTable.trainNumber],
+                scheduleId = runRow[ScheduleTable.scheduleId],
+                orderId = runRow[ScheduleTable.trainOrderId].toLong(),
+                trainOrderId = runRow[ScheduleTable.trainOrderId],
+                name = runRow[ScheduleTable.trainName],
+                carrierCode = carrierRow[CarriersTable.code],
+                nationalNumber = runRow[ScheduleTable.trainNumber],
                 commercialCategorySymbol = runRow[ScheduleTable.catSymbol],
                 originStation = StationDto(
                     id = originRow[StationsTable.id].value,
@@ -265,11 +298,25 @@ object SpotRepository {
             )
 
             spotId to Spot(
-                id = spotId, user = userRow.toUserDto().toUser(),
-                model = pl.meleko.trainspot.model.TrainModel(modelRow[TrainModelsTable.model], modelRow[TrainModelsTable.number], modelCarrierCode),
-                station = stationDto?.toStation(), trainRun = route.toScheduleRoute(), imageUrl = row[SpotsTable.imageUrl],
-                description = row[SpotsTable.description].orEmpty(), lat = row[SpotsTable.lat], lon = row[SpotsTable.lon],
-                spottedAt = row[SpotsTable.spottedAt].toInstant().toKotlinInstant(), createdAt = row[SpotsTable.createdAt],
+                id = spotId,
+                user = userRow.toUserDto().toUser(),
+                model = TrainModel(
+                    model = listOf(
+                        typeRow[TrainTypesTable.name],
+                        vehicleRow[TrainVehiclesTable.model]
+                    )
+                        .filter { it.isNotEmpty() }.joinToString("-"),
+                    number = modelRow[TrainModelsTable.number],
+                    carrierCode = modelCarrierCode
+                ),
+                station = stationDto?.toStation(),
+                trainRun = route.toScheduleRoute(),
+                imageUrl = row[SpotsTable.imageUrl],
+                description = row[SpotsTable.description].orEmpty(),
+                lat = row[SpotsTable.lat],
+                lon = row[SpotsTable.lon],
+                spottedAt = row[SpotsTable.spottedAt].toInstant().toKotlinInstant(),
+                createdAt = row[SpotsTable.createdAt],
                 likes = likes[row[SpotsTable.id].value]?.size?.toLong() ?: 0,
                 isLiked = row[SpotsTable.id].value in likedSpotIds,
                 commentsCount = commentsCounts[row[SpotsTable.id].value] ?: 0
@@ -277,23 +324,5 @@ object SpotRepository {
         }.toMap()
 
         return ids.mapNotNull(spotsById::get)
-    }
-
-    private fun findOrCreateModelId(model: String, number: String, carrierCode: String): Uuid? {
-        val condition = (TrainModelsTable.number eq number) and
-            (TrainModelsTable.carrierCode eq carrierCode) and
-            (TrainModelsTable.model eq model)
-
-        TrainModelsTable.selectAll().where { condition }.firstOrNull()?.let {
-            return it[TrainModelsTable.id].value
-        }
-
-        if (!CarriersTable.selectAll().where { CarriersTable.id eq carrierCode }.any()) return null
-
-        return TrainModelsTable.insertAndGetId {
-            it[TrainModelsTable.model] = model
-            it[TrainModelsTable.number] = number
-            it[TrainModelsTable.carrierCode] = carrierCode
-        }.value
     }
 }
