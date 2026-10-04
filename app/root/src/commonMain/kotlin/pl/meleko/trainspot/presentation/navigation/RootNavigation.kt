@@ -63,6 +63,7 @@ fun RootNavigation(
                 entry<Screen.Auth> {
                     Box(Modifier.fillMaxSize().padding(contentPadding)) {
                         AuthNavigation(
+                            onAuthenticated = mainViewModel::onAuthenticated,
                             onAuthSuccess = {
                                 backStack.removeLastOrNull()
                                 backStack.add(Screen.Home)

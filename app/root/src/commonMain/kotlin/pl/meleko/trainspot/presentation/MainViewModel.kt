@@ -2,6 +2,7 @@ package pl.meleko.trainspot.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -29,21 +30,31 @@ class MainViewModel(
         checkAuth()
     }
 
+    fun onAuthenticated() {
+        _authState.value = AuthState.Authenticated
+        viewModelScope.launch {
+            try {
+                dictionaryRepository.syncDictionariesIfNeeded()
+            } catch (cancellation: CancellationException) {
+                throw cancellation
+            } catch (_: Exception) {
+            }
+        }
+    }
+
     private fun checkAuth() {
         viewModelScope.launch {
             val token = authRepository.getToken()
             if (token != null) {
                 authRepository.checkSession()
                     .onSuccess {
-                        _authState.value = AuthState.Authenticated
-                        dictionaryRepository.syncDictionariesIfNeeded()
+                        onAuthenticated()
                     }
                     .onFailure { error ->
                         if (error == DataError.Network.UNAUTHORIZED) {
                             authRepository.refreshTokens()
                                 .onSuccess {
-                                    _authState.value = AuthState.Authenticated
-                                    dictionaryRepository.syncDictionariesIfNeeded()
+                                    onAuthenticated()
                                 }
                                 .onFailure {
                                     _authState.value = AuthState.Unauthenticated

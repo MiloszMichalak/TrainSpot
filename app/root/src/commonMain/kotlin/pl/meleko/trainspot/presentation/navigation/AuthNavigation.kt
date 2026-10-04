@@ -24,7 +24,10 @@ private val authNavigationConfig = SavedStateConfiguration {
 }
 
 @Composable
-fun AuthNavigation(onAuthSuccess: () -> Unit) {
+fun AuthNavigation(
+    onAuthenticated: () -> Unit,
+    onAuthSuccess: () -> Unit
+) {
     val backStack = rememberNavBackStack(authNavigationConfig, Screen.Auth.Login)
 
     NavDisplay(
@@ -38,13 +41,19 @@ fun AuthNavigation(onAuthSuccess: () -> Unit) {
         entryProvider = entryProvider {
             entry<Screen.Auth.Login> {
                 LoginRoot(
-                    onLoginSuccess = { onAuthSuccess() },
+                    onLoginSuccess = {
+                        onAuthenticated()
+                        onAuthSuccess()
+                    },
                     onNavigateToRegister = { backStack.add(Screen.Auth.Register) }
                 )
             }
             entry<Screen.Auth.Register> {
                 RegisterRoot(
-                    onRegisterSuccess = { backStack.add(Screen.Auth.EnterUsername) },
+                    onRegisterSuccess = {
+                        onAuthenticated()
+                        backStack.add(Screen.Auth.EnterUsername)
+                    },
                     onNavigateToLogin = { backStack.add(Screen.Auth.Login) }
                 )
             }
