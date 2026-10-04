@@ -345,8 +345,8 @@ class AddSpotViewModel(
         stationId = selectedStation?.id,
         trainRunId = selectedTrainSuggestion?.trainOrderId,
         description = description,
-        lat = latitude,
-        lon = longitude
+        lat = latitude ?: selectedStation?.latitude,
+        lon = longitude ?: selectedStation?.longitude
     )
 
     private fun ScheduleRoute.toTrainSuggestion() = TrainSuggestion(

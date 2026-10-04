@@ -43,10 +43,10 @@ class FeedViewModel(
             _state.update { it.copy(isRefreshing = false) }
             _events.send(FeedEvent.Error(error.toUiText()))
         },
-        onSuccess = { response, page ->
+        onSuccess = { response, _ ->
             _state.update {
                 it.copy(
-                    spots = if (page == 0) response.items.map { fresh ->
+                    spots = if (response.page == 0) response.items.map { fresh ->
                         val pending = it.spots.find { old -> old.id == fresh.id }
                         if (fresh.id.toString() in it.pendingLikeSpotIds && pending != null) {
                             fresh.copy(isLiked = pending.isLiked, likes = pending.likes)
