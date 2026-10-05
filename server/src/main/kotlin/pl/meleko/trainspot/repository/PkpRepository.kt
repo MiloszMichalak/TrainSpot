@@ -16,13 +16,14 @@ import pl.meleko.trainspot.database.CommercialCategoriesTable
 import pl.meleko.trainspot.database.ScheduleTable
 import pl.meleko.trainspot.database.StationsTable
 import pl.meleko.trainspot.database.TrainStopsTable
+import pl.meleko.trainspot.model.ScheduleRouteStops
+import pl.meleko.trainspot.model.StationStop
 import pl.meleko.trainspot.network.dto.CarrierDto
 import pl.meleko.trainspot.network.dto.CommercialCategoryDto
 import pl.meleko.trainspot.network.dto.ScheduleRouteDto
-import pl.meleko.trainspot.network.dto.ScheduleRouteStopsDto
 import pl.meleko.trainspot.network.dto.StationDto
-import pl.meleko.trainspot.network.dto.StationStopDto
 import pl.meleko.trainspot.network.dto.toCarrierDto
+import pl.meleko.trainspot.network.dto.toStation
 import pl.meleko.trainspot.util.dbTransaction
 import java.time.LocalDate
 import java.time.LocalTime
@@ -59,39 +60,56 @@ object PkpRepository {
             }
     }
 
-    suspend fun getTrainRouteById(trainOrderId: Int): ScheduleRouteStopsDto = dbTransaction {
+    suspend fun getTrainRouteById(trainOrderId: Int): ScheduleRouteStops? = dbTransaction {
         val route = ScheduleTable
             .selectAll()
             .where { ScheduleTable.id eq trainOrderId }
             .singleOrNull()
-            ?: throw NoSuchElementException("Route $trainOrderId not found")
+            ?: return@dbTransaction null
 
         val carrier = CarriersTable
             .selectAll()
             .where { CarriersTable.id eq route[ScheduleTable.carrierCode].value }
             .single()
 
-        val origin = station(route[ScheduleTable.originStationId].value)
-        val dest = station(route[ScheduleTable.destStationId].value)
-
-        val stops = TrainStopsTable
+        val stopRows = TrainStopsTable
             .selectAll()
             .where { TrainStopsTable.trainRunId eq trainOrderId }
             .orderBy(TrainStopsTable.orderNumber to SortOrder.ASC)
-            .map { row ->
-                StationStopDto(
-                    stationId = row[TrainStopsTable.stationId].value,
-                    orderNumber = row[TrainStopsTable.orderNumber],
-                    arrivalCommercialCategory = row[TrainStopsTable.arrCat], arrivalTrainNumber = row[TrainStopsTable.arrTrainNum],
-                    arrivalPlatform = row[TrainStopsTable.arrivalPlatform], arrivalTrack = row[TrainStopsTable.arrivalTrack],
-                    arrivalDay = row[TrainStopsTable.arrDayOffset], arrivalTime = row[TrainStopsTable.arrivalTime]?.toString(),
-                    departureCommercialCategory = row[TrainStopsTable.depCat], departureTrainNumber = row[TrainStopsTable.depTrainNum],
-                    departurePlatform = row[TrainStopsTable.platform], departureTrack = row[TrainStopsTable.track],
-                    departureDay = row[TrainStopsTable.depDayOffset], departureTime = row[TrainStopsTable.departureTime]?.toString()
-                )
+            .toList()
+
+        val stationIds = (stopRows.map { it[TrainStopsTable.stationId].value } +
+            listOf(
+                route[ScheduleTable.originStationId].value,
+                route[ScheduleTable.destStationId].value
+            )).distinct()
+
+        val stations = StationsTable.selectAll()
+            .where { StationsTable.id inList stationIds }
+            .associate { row ->
+                row[StationsTable.id].value to StationDto(
+                    id = row[StationsTable.id].value,
+                    name = row[StationsTable.name],
+                    latitude = row[StationsTable.latitude],
+                    longitude = row[StationsTable.longitude]
+                ).toStation()
             }
 
-        ScheduleRouteStopsDto(
+        val stops = stopRows.map { row ->
+            StationStop(
+                stationId = stations.getValue(row[TrainStopsTable.stationId].value),
+                orderNumber = row[TrainStopsTable.orderNumber],
+                arrivalTime = row[TrainStopsTable.arrivalTime]?.toString(),
+                departureCommercialCategory = row[TrainStopsTable.depCat],
+                departureTrainNumber = row[TrainStopsTable.depTrainNum],
+                departurePlatform = row[TrainStopsTable.platform],
+                departureTrack = row[TrainStopsTable.track],
+                departureDay = row[TrainStopsTable.depDayOffset],
+                departureTime = row[TrainStopsTable.departureTime]?.toString()
+            )
+        }
+
+        ScheduleRouteStops(
             scheduleId = route[ScheduleTable.scheduleId],
             orderId = trainOrderId.toLong(),
             trainOrderId = trainOrderId,
@@ -101,9 +119,8 @@ object PkpRepository {
             internationalArrivalNumber = route[ScheduleTable.internationalArrivalNumber],
             internationalDepartureNumber = route[ScheduleTable.internationalDepartureNumber],
             commercialCategorySymbol = route[ScheduleTable.catSymbol],
-            operatingDates = listOf(route[ScheduleTable.operatingDate].toString()),
-            originStation = origin,
-            destStation = dest,
+            originStation = stations.getValue(route[ScheduleTable.originStationId].value),
+            destStation = stations.getValue(route[ScheduleTable.destStationId].value),
             stations = stops
         )
     }

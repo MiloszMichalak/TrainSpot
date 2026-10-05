@@ -10,6 +10,11 @@ import pl.meleko.trainspot.util.mapToResponse
 fun Routing.installScheduleRoutes() {
     authenticate("auth-jwt") {
         route("/schedule"){
+            get("/{trainOrderId}/route") {
+                val trainOrderId = call.parameters["trainOrderId"]?.toIntOrNull()
+                ScheduleService.getTrainRoute(trainOrderId).mapToResponse()
+            }
+
             // GET /station/{id}/recent - Get recent trains at a station
             get("/station/{id}/recent") {
                 val stationId = call.parameters["id"]?.toInt()

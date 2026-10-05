@@ -3,7 +3,6 @@ package pl.meleko.trainspot.network
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
-import io.ktor.http.parameters
 import pl.meleko.trainspot.network.dto.CarrierDto
 import pl.meleko.trainspot.network.dto.CarriersResponse
 import pl.meleko.trainspot.network.dto.CommercialCategoriesResponse
@@ -38,10 +37,8 @@ class PkpApiClient(
     suspend fun fetchSchedules(): SchedulesResponse {
         return client.get("/api/v1/schedules") {
             url {
-                parameters {
-                    append("fullRoute", "true")
-                    append("dictionaries", "false")
-                }
+                parameters.append("fullRoute", "true")
+                parameters.append("dictionaries", "false")
             }
         }.body<SchedulesResponse>()
     }
