@@ -51,6 +51,7 @@ fun SpotCard(
     spot: Spot,
     onLikeClick: () -> Unit,
     onLocationClick: (String, Double, Double) -> Unit,
+    onRouteClick: () -> Unit,
     onCommentClick: () -> Unit = {},
     isLikePending: Boolean = false,
     modifier: Modifier = Modifier
@@ -218,6 +219,7 @@ fun SpotCard(
                     .padding(16.dp, 10.dp, 16.dp, 4.dp)
             ) {
                 Row(
+                    modifier = Modifier.clickable(onClick = onRouteClick),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Box(

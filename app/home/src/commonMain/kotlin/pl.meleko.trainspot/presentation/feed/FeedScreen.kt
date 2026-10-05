@@ -66,6 +66,7 @@ fun FeedRoot(
     onNavigateToCreate: () -> Unit,
     onNavigateToDetails: (String) -> Unit,
     onNavigateToLocationMap: (String, Double, Double) -> Unit,
+    onNavigateToRouteMap: (String) -> Unit,
     onNavigateToProfile: () -> Unit,
     viewModel: FeedViewModel = koinViewModel()
 ) {
@@ -85,6 +86,7 @@ fun FeedRoot(
         onNavigateToCreate = onNavigateToCreate,
         onNavigateToDetails = onNavigateToDetails,
         onNavigateToLocationMap = onNavigateToLocationMap,
+        onNavigateToRouteMap = onNavigateToRouteMap,
         onNavigateToProfile = onNavigateToProfile
     )
 }
@@ -97,6 +99,7 @@ fun FeedScreen(
     onNavigateToCreate: () -> Unit,
     onNavigateToDetails: (String) -> Unit,
     onNavigateToLocationMap: (String, Double, Double) -> Unit,
+    onNavigateToRouteMap: (String) -> Unit,
     onNavigateToProfile: () -> Unit
 ) {
     val pullToRefreshState = rememberPullToRefreshState()
@@ -147,6 +150,7 @@ fun FeedScreen(
                             spot = spot,
                             onLikeClick = { onAction(FeedAction.OnLikeClick(spot.id.toString())) },
                             onLocationClick = onNavigateToLocationMap,
+                            onRouteClick = { onNavigateToRouteMap(spot.id.toString()) },
                             onCommentClick = { commentsSpotId = spot.id.toString() },
                             isLikePending = spot.id.toString() in state.pendingLikeSpotIds,
                             modifier = Modifier.clickable { onNavigateToDetails(spot.id.toString()) }

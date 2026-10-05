@@ -31,5 +31,7 @@ sealed interface Screen: NavKey {
             val latitude: Double,
             val longitude: Double
         ): Screen
+        @Serializable
+        data class TrainRouteMap(val spotId: String): Screen
     }
 }

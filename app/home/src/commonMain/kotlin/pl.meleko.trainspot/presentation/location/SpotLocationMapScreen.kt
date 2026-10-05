@@ -2,9 +2,9 @@ package pl.meleko.trainspot.presentation.location
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
@@ -20,28 +20,31 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.stringResource
+import org.maplibre.compose.camera.CameraAnimation
 import org.maplibre.compose.camera.CameraPosition
+import org.maplibre.compose.camera.CameraUpdate
 import org.maplibre.compose.expressions.dsl.const
 import org.maplibre.compose.layers.CircleLayer
+import org.maplibre.compose.layers.RasterLayer
 import org.maplibre.compose.map.MaplibreMap
 import org.maplibre.compose.map.rememberMapState
-import org.maplibre.compose.sources.GeoJsonData
-import org.maplibre.compose.sources.rememberGeoJsonSource
-import org.maplibre.compose.style.BaseStyle
-import org.maplibre.spatialk.geojson.Position
-import org.jetbrains.compose.resources.stringResource
-import org.maplibre.compose.layers.RasterLayer
 import org.maplibre.compose.overlay.DisappearingCompassButton
 import org.maplibre.compose.overlay.DisappearingScaleBar
+import org.maplibre.compose.sources.GeoJsonData
+import org.maplibre.compose.sources.rememberGeoJsonSource
 import org.maplibre.compose.sources.rememberRasterTileSource
+import org.maplibre.compose.style.BaseStyle
 import org.maplibre.spatialk.geojson.Point
+import org.maplibre.spatialk.geojson.Position
 import trainspot.app.shared.generated.resources.Res
 import trainspot.app.shared.generated.resources.navigate_back
 import trainspot.app.shared.generated.resources.spot_location_title
@@ -51,7 +54,8 @@ fun SpotLocationMapScreen(
     placeName: String,
     latitude: Double,
     longitude: Double,
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    bottomContent: (@Composable ((Double, Double) -> Unit) -> Unit)? = null
 ) {
     val mapState = rememberMapState(
         baseStyle = if (isSystemInDarkTheme()) {
@@ -77,11 +81,12 @@ fun SpotLocationMapScreen(
             opacity = const(1f)
         )
 
+
         val spotLocation = rememberGeoJsonSource(
             GeoJsonData.Features(
                 Point(
-                    longitude = longitude,
-                    latitude = latitude,
+                    longitude = requireNotNull(longitude),
+                    latitude = requireNotNull(latitude),
                 )
             )
         )
@@ -94,52 +99,66 @@ fun SpotLocationMapScreen(
             strokeColor = const(Color.White),
             strokeWidth = const(3.dp)
         )
+
     }
 
-    Box(Modifier.fillMaxSize()) {
-        MaplibreMap(
-            state = mapState,
-            modifier = Modifier.fillMaxSize()
-        ) {
-            DisappearingScaleBar(
-                metersPerDp = { mapState.viewport?.metersPerDpAtTarget ?: 1.0 },
-                zoom = { mapState.cameraPosition.zoom},
-                modifier = Modifier.align(Alignment.BottomStart).padding(16.dp)
-            )
+    val cameraScope = rememberCoroutineScope()
+    Column(Modifier.fillMaxSize()) {
+        Box(Modifier.weight(1f)) {
+            MaplibreMap(
+                state = mapState,
+                modifier = Modifier.fillMaxSize()
+            ) {
+                DisappearingScaleBar(
+                    metersPerDp = { mapState.viewport?.metersPerDpAtTarget ?: 1.0 },
+                    zoom = { mapState.cameraPosition.zoom},
+                    modifier = Modifier.align(Alignment.BottomStart).padding(16.dp)
+                )
 
-            DisappearingCompassButton(
-                modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp)
+                DisappearingCompassButton(
+                    modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp)
+                )
+            }
+            TopAppBar(
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .windowInsetsPadding(
+                        WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
+                    )
+                    .padding(horizontal = 12.dp, vertical = 8.dp)
+                    .clip(RoundedCornerShape(16.dp)),
+                windowInsets = WindowInsets(0, 0, 0, 0),
+                title = {
+                    Text(
+                        text = placeName.ifBlank { stringResource(Res.string.spot_location_title) },
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                },
+                navigationIcon = {
+                    IconButton(onClick = onNavigateBack) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(Res.string.navigate_back)
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color(0xFF141618).copy(alpha = 0.92f),
+                    titleContentColor = MaterialTheme.colorScheme.onSurface,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface
+                )
             )
         }
-        TopAppBar(
-            modifier = Modifier
-                .align(Alignment.TopCenter)
-                .windowInsetsPadding(
-                    WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
+        bottomContent?.invoke { targetLatitude, targetLongitude ->
+            cameraScope.launch {
+                mapState.animateCamera(
+                    update = CameraUpdate(
+                        target = Position(latitude = targetLatitude, longitude = targetLongitude)
+                    ),
+                    animation = CameraAnimation.Ease()
                 )
-                .padding(horizontal = 12.dp, vertical = 8.dp)
-                .clip(RoundedCornerShape(16.dp)),
-            windowInsets = WindowInsets(0, 0, 0, 0),
-            title = {
-                Text(
-                    text = placeName.ifBlank { stringResource(Res.string.spot_location_title) },
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-            },
-            navigationIcon = {
-                IconButton(onClick = onNavigateBack) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = stringResource(Res.string.navigate_back)
-                    )
-                }
-            },
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = Color(0xFF141618).copy(alpha = 0.92f),
-                titleContentColor = MaterialTheme.colorScheme.onSurface,
-                navigationIconContentColor = MaterialTheme.colorScheme.onSurface
-            )
-        )
+            }
+        }
     }
 }

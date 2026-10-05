@@ -1,10 +1,10 @@
 package pl.meleko.trainspot.presentation.navigation
 
-import androidx.compose.runtime.Composable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
@@ -16,8 +16,9 @@ import kotlinx.serialization.modules.polymorphic
 import kotlinx.serialization.modules.subclass
 import pl.meleko.trainspot.presentation.addspot.AddSpotRoot
 import pl.meleko.trainspot.presentation.feed.FeedRoot
-import pl.meleko.trainspot.presentation.profile.ProfileRoot
 import pl.meleko.trainspot.presentation.location.SpotLocationMapScreen
+import pl.meleko.trainspot.presentation.location.TrainRouteMapRoot
+import pl.meleko.trainspot.presentation.profile.ProfileRoot
 
 private val homeNavigationConfig = SavedStateConfiguration {
     serializersModule = SerializersModule {
@@ -27,6 +28,7 @@ private val homeNavigationConfig = SavedStateConfiguration {
             subclass(Screen.Home.Create::class)
             subclass(Screen.Home.Profile::class)
             subclass(Screen.Home.LocationMap::class)
+            subclass(Screen.Home.TrainRouteMap::class)
         }
     }
 }
@@ -52,6 +54,7 @@ fun HomeNavigation(contentPadding: PaddingValues) {
                         onNavigateToLocationMap = { placeName, latitude, longitude ->
                             backStack.add(Screen.Home.LocationMap(placeName, latitude, longitude))
                         },
+                        onNavigateToRouteMap = { spotId -> backStack.add(Screen.Home.TrainRouteMap(spotId)) },
                         onNavigateToProfile = { backStack.add(Screen.Home.Profile) }
                     )
                 }
@@ -76,6 +79,12 @@ fun HomeNavigation(contentPadding: PaddingValues) {
                     placeName = key.placeName,
                     latitude = key.latitude,
                     longitude = key.longitude,
+                    onNavigateBack = { backStack.removeLastOrNull() }
+                )
+            }
+            entry<Screen.Home.TrainRouteMap> { key ->
+                TrainRouteMapRoot(
+                    spotId = key.spotId,
                     onNavigateBack = { backStack.removeLastOrNull() }
                 )
             }

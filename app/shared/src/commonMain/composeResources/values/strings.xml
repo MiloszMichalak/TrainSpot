@@ -107,4 +107,6 @@
     <string name="error_no_nearby_station">No station with coordinates was found within 5 km. Select a station manually.</string>
     <string name="spot_location_title">Spot location</string>
     <string name="navigate_back">Back</string>
+    <string name="train_route_title">Train route</string>
+    <string name="train_route_empty">No stops available for this train.</string>
 </resources>

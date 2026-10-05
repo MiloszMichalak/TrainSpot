@@ -113,4 +113,6 @@
     <string name="error_no_nearby_station">Nie znaleziono stacji ze współrzędnymi w promieniu 5 km. Wybierz stację ręcznie.</string>
     <string name="spot_location_title">Lokalizacja spotu</string>
     <string name="navigate_back">Wróć</string>
+    <string name="train_route_title">Trasa pociągu</string>
+    <string name="train_route_empty">Brak przystanków dla tego pociągu.</string>
 </resources>
