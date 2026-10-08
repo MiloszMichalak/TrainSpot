@@ -5,6 +5,7 @@ import pl.meleko.trainspot.model.Spot
 import pl.meleko.trainspot.repository.LikesRepository
 import pl.meleko.trainspot.repository.SpotRepository
 import pl.meleko.trainspot.requests.SpotRequest
+import pl.meleko.trainspot.requests.hasValidTrainSelection
 import pl.meleko.trainspot.response.PaginationResponse
 import pl.meleko.trainspot.util.ImageStorage
 import pl.meleko.trainspot.util.IncomingImage
@@ -18,7 +19,7 @@ object SpotsService {
         val trainModel = request.trainModel
         if (
             trainModel == null ||
-            request.trainRunId == null
+            !request.hasValidTrainSelection()
         ) {
             return NetworkResult.Error(HttpStatusCode.BadRequest)
         }
@@ -69,6 +70,7 @@ object SpotsService {
     }
 
     suspend fun update(id: Uuid, userId: Uuid, request: SpotRequest): NetworkResult<Spot> {
+        if (!request.hasValidTrainSelection()) return NetworkResult.Error(HttpStatusCode.BadRequest)
         val existingSpot = SpotRepository.findById(id)
             ?: return NetworkResult.Error(HttpStatusCode.NotFound)
 

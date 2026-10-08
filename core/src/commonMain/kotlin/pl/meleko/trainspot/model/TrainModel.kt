@@ -5,6 +5,6 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class TrainModel(
     val model: String,
-    val number: String,
-    val carrierCode: String
+    val number: String? = null,
+    val carrierCode: String? = null
 )

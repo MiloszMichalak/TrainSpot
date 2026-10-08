@@ -16,6 +16,15 @@ data class AddSpotState(
     val trainSuggestions: List<TrainSuggestion> = emptyList(),
     val selectedTrainSuggestion: TrainSuggestion? = null,
     val trainNumber: String = "",
+    val vehicleNumber: String = "",
+    val isManualTrain: Boolean = false,
+    val showManualTrainRoute: Boolean = false,
+    val originStationQuery: String = "",
+    val destinationStationQuery: String = "",
+    val originStation: Station? = null,
+    val destinationStation: Station? = null,
+    val originStationSuggestions: List<Station> = emptyList(),
+    val destinationStationSuggestions: List<Station> = emptyList(),
     val rollingStockModel: String = "",
     val rollingStockCarrierCode: String = "",
     val description: String = "",
@@ -27,9 +36,20 @@ data class AddSpotState(
         get() = locationRequestId != null
 
     val canPublish: Boolean
-        get() = !isPublishing && !isLocatingStation &&
+        get() = !isLoading && !isPublishing && !isLocatingStation &&
             (selectedMedia != null || (isEditMode && initialImageUrl != null)) &&
-            (isEditMode || selectedTrainSuggestion != null)
+            rollingStockModel.isNotBlank() &&
+            isTrainInputValid
+
+    val isTrainInputValid: Boolean
+        get() = !isManualTrain || (
+            (originStationQuery.isBlank() && destinationStationQuery.isBlank() ||
+                originStation != null && destinationStation != null) &&
+                (trainNumber.isNotBlank() ||
+                    originStationQuery.isBlank() && destinationStationQuery.isBlank()) &&
+                (trainNumber.isBlank() || selectedStation != null) &&
+                trainNumber.trim().length <= 50
+            )
 }
 
 data class SelectedSpotMedia(

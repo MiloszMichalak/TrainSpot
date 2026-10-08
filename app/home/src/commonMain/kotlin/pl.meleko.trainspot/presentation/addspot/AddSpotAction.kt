@@ -14,6 +14,11 @@ sealed interface AddSpotAction {
     data class OnLocationCancelled(val requestId: Int) : AddSpotAction
     data class OnTrainSelected(val train: TrainSuggestion) : AddSpotAction
     data class OnTrainNumberChanged(val number: String) : AddSpotAction
+    data object OnManualTrainClick : AddSpotAction
+    data object OnClearTrainClick : AddSpotAction
+    data class OnVehicleNumberChanged(val number: String) : AddSpotAction
+    data class OnRouteStationQueryChanged(val query: String, val isOrigin: Boolean) : AddSpotAction
+    data class OnRouteStationSelected(val station: Station, val isOrigin: Boolean) : AddSpotAction
     data class OnRollingStockModelChanged(val model: String) : AddSpotAction
     data class OnDescriptionChanged(val description: String) : AddSpotAction
     data object OnPublishClick : AddSpotAction

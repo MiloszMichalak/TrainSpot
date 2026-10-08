@@ -45,7 +45,14 @@ class TrainRouteMapViewModel(
                     return@launch
                 }
             }
-            when (val result = scheduleRepository.getTrainRoute(spot.trainRun.trainOrderId)) {
+
+            val trainRun = spot.trainRun
+            if (trainRun == null || trainRun.trainOrderId <= 0) {
+                _state.update { it.copy(stops = emptyList(), isLoading = false) }
+                return@launch
+            }
+
+            when (val result = scheduleRepository.getTrainRoute(trainRun.trainOrderId)) {
                 is Result.Success -> _state.update {
                     it.copy(stops = result.data.stations.sortedBy { stop -> stop.orderNumber }, isLoading = false)
                 }

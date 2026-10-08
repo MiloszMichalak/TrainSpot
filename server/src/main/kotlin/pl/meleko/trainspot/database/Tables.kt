@@ -63,8 +63,8 @@ object TrainVehiclesTable : UuidTable("train_vehicles") {
 
 object TrainModelsTable : UuidTable("train_models") {
     val vehicle = reference("vehicle", TrainVehiclesTable, onDelete = ReferenceOption.RESTRICT).index()
-    val number = varchar("number", 16)
-    val carrierCode = reference("carrier_code", CarriersTable, onDelete = ReferenceOption.RESTRICT)
+    val number = varchar("number", 16).nullable()
+    val carrierCode = optReference("carrier_code", CarriersTable, onDelete = ReferenceOption.RESTRICT)
     val createdAt = timestamp("created_at").defaultExpression(CurrentTimestamp)
 }
 
@@ -72,7 +72,7 @@ object SpotsTable : UuidTable("spots") {
     val userId = reference("user_id", UsersTable, onDelete = ReferenceOption.CASCADE)
     val modelId = reference("model_id", TrainModelsTable, onDelete = ReferenceOption.CASCADE)
     val stationId = optReference("station_id", StationsTable, onDelete = ReferenceOption.SET_NULL)
-    val trainRunId = reference("train_run_id", ScheduleTable, onDelete = ReferenceOption.CASCADE)
+    val trainRunId = optReference("train_run_id", ScheduleTable, onDelete = ReferenceOption.CASCADE)
     val imageUrl = varchar("image_url", 255)
     val description = text("description").nullable()
     val lat = double("lat").nullable()
@@ -107,14 +107,14 @@ object ScheduleTable : IdTable<Int>("train_runs") {
     val trainOrderId = integer("train_order_id")
     val scheduleId = integer("schedule_id")
     val trainName = varchar("train_name", 32).nullable()
-    val carrierCode = reference("carrier_code", CarriersTable, onDelete = ReferenceOption.CASCADE)
+    val carrierCode = optReference("carrier_code", CarriersTable, onDelete = ReferenceOption.CASCADE)
     val trainNumber = varchar("train_number", 50).nullable()
     val catSymbol = varchar("cat_symbol", 16)
     val operatingDate = date("operating_date")
     val internationalArrivalNumber = varchar("international_arrival_number", 50).nullable()
     val internationalDepartureNumber = varchar("international_departure_number", 50).nullable()
-    val originStationId = reference("origin_station_id", StationsTable, onDelete = ReferenceOption.CASCADE)
-    val destStationId = reference("dest_station_id", StationsTable, onDelete = ReferenceOption.CASCADE)
+    val originStationId = optReference("origin_station_id", StationsTable, onDelete = ReferenceOption.CASCADE)
+    val destStationId = optReference("dest_station_id", StationsTable, onDelete = ReferenceOption.CASCADE)
 
     override val id = trainOrderId.entityId()
     override val primaryKey = PrimaryKey(id)

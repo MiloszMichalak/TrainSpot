@@ -61,10 +61,17 @@ class AddSpotViewModel(
                         it.copy(
                             isLoading = false,
                             initialImageUrl = spot.imageUrl,
-                            selectedTrainSuggestion = spot.trainRun.toTrainSuggestion(),
-                            trainNumber = spot.model.number,
+                            selectedTrainSuggestion = spot.trainRun?.toTrainSuggestion(),
+                            vehicleNumber = spot.model.number.orEmpty(),
                             rollingStockModel = spot.model.model,
-                            rollingStockCarrierCode = spot.model.carrierCode,
+                            rollingStockCarrierCode = spot.model.carrierCode.orEmpty(),
+                            trainNumber = spot.trainRun?.nationalNumber.orEmpty(),
+                            isManualTrain = (spot.trainRun?.trainOrderId ?: 0) < 0,
+                            showManualTrainRoute = (spot.trainRun?.trainOrderId ?: 0) < 0,
+                            originStation = spot.trainRun?.originStation,
+                            originStationQuery = spot.trainRun?.originStation?.name.orEmpty(),
+                            destinationStation = spot.trainRun?.destStation,
+                            destinationStationQuery = spot.trainRun?.destStation?.name.orEmpty(),
                             description = spot.description,
                             selectedStation = spot.station,
                             latitude = spot.lat,
@@ -99,6 +106,7 @@ class AddSpotViewModel(
                         stationSearchQuery = action.query,
                         selectedStation = null,
                         selectedTrainSuggestion = null,
+                        trainNumber = if (it.isManualTrain) it.trainNumber else "",
                         trainSuggestions = emptyList()
                     )
                 }
@@ -130,12 +138,57 @@ class AddSpotViewModel(
                     it.copy(
                         selectedTrainSuggestion = action.train,
                         trainNumber = action.train.number,
+                        isManualTrain = false,
+                        showManualTrainRoute = false,
+                        originStation = null,
+                        originStationQuery = "",
+                        destinationStation = null,
+                        destinationStationQuery = "",
+                        originStationSuggestions = emptyList(),
+                        destinationStationSuggestions = emptyList(),
                         rollingStockCarrierCode = action.train.carrierCode
                     )
                 }
             }
             is AddSpotAction.OnTrainNumberChanged -> {
-                _state.update { it.copy(trainNumber = action.number) }
+                _state.update {
+                    it.copy(trainNumber = action.number, isManualTrain = true, selectedTrainSuggestion = null)
+                }
+            }
+            AddSpotAction.OnManualTrainClick -> {
+                _state.update { it.copy(showManualTrainRoute = !it.showManualTrainRoute) }
+            }
+            AddSpotAction.OnClearTrainClick -> {
+                _state.update {
+                    it.copy(
+                        isManualTrain = false,
+                        showManualTrainRoute = false,
+                        selectedTrainSuggestion = null,
+                        trainNumber = "",
+                        originStation = null,
+                        originStationQuery = "",
+                        destinationStation = null,
+                        destinationStationQuery = "",
+                        originStationSuggestions = emptyList(),
+                        destinationStationSuggestions = emptyList()
+                    )
+                }
+            }
+            is AddSpotAction.OnVehicleNumberChanged -> {
+                _state.update { it.copy(vehicleNumber = action.number) }
+            }
+            is AddSpotAction.OnRouteStationQueryChanged -> {
+                _state.update {
+                    if (action.isOrigin) it.copy(originStationQuery = action.query, originStation = null, originStationSuggestions = emptyList(), isManualTrain = true, selectedTrainSuggestion = null)
+                    else it.copy(destinationStationQuery = action.query, destinationStation = null, destinationStationSuggestions = emptyList(), isManualTrain = true, selectedTrainSuggestion = null)
+                }
+                searchRouteStations(action.query, action.isOrigin)
+            }
+            is AddSpotAction.OnRouteStationSelected -> {
+                _state.update {
+                    if (action.isOrigin) it.copy(originStationQuery = action.station.name, originStation = action.station, originStationSuggestions = emptyList())
+                    else it.copy(destinationStationQuery = action.station.name, destinationStation = action.station, destinationStationSuggestions = emptyList())
+                }
             }
             is AddSpotAction.OnRollingStockModelChanged -> {
                 _state.update { it.copy(rollingStockModel = action.model) }
@@ -172,6 +225,7 @@ class AddSpotViewModel(
                 stationSearchQuery = station.name,
                 stationSuggestions = emptyList(),
                 selectedTrainSuggestion = null,
+                trainNumber = if (it.isManualTrain) it.trainNumber else "",
                 trainSuggestions = emptyList()
             )
         }
@@ -218,9 +272,15 @@ class AddSpotViewModel(
             return
         }
         stationSearchJob = viewModelScope.launch {
-            val results = dictionaryRepository.searchStations(query)
+            val results = dictionaryRepository.searchStations(query.trim())
             if (state.value.stationSearchQuery == query && state.value.selectedStation == null) {
-                _state.update { it.copy(stationSuggestions = results) }
+                val exactMatches = results.filter { it.name.equals(query.trim(), ignoreCase = true) }
+                if (exactMatches.size == 1) {
+                    stationSearchJob = null
+                    selectStation(exactMatches.single())
+                } else {
+                    _state.update { it.copy(stationSuggestions = results) }
+                }
             }
         }
     }
@@ -233,7 +293,7 @@ class AddSpotViewModel(
                     if (state.value.selectedStation?.id != stationId) return@launch
                     _state.update { state ->
                         state.copy(
-                            trainSuggestions = routes.map { it.toTrainSuggestion() }
+                            trainSuggestions = routes.map { it.toTrainSuggestion() },
                         )
                     }
                 }
@@ -245,10 +305,29 @@ class AddSpotViewModel(
         }
     }
 
+    private var originStationSearchJob: Job? = null
+    private var destinationStationSearchJob: Job? = null
+
+    private fun searchRouteStations(query: String, isOrigin: Boolean) {
+        if (isOrigin) originStationSearchJob?.cancel() else destinationStationSearchJob?.cancel()
+        if (query.length < 2) return
+        val job = viewModelScope.launch {
+            val results = dictionaryRepository.searchStations(query)
+            _state.update {
+                when {
+                    isOrigin && it.originStationQuery == query && it.originStation == null -> it.copy(originStationSuggestions = results)
+                    !isOrigin && it.destinationStationQuery == query && it.destinationStation == null -> it.copy(destinationStationSuggestions = results)
+                    else -> it
+                }
+            }
+        }
+        if (isOrigin) originStationSearchJob = job else destinationStationSearchJob = job
+    }
+
     private fun publishSpot() {
         val currentState = state.value
         val selectedMedia = currentState.selectedMedia
-        if (selectedMedia == null || currentState.selectedTrainSuggestion == null) {
+        if (selectedMedia == null || !currentState.canPublish) {
             viewModelScope.launch {
                 _events.send(AddSpotEvent.Error(UiText.ResString(Res.string.error_invalid_data)))
             }
@@ -313,6 +392,7 @@ class AddSpotViewModel(
 
     private fun updateSpot() {
         val id = spotId ?: return
+        if (!state.value.canPublish) return
         
         viewModelScope.launch {
             _state.update { it.copy(isPublishing = true) }
@@ -339,11 +419,14 @@ class AddSpotViewModel(
     private fun AddSpotState.toSpotRequest() = SpotRequest(
         trainModel = TrainModel(
             model = rollingStockModel,
-            number = trainNumber,
-            carrierCode = rollingStockCarrierCode
+            number = vehicleNumber.trim().takeIf(String::isNotEmpty),
+            carrierCode = rollingStockCarrierCode.trim().takeIf { !isManualTrain && it.isNotEmpty() }
         ),
         stationId = selectedStation?.id,
-        trainRunId = selectedTrainSuggestion?.trainOrderId,
+        trainRunId = selectedTrainSuggestion?.trainOrderId.takeUnless { isManualTrain },
+        manualTrainNumber = trainNumber.trim().takeIf { isManualTrain && it.isNotEmpty() },
+        originStationId = originStation?.id.takeIf { isManualTrain },
+        destinationStationId = destinationStation?.id.takeIf { isManualTrain },
         description = description,
         lat = latitude ?: selectedStation?.latitude,
         lon = longitude ?: selectedStation?.longitude

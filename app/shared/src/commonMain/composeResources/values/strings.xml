@@ -109,4 +109,12 @@
     <string name="navigate_back">Back</string>
     <string name="train_route_title">Train route</string>
     <string name="train_route_empty">No stops available for this train.</string>
+    <string name="manual_train_button">Add</string>
+    <string name="clear_train_button">No train selected</string>
+    <string name="origin_station_label">Origin station (optional)</string>
+    <string name="destination_station_label">Destination station (optional)</string>
+    <string name="vehicle_number_label">Vehicle number</string>
+    <string name="manual_train_hint">A train number is enough. You can also select both route stations. Select the spot station to record the passage.</string>
+    <string name="manual_train_error">Route stations require a train number and both stations selected from suggestions. A manual train also requires the spot station.</string>
+    <string name="rolling_stock_required_hint">Enter the rolling stock model to publish the spot.</string>
 </resources>

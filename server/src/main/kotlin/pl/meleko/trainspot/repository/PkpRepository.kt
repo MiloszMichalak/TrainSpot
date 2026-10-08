@@ -1,15 +1,12 @@
 package pl.meleko.trainspot.repository
 
+import kotlinx.datetime.toJavaLocalDate
+import kotlinx.datetime.toJavaLocalTime
 import kotlinx.datetime.toKotlinLocalDate
-import kotlinx.datetime.toKotlinLocalTime
-import org.jetbrains.exposed.v1.core.Op
 import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
-import org.jetbrains.exposed.v1.core.greaterEq
 import org.jetbrains.exposed.v1.core.inList
-import org.jetbrains.exposed.v1.core.lessEq
-import org.jetbrains.exposed.v1.core.or
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import pl.meleko.trainspot.database.CarriersTable
 import pl.meleko.trainspot.database.CommercialCategoriesTable
@@ -26,9 +23,11 @@ import pl.meleko.trainspot.network.dto.toCarrierDto
 import pl.meleko.trainspot.network.dto.toStation
 import pl.meleko.trainspot.util.dbTransaction
 import java.time.LocalDate
-import java.time.LocalTime
+import java.time.LocalDateTime
+import java.time.ZoneId
 
 object PkpRepository {
+    private val scheduleZone = ZoneId.of("Europe/Warsaw")
     suspend fun getAllStations(): List<StationDto> = dbTransaction {
         StationsTable
             .selectAll()
@@ -67,11 +66,6 @@ object PkpRepository {
             .singleOrNull()
             ?: return@dbTransaction null
 
-        val carrier = CarriersTable
-            .selectAll()
-            .where { CarriersTable.id eq route[ScheduleTable.carrierCode].value }
-            .single()
-
         val stopRows = TrainStopsTable
             .selectAll()
             .where { TrainStopsTable.trainRunId eq trainOrderId }
@@ -79,9 +73,9 @@ object PkpRepository {
             .toList()
 
         val stationIds = (stopRows.map { it[TrainStopsTable.stationId].value } +
-            listOf(
-                route[ScheduleTable.originStationId].value,
-                route[ScheduleTable.destStationId].value
+            listOfNotNull(
+                route[ScheduleTable.originStationId]?.value,
+                route[ScheduleTable.destStationId]?.value
             )).distinct()
 
         val stations = StationsTable.selectAll()
@@ -114,77 +108,77 @@ object PkpRepository {
             orderId = trainOrderId.toLong(),
             trainOrderId = trainOrderId,
             name = route[ScheduleTable.trainName],
-            carrierCode = carrier[CarriersTable.code],
+            carrierCode = route[ScheduleTable.carrierCode]?.value.orEmpty(),
             nationalNumber = route[ScheduleTable.trainNumber],
             internationalArrivalNumber = route[ScheduleTable.internationalArrivalNumber],
             internationalDepartureNumber = route[ScheduleTable.internationalDepartureNumber],
             commercialCategorySymbol = route[ScheduleTable.catSymbol],
-            originStation = stations.getValue(route[ScheduleTable.originStationId].value),
-            destStation = stations.getValue(route[ScheduleTable.destStationId].value),
+            originStation = route[ScheduleTable.originStationId]?.value?.let(stations::get),
+            destStation = route[ScheduleTable.destStationId]?.value?.let(stations::get),
             stations = stops
         )
     }
 
     suspend fun getRecentTrainsForStation(stationId: Int, minutes: Long): List<ScheduleRouteDto> {
-        val now = LocalTime.now()
-
-        val from = now.minusMinutes(minutes).toKotlinLocalTime()
-        val to = now.plusMinutes(minutes).toKotlinLocalTime()
-
-        val timeCondition = if (to < from) {
-            ((TrainStopsTable.departureTime greaterEq from) or (TrainStopsTable.departureTime lessEq to)) or
-                ((TrainStopsTable.arrivalTime greaterEq from) or (TrainStopsTable.arrivalTime lessEq to))
-        } else {
-            ((TrainStopsTable.departureTime greaterEq from) and (TrainStopsTable.departureTime lessEq to)) or
-                ((TrainStopsTable.arrivalTime greaterEq from) and (TrainStopsTable.arrivalTime lessEq to))
-        }
-
-        return fetchTrainsForStation(stationId, timeCondition)
+        val now = LocalDateTime.now(scheduleZone)
+        return fetchTrainsForStation(stationId, now.minusMinutes(minutes), now.plusMinutes(minutes))
     }
 
     suspend fun getTodayTrainsForStation(stationId: Int): List<ScheduleRouteDto> = fetchTrainsForStation(stationId)
 
-    private suspend fun fetchTrainsForStation(stationId: Int, timeCondition: Op<Boolean>? = null): List<ScheduleRouteDto> = dbTransaction {
+    private suspend fun fetchTrainsForStation(
+        stationId: Int,
+        from: LocalDateTime? = null,
+        to: LocalDateTime? = null
+    ): List<ScheduleRouteDto> = dbTransaction {
         val stopQuery = TrainStopsTable
             .selectAll()
-            .where {
-                val base = (TrainStopsTable.stationId eq stationId)
-                if (timeCondition != null) base and timeCondition else base
-            }
+            .where { TrainStopsTable.stationId eq stationId }
 
         val matchingStops = stopQuery
             .orderBy(TrainStopsTable.departureTime to SortOrder.ASC)
             .toList()
             .groupBy { it[TrainStopsTable.trainRunId].value }
 
+        if (matchingStops.isEmpty()) return@dbTransaction emptyList()
+
         val runRows = ScheduleTable
             .selectAll()
             .where {
-                (ScheduleTable.id inList matchingStops.keys.toList()) and
-                    (ScheduleTable.operatingDate eq LocalDate.now().toKotlinLocalDate())
+                val stationRuns = ScheduleTable.id inList matchingStops.keys.toList()
+                if (from == null) {
+                    stationRuns and (ScheduleTable.operatingDate eq LocalDate.now(scheduleZone).toKotlinLocalDate())
+                } else stationRuns
             }
             .toList()
             .associateBy { it[ScheduleTable.trainOrderId] }
 
-        runRows.values.sortedBy { run ->
-            matchingStops[run[ScheduleTable.trainOrderId]]?.firstOrNull()?.get(TrainStopsTable.departureTime)
-        }.mapNotNull { run ->
-            val times = matchingStops[run[ScheduleTable.trainOrderId]]?.firstOrNull() ?: return@mapNotNull null
-            val carrier = CarriersTable
-                .selectAll()
-                .where { CarriersTable.id eq run[ScheduleTable.carrierCode].value }
-                .singleOrNull() ?: return@mapNotNull null
-
+        runRows.values.mapNotNull { run ->
+            val operatingDate = run[ScheduleTable.operatingDate].toJavaLocalDate()
+            val matchingTimes = matchingStops[run[ScheduleTable.trainOrderId]].orEmpty().mapNotNull stopTime@{ stop ->
+                val arrival = stop[TrainStopsTable.arrivalTime]?.toJavaLocalTime()?.let {
+                    operatingDate.plusDays((stop[TrainStopsTable.arrDayOffset] ?: 0).toLong()).atTime(it)
+                }
+                val departure = stop[TrainStopsTable.departureTime]?.toJavaLocalTime()?.let {
+                    operatingDate.plusDays((stop[TrainStopsTable.depDayOffset] ?: 0).toLong()).atTime(it)
+                }
+                val eventTime = listOfNotNull(arrival, departure).filter {
+                    from == null || to == null || (!it.isBefore(from) && !it.isAfter(to))
+                }.minOrNull() ?: return@stopTime null
+                stop to eventTime
+            }.minByOrNull { it.second } ?: return@mapNotNull null
+            Triple(run, matchingTimes.first, matchingTimes.second)
+        }.sortedBy { it.third }.map { (run, times, _) ->
             ScheduleRouteDto(
                 scheduleId = run[ScheduleTable.scheduleId],
                 orderId = run[ScheduleTable.trainOrderId].toLong(),
                 trainOrderId = run[ScheduleTable.trainOrderId],
                 name = run[ScheduleTable.trainName],
-                carrierCode = carrier[CarriersTable.code],
+                carrierCode = run[ScheduleTable.carrierCode]?.value.orEmpty(),
                 nationalNumber = run[ScheduleTable.trainNumber],
                 commercialCategorySymbol = run[ScheduleTable.catSymbol],
-                originStation = station(run[ScheduleTable.originStationId].value),
-                destStation = station(run[ScheduleTable.destStationId].value),
+                originStation = run[ScheduleTable.originStationId]?.value?.let(::station),
+                destStation = run[ScheduleTable.destStationId]?.value?.let(::station),
                 arrivalTime = times[TrainStopsTable.arrivalTime]?.toString(),
                 departureTime = times[TrainStopsTable.departureTime]?.toString()
             )

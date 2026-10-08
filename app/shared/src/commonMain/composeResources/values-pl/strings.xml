@@ -115,4 +115,12 @@
     <string name="navigate_back">Wróć</string>
     <string name="train_route_title">Trasa pociągu</string>
     <string name="train_route_empty">Brak przystanków dla tego pociągu.</string>
+    <string name="manual_train_button">Add</string>
+    <string name="clear_train_button">Nie przypisuj pociągu</string>
+    <string name="origin_station_label">Stacja początkowa (opcjonalnie)</string>
+    <string name="destination_station_label">Stacja końcowa (opcjonalnie)</string>
+    <string name="vehicle_number_label">Numer pojazdu</string>
+    <string name="manual_train_hint">Wystarczy numer pociągu. Możesz też wybrać obie stacje trasy. Wybierz stację spota, aby zapisać przejazd.</string>
+    <string name="manual_train_error">Stacje trasy wymagają numeru pociągu i wybrania obu stacji z podpowiedzi. Ręczny pociąg wymaga też stacji spota.</string>
+    <string name="rolling_stock_required_hint">Podaj model taboru, aby opublikować spota.</string>
 </resources>

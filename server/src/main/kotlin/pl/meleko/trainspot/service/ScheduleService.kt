@@ -25,12 +25,14 @@ object ScheduleService {
     }
 
     suspend fun getRecentTrains(stationId: Int?, minutes: Long): NetworkResult<List<ScheduleRoute>> {
-        if (stationId == null) {
+        if (stationId == null || stationId <= 0 || minutes !in 1L..1440L) {
             return NetworkResult.Error(HttpStatusCode.BadRequest)
         }
 
         return try {
             NetworkResult.Success(PkpRepository.getRecentTrainsForStation(stationId, minutes).map { it.toScheduleRoute() })
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             NetworkResult.Error(HttpStatusCode.InternalServerError)
         }

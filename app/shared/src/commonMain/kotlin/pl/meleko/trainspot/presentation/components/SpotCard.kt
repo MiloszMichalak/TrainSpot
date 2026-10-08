@@ -57,6 +57,15 @@ fun SpotCard(
     modifier: Modifier = Modifier
 ) {
     val createdTime = spot.createdAt.toLocalDateTime(TimeZone.currentSystemDefault()).time
+    val trainRun = spot.trainRun
+    val trainLabel = trainRun?.let {
+        listOfNotNull(
+            it.carrierCode.takeIf(String::isNotBlank),
+            it.nationalNumber?.takeIf(String::isNotBlank)
+        )
+            .joinToString(" ")
+            .takeIf(String::isNotBlank)
+    }
 
     val spotLatitude = spot.lat
     val spotLongitude = spot.lon
@@ -191,8 +200,8 @@ fun SpotCard(
                         .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.85f))
                         .padding(horizontal = 10.dp, vertical = 6.dp)
                 ) {
-                    Text(
-                        text = spot.trainRun.carrierCode + " " + (spot.trainRun.nationalNumber ?: ""),
+                    if (trainLabel != null) Text(
+                        text = trainLabel,
                         style = TextStyle(
                             fontFamily = FontFamily.Monospace,
                             fontSize = 16.sp,
@@ -213,7 +222,9 @@ fun SpotCard(
                 }
             }
 
-            Column(
+            if (trainRun != null &&
+                (trainRun.originStation != null || trainRun.destStation != null)
+            ) Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp, 10.dp, 16.dp, 4.dp)
@@ -230,7 +241,7 @@ fun SpotCard(
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = spot.trainRun.originStation?.name.orEmpty(),
+                        text = trainRun?.originStation?.name.orEmpty(),
                         style = TextStyle(
                             fontFamily = FontFamily.Monospace,
                             fontSize = 11.sp,
@@ -247,7 +258,7 @@ fun SpotCard(
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = spot.trainRun.destStation?.name.orEmpty(),
+                        text = trainRun.destStation?.name.orEmpty(),
                         style = TextStyle(
                             fontFamily = FontFamily.Monospace,
                             fontSize = 11.sp,

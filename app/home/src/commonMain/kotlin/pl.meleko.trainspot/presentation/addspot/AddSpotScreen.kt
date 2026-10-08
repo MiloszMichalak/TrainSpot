@@ -18,9 +18,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddAPhoto
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.LocationOn
@@ -35,6 +38,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -89,14 +93,18 @@ import trainspot.app.shared.generated.resources.add_photo_subtitle
 import trainspot.app.shared.generated.resources.add_spot_title
 import trainspot.app.shared.generated.resources.description_label
 import trainspot.app.shared.generated.resources.description_placeholder
+import trainspot.app.shared.generated.resources.destination_station_label
 import trainspot.app.shared.generated.resources.error_location_permission_denied
 import trainspot.app.shared.generated.resources.error_location_permission_settings
 import trainspot.app.shared.generated.resources.error_location_services_disabled
 import trainspot.app.shared.generated.resources.error_location_unavailable
 import trainspot.app.shared.generated.resources.locate_station
+import trainspot.app.shared.generated.resources.manual_train_error
+import trainspot.app.shared.generated.resources.origin_station_label
 import trainspot.app.shared.generated.resources.publish_button
 import trainspot.app.shared.generated.resources.rolling_stock_model_label
 import trainspot.app.shared.generated.resources.rolling_stock_model_placeholder
+import trainspot.app.shared.generated.resources.rolling_stock_required_hint
 import trainspot.app.shared.generated.resources.station_label
 import trainspot.app.shared.generated.resources.station_placeholder
 import trainspot.app.shared.generated.resources.train_number_label
@@ -192,6 +200,7 @@ fun AddSpotScreen(
                 .fillMaxSize()
                 .padding(padding)
                 .padding(horizontal = 16.dp)
+                .verticalScroll(rememberScrollState())
         ) {
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -297,32 +306,69 @@ fun AddSpotScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Box(modifier = Modifier.weight(1f)) {
-                    RailTextField(
-                        label = stringResource(Res.string.train_number_label),
-                        value = state.trainNumber,
-                        onValueChange = { onAction(AddSpotAction.OnTrainNumberChanged(it)) },
-                        placeholder = stringResource(Res.string.train_number_placeholder),
-                        icon = Icons.Default.Close
-                    )
+            RailTextField(
+                label = stringResource(Res.string.train_number_label),
+                value = state.trainNumber,
+                onValueChange = { onAction(AddSpotAction.OnTrainNumberChanged(it)) },
+                placeholder = stringResource(Res.string.train_number_placeholder),
+                icon = Icons.Default.Close,
+                keyboardType = KeyboardType.Text,
+                trailingContent = {
+                    IconButton(
+                        onClick = { onAction(AddSpotAction.OnManualTrainClick) },
+                        enabled = !state.isPublishing && !state.isLoading
+                    ) {
+                        Icon(imageVector = Icons.Default.Add, contentDescription = null)
+                    }
                 }
-                Box(modifier = Modifier.weight(1f)) {
-                    RailTextField(
-                        label = stringResource(Res.string.rolling_stock_model_label),
-                        value = state.rollingStockModel,
-                        onValueChange = { onAction(AddSpotAction.OnRollingStockModelChanged(it)) },
-                        placeholder = stringResource(Res.string.rolling_stock_model_placeholder),
-                        icon = Icons.Default.Close
-                    )
-                }
+            )
+            if (state.showManualTrainRoute) {
+                Spacer(Modifier.height(12.dp))
+                RouteStationField(
+                    label = stringResource(Res.string.origin_station_label),
+                    query = state.originStationQuery,
+                    suggestions = state.originStationSuggestions,
+                    onQueryChange = { onAction(AddSpotAction.OnRouteStationQueryChanged(it, true)) },
+                    onSelected = { onAction(AddSpotAction.OnRouteStationSelected(it, true)) }
+                )
+                Spacer(Modifier.height(12.dp))
+                RouteStationField(
+                    label = stringResource(Res.string.destination_station_label),
+                    query = state.destinationStationQuery,
+                    suggestions = state.destinationStationSuggestions,
+                    onQueryChange = { onAction(AddSpotAction.OnRouteStationQueryChanged(it, false)) },
+                    onSelected = { onAction(AddSpotAction.OnRouteStationSelected(it, false)) }
+                )
             }
+            if (!state.isTrainInputValid) {
+                Text(
+                    text = stringResource(Res.string.manual_train_error),
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(vertical = 8.dp)
+                )
+            }
+
+            Spacer(Modifier.height(16.dp))
+            RailTextField(
+                label = stringResource(Res.string.rolling_stock_model_label),
+                value = state.rollingStockModel,
+                onValueChange = { onAction(AddSpotAction.OnRollingStockModelChanged(it)) },
+                placeholder = stringResource(Res.string.rolling_stock_model_placeholder),
+                icon = Icons.Default.Close,
+                keyboardType = KeyboardType.Text
+            )
             
+            if (state.rollingStockModel.isBlank()) {
+                Text(
+                    text = stringResource(Res.string.rolling_stock_required_hint),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(top = 8.dp)
+                )
+            }
             Spacer(modifier = Modifier.height(16.dp))
-            
+
             RailTextField(
                 label = stringResource(Res.string.description_label),
                 value = state.description,
@@ -330,6 +376,32 @@ fun AddSpotScreen(
                 placeholder = stringResource(Res.string.description_placeholder),
                 icon = Icons.Default.Close
             )
+            Spacer(Modifier.height(24.dp))
+        }
+    }
+}
+
+@Composable
+private fun RouteStationField(
+    label: String,
+    query: String,
+    suggestions: List<pl.meleko.trainspot.model.Station>,
+    onQueryChange: (String) -> Unit,
+    onSelected: (pl.meleko.trainspot.model.Station) -> Unit
+) {
+    Column {
+        RailTextField(
+            label = label,
+            value = query,
+            onValueChange = onQueryChange,
+            placeholder = stringResource(Res.string.station_placeholder),
+            icon = Icons.Default.LocationOn,
+            keyboardType = KeyboardType.Text
+        )
+        suggestions.forEach { station ->
+            TextButton(onClick = { onSelected(station) }, modifier = Modifier.fillMaxWidth()) {
+                Text(station.name)
+            }
         }
     }
 }

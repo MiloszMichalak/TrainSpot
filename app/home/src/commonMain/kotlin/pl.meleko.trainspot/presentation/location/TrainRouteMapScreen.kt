@@ -59,6 +59,7 @@ fun TrainRouteMapScreen(
     onNavigateBack: () -> Unit
 ) {
     val spot = state.spot
+    val isManualTrain = (spot?.trainRun?.trainOrderId ?: 0) < 0
     val routeName = listOfNotNull(spot?.trainRun?.originStation?.name, spot?.trainRun?.destStation?.name)
         .filter { it.isNotBlank() }.joinToString(" → ")
 
@@ -68,7 +69,9 @@ fun TrainRouteMapScreen(
             latitude = spot?.lat ?: 52.0,
             longitude = spot?.lon ?: 19.0,
             onNavigateBack = onNavigateBack,
-            bottomContent = { onFocusStation -> TrainRouteStops(state, onRetry, onFocusStation) }
+            bottomContent = { onFocusStation ->
+                if (!isManualTrain) TrainRouteStops(state, onRetry, onFocusStation)
+            }
         )
     }
 }

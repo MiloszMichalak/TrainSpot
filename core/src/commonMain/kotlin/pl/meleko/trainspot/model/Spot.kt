@@ -10,7 +10,7 @@ data class Spot(
     val user: User,
     val model: TrainModel,
     val station: Station?,
-    val trainRun: ScheduleRoute,
+    val trainRun: ScheduleRoute?,
     val imageUrl: String,
     val description: String,
     val lat: Double?,
